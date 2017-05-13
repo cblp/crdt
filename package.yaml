@@ -1,0 +1,8 @@
+name: crdt
+version: '0.1' # ComVer
+
+dependencies:
+  - base
+
+library:
+    source-dirs: lib
