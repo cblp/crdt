@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | Conflict-free replicated data types
@@ -7,11 +8,18 @@ module CRDT
     , query
     ) where
 
+import           Data.Kind      (Type)
+import           Data.Proxy     (Proxy (..))
 import           Data.Semigroup (Semigroup)
-import Data.Kind (Type)
 
 {- |
 State-based, or convergent (Cv) replicated data type.
+
+Update is any function modifying @state@.
+
+Query function is not needed. State itself is exposed.
+In other words, @query = id@.
+
 Laws:
     1. Commutativity:
         x <> y == y <> x
@@ -37,6 +45,7 @@ Laws:
 class CmRDT op where
     type State op :: Type
     update :: op -> State op -> State op
+    initial :: Proxy op -> State op
 
-query :: (Foldable f, CmRDT op) => f op -> State op -> State op
-query ops initial = foldr update initial ops
+query :: forall f op . (Foldable f, CmRDT op) => f op -> State op
+query = foldr update (initial (Proxy :: Proxy op))
