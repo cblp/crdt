@@ -3,6 +3,21 @@ version: '0.1' # ComVer
 
 dependencies:
   - base
+  - vector
 
 library:
-    source-dirs: lib
+  source-dirs: lib
+
+tests:
+  test:
+    dependencies:
+      - QuickCheck
+      - tasty
+      - tasty-quickcheck
+
+      - crdt
+
+      - primitive
+
+    main: Main.hs
+    source-dirs: test

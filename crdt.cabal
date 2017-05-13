@@ -12,6 +12,24 @@ library
       lib
   build-depends:
       base
+    , vector
   exposed-modules:
       CRDT
+      CRDT.GCounter
+      CRDT.GCounter.Internal
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      base
+    , vector
+    , QuickCheck
+    , tasty
+    , tasty-quickcheck
+    , crdt
+    , primitive
   default-language: Haskell2010

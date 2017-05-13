@@ -1,5 +1,6 @@
 steps:
-  - imports: {}
+  - imports:
+      align: group
   - language_pragmas:
       align: false
   - trailing_whitespace: {}

@@ -8,9 +8,9 @@ module CRDT
     , query
     ) where
 
-import           Data.Kind      (Type)
-import           Data.Proxy     (Proxy (..))
-import           Data.Semigroup (Semigroup)
+import Data.Kind      (Type)
+import Data.Proxy     (Proxy (..))
+import Data.Semigroup (Semigroup)
 
 {- |
 State-based, or convergent (Cv) replicated data type.
@@ -27,7 +27,6 @@ Laws:
         x <> x == x
 
 Examples:
-    - G-counter
     - PN-counter
     - G-set
     - 2P-set
