@@ -6,7 +6,7 @@ import qualified Data.Vector    as Vector
 
 import CRDT (CvRDT)
 
--- | 'Vector' may be sub-optimal for storing sparsed vector.
+-- | Grow-only counter.
 newtype GCounter a = GCounter (Vector a)
     deriving Eq
 
