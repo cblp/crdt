@@ -1,0 +1,8 @@
+steps:
+  - imports: {}
+  - language_pragmas:
+      align: false
+  - trailing_whitespace: {}
+language_extensions:
+  - DataKinds
+  - ExplicitNamespaces
