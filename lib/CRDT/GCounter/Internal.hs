@@ -4,7 +4,7 @@ import           Data.Semigroup (Semigroup ((<>)))
 import           Data.Vector    (Vector)
 import qualified Data.Vector    as Vector
 
-import CRDT (CvRDT)
+import CRDT.Cv (CvRDT)
 
 -- | Grow-only counter.
 newtype GCounter a = GCounter (Vector a)
