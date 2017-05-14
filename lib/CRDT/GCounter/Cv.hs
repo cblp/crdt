@@ -11,7 +11,12 @@ import qualified Data.Vector.Mutable as VectorM
 
 import CRDT.GCounter.Cv.Internal
 
-increment :: Num a => Word -> GCounter a -> GCounter a
+-- | Increment counter
+increment
+    :: Num a
+    => Word -- ^ replica id
+    -> GCounter a
+    -> GCounter a
 increment replicaId (GCounter vec) = let
     i = fromIntegral replicaId
     vecResized =
@@ -23,8 +28,10 @@ increment replicaId (GCounter vec) = let
     in
     GCounter vecUpdated
 
+-- | Initial state
 initial :: GCounter a
 initial = GCounter Vector.empty
 
+-- | Get value from the state
 query :: Num a => GCounter a -> a
 query (GCounter v) = sum v

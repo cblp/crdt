@@ -1,37 +1,23 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
-import           Data.Proxy            (Proxy (..))
-import           Data.Semigroup        ((<>))
-import           Data.Vector           (Vector)
-import qualified Data.Vector           as Vector
-import           Test.QuickCheck       (Arbitrary, Small (..), arbitrary)
-import           Test.Tasty            (TestTree, defaultMain, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import Data.Proxy            (Proxy (..))
+import Data.Semigroup        ((<>))
+import Test.QuickCheck       (Arbitrary, Small (..))
+import Test.Tasty            (TestTree, defaultMain, testGroup)
+import Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cv                    (CvRDT)
-import qualified CRDT.GCounter.Cv           as GcCv
-import qualified CRDT.GCounter.Cv.Internal  as GcCv
-import qualified CRDT.PNCounter.Cv          as PncCv
-import qualified CRDT.PNCounter.Cv.Internal as PncCv
+import           CRDT.Cm           (CmRDT, State)
+import qualified CRDT.Cm           as Cm
+import           CRDT.Cv           (CvRDT)
+import qualified CRDT.GCounter.Cv  as GcCv
+import qualified CRDT.PNCounter.Cm as PncCm
+import qualified CRDT.PNCounter.Cv as PncCv
+
+import Instances ()
 
 main :: IO ()
 main = defaultMain $ testGroup "" [gCounter, pnCounter]
-
-instance Arbitrary a => Arbitrary (Vector a) where
-    arbitrary = Vector.fromList <$> arbitrary
-
-deriving instance Arbitrary a => Arbitrary (GcCv.GCounter a)
-
-deriving instance Show a => Show (GcCv.GCounter a)
-
-instance Arbitrary a => Arbitrary (PncCv.PNCounter a) where
-    arbitrary = PncCv.PNCounter <$> arbitrary <*> arbitrary
-
-deriving instance Show a => Show (PncCv.PNCounter a)
 
 gCounter :: TestTree
 gCounter = testGroup "GCounter"
@@ -54,6 +40,8 @@ pnCounter = testGroup "PNCounter"
             \(c :: PncCv.PNCounter Int) (Small i) ->
                 PncCv.query (PncCv.decrement i c) == pred (PncCv.query c)
         ]
+    , testGroup "Cm"
+        [ cmrdtCommutativity (Proxy :: Proxy (PncCm.PNCounter Int)) ]
     ]
 
 cvrdtLaws
@@ -72,3 +60,15 @@ cvrdtLaws _ = testGroup "CvRDT laws"
 
     idempotency :: a -> Bool
     idempotency x = x <> x == x
+
+cmrdtCommutativity
+    :: forall op
+    . ( Arbitrary op, CmRDT op, Show op
+      , Arbitrary (State op), Eq (State op), Show (State op)
+      )
+    => Proxy op -> TestTree
+cmrdtCommutativity _ = testProperty "CmRDT law: commutativity" commutativity
+  where
+    commutativity :: op -> op -> State op -> Bool
+    commutativity op1 op2 x =
+        (Cm.update op1 . Cm.update op2) x == (Cm.update op2 . Cm.update op1) x

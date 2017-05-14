@@ -7,7 +7,7 @@ import CRDT.GCounter.Cv (GCounter)
 
 {- |
 Positive-negative counter. Allows incrementing and decrementing.
-Nice example of cobining of existing CvRDT ('GCounter' in this case)
+Nice example of combining of existing CvRDT ('GCounter' in this case)
 to create another CvRDT.
 -}
 data PNCounter a = PNCounter

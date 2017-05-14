@@ -11,13 +11,12 @@ library:
 tests:
   test:
     dependencies:
+      - derive
       - QuickCheck
       - tasty
       - tasty-quickcheck
 
       - crdt
-
-      - primitive
 
     main: Main.hs
     source-dirs: test
