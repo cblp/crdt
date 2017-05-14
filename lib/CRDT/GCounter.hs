@@ -12,10 +12,16 @@ import qualified Data.Vector.Mutable as VectorM
 import CRDT.GCounter.Internal
 
 increment :: (Enum a, Num a) => Word -> GCounter a -> GCounter a
-increment i (GCounter v) = GCounter $ Vector.modify incrementM $ if i + 1 > n then v <> Vector.replicate (fromIntegral $ i + 1 - n) 0 else v
-  where
-    incrementM vm = VectorM.modify vm succ $ fromIntegral i
-    n = fromIntegral $ length v
+increment replicaId (GCounter vec) = let
+    i = fromIntegral replicaId
+    vecResized =
+        if i + 1 > length vec then
+            vec <> Vector.replicate (i + 1 - length vec) 0
+        else
+            vec
+    vecUpdated = Vector.modify (\vm -> VectorM.modify vm succ i) vecResized
+    in
+    GCounter vecUpdated
 
 initial :: GCounter a
 initial = GCounter Vector.empty
