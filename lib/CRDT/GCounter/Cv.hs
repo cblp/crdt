@@ -11,7 +11,7 @@ import qualified Data.Vector.Mutable as VectorM
 
 import CRDT.GCounter.Cv.Internal
 
-increment :: (Enum a, Num a) => Word -> GCounter a -> GCounter a
+increment :: Num a => Word -> GCounter a -> GCounter a
 increment replicaId (GCounter vec) = let
     i = fromIntegral replicaId
     vecResized =
@@ -19,7 +19,7 @@ increment replicaId (GCounter vec) = let
             vec <> Vector.replicate (i + 1 - length vec) 0
         else
             vec
-    vecUpdated = Vector.modify (\vm -> VectorM.modify vm succ i) vecResized
+    vecUpdated = Vector.modify (\vm -> VectorM.modify vm (+1) i) vecResized
     in
     GCounter vecUpdated
 
