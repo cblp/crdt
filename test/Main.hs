@@ -11,13 +11,14 @@ import           CRDT.Cm           (CmRDT, State)
 import qualified CRDT.Cm           as Cm
 import           CRDT.Cv           (CvRDT)
 import qualified CRDT.GCounter.Cv  as GcCv
+import           CRDT.LWW          (LWW)
 import qualified CRDT.PNCounter.Cm as PncCm
 import qualified CRDT.PNCounter.Cv as PncCv
 
 import Instances ()
 
 main :: IO ()
-main = defaultMain $ testGroup "" [gCounter, pnCounter]
+main = defaultMain $ testGroup "" [gCounter, pnCounter, lww]
 
 gCounter :: TestTree
 gCounter = testGroup "GCounter"
@@ -42,6 +43,12 @@ pnCounter = testGroup "PNCounter"
         ]
     , testGroup "Cm"
         [ cmrdtCommutativity (Proxy :: Proxy (PncCm.PNCounter Int)) ]
+    ]
+
+lww :: TestTree
+lww = testGroup "LWW"
+    [ testGroup "Cm" [ cmrdtCommutativity (Proxy :: Proxy (LWW Int)) ]
+    , testGroup "Cv" [ cvrdtLaws (Proxy :: Proxy (LWW Int)) ]
     ]
 
 cvrdtLaws

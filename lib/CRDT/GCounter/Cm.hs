@@ -2,9 +2,10 @@
 
 module CRDT.GCounter.Cm
     ( GCounter (..)
+    , initial
     ) where
 
-import CRDT.Cm (CmRDT, State, initial, update)
+import CRDT.Cm (CmRDT, State, update)
 
 -- | Grow-only counter.
 --
@@ -13,5 +14,8 @@ data GCounter a = Increment
 
 instance Num a => CmRDT (GCounter a) where
     type State (GCounter a) = a
-    initial _ = 0
     update _ = (+1)
+
+-- | Initial state
+initial :: Num a => a
+initial = 0

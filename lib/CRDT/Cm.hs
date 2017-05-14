@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm
@@ -6,8 +5,7 @@ module CRDT.Cm
     , query
     ) where
 
-import Data.Kind  (Type)
-import Data.Proxy (Proxy (..))
+import Data.Kind (Type)
 
 {- |
 Operation-based, or commutative (Cm) replicated data type.
@@ -24,9 +22,6 @@ class CmRDT op where
     -- | Apply operation to a value
     update :: op -> State op -> State op
 
-    -- | Initial state
-    initial :: Proxy op -> State op
-
 -- | Build state from a series of operations.
-query :: forall f op . (Foldable f, CmRDT op) => f op -> State op
-query = foldr update (initial (Proxy :: Proxy op))
+query :: (Foldable f, CmRDT op) => f op -> State op -> State op
+query ops initial = foldr update initial ops
