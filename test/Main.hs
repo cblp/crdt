@@ -11,8 +11,8 @@ import           Test.QuickCheck       (Arbitrary, Small (..), arbitrary)
 import           Test.Tasty            (TestTree, defaultMain, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import qualified CRDT.GCounter          as GCounter
-import           CRDT.GCounter.Internal (GCounter (..))
+import qualified CRDT.GCounter.Cv          as GCounter
+import           CRDT.GCounter.Cv.Internal (GCounter (..))
 
 main :: IO ()
 main = defaultMain $ testGroup "" [gCounter]

@@ -1,4 +1,4 @@
-module CRDT.GCounter
+module CRDT.GCounter.Cv
     ( GCounter
     , increment
     , initial
@@ -9,7 +9,7 @@ import           Data.Monoid         ((<>))
 import qualified Data.Vector         as Vector
 import qualified Data.Vector.Mutable as VectorM
 
-import CRDT.GCounter.Internal
+import CRDT.GCounter.Cv.Internal
 
 increment :: (Enum a, Num a) => Word -> GCounter a -> GCounter a
 increment replicaId (GCounter vec) = let

@@ -1,4 +1,4 @@
-module CRDT.GCounter.Internal where
+module CRDT.GCounter.Cv.Internal where
 
 import           Data.Semigroup (Semigroup ((<>)))
 import           Data.Vector    (Vector)
