@@ -2,6 +2,7 @@
 
 module CRDT.LWW
     ( LWW (..)
+    , Timestamp
     ) where
 
 import Data.Semigroup  (Semigroup (..))

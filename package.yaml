@@ -1,8 +1,16 @@
 name: crdt
 version: '0.1' # ComVer
+category: Distributed Systems
+maintainer: Yuriy Syrovetskiy <cblp@cblp.su>
+license: BSD3
+license-file: LICENSE
+synopsis: Conflict-free replicated data types
+description:
+  Definitions of CmRDT and CvRDT. Implementations for some classic CRDTs.
+github: cblp/crdt
 
 dependencies:
-  - base
+  - base >= 4.9 && < 4.10
   - vector
 
 library:
