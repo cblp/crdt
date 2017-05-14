@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
+import           Data.Proxy            (Proxy (..))
 import           Data.Semigroup        ((<>))
 import           Data.Vector           (Vector)
 import qualified Data.Vector           as Vector
@@ -11,6 +12,7 @@ import           Test.QuickCheck       (Arbitrary, Small (..), arbitrary)
 import           Test.Tasty            (TestTree, defaultMain, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
+import           CRDT.Cv                    (CvRDT)
 import qualified CRDT.GCounter.Cv           as GcCv
 import qualified CRDT.GCounter.Cv.Internal  as GcCv
 import qualified CRDT.PNCounter.Cv          as PncCv
@@ -34,14 +36,7 @@ deriving instance Show a => Show (PncCv.PNCounter a)
 gCounter :: TestTree
 gCounter = testGroup "GCounter"
     [ testGroup "Cv"
-        [ testGroup "laws"
-            [ testProperty "associativity" $
-                \(x :: GcCv.GCounter Int) y z -> (x <> y) <> z == x <> (y <> z)
-            , testProperty "commutativity" $
-                \(x :: GcCv.GCounter Int) y -> x <> y == y <> x
-            , testProperty "idempotency" $
-                \(x :: GcCv.GCounter Int) -> x <> x == x
-            ]
+        [ cvrdtLaws (Proxy :: Proxy (GcCv.GCounter Int))
         , testProperty "increment" $
             \(c :: GcCv.GCounter Int) (Small i) ->
                 GcCv.query (GcCv.increment i c) == succ (GcCv.query c)
@@ -51,15 +46,7 @@ gCounter = testGroup "GCounter"
 pnCounter :: TestTree
 pnCounter = testGroup "PNCounter"
     [ testGroup "Cv"
-        [ testGroup "laws"
-            [ testProperty "associativity" $
-                \(x :: PncCv.PNCounter Int) y z ->
-                    (x <> y) <> z == x <> (y <> z)
-            , testProperty "commutativity" $
-                \(x :: PncCv.PNCounter Int) y -> x <> y == y <> x
-            , testProperty "idempotency" $
-                \(x :: PncCv.PNCounter Int) -> x <> x == x
-            ]
+        [ cvrdtLaws (Proxy :: Proxy (PncCv.PNCounter Int))
         , testProperty "increment" $
             \(c :: PncCv.PNCounter Int) (Small i) ->
                 PncCv.query (PncCv.increment i c) == succ (PncCv.query c)
@@ -68,3 +55,20 @@ pnCounter = testGroup "PNCounter"
                 PncCv.query (PncCv.decrement i c) == pred (PncCv.query c)
         ]
     ]
+
+cvrdtLaws
+    :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => Proxy a -> TestTree
+cvrdtLaws _ = testGroup "CvRDT laws"
+    [ testProperty "associativity" associativity
+    , testProperty "commutativity" commutativity
+    , testProperty "idempotency"   idempotency
+    ]
+  where
+    associativity :: a -> a -> a -> Bool
+    associativity x y z = (x <> y) <> z == x <> (y <> z)
+
+    commutativity :: a -> a -> Bool
+    commutativity x y = x <> y == y <> x
+
+    idempotency :: a -> Bool
+    idempotency x = x <> x == x
