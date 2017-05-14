@@ -6,7 +6,9 @@ module CRDT.GCounter.Cm
 
 import CRDT.Cm (CmRDT, State, initial, update)
 
--- | 'Increment' obviously commutes with itself.
+-- | Grow-only counter.
+--
+-- Commutativity: 'Increment' obviously commutes with itself.
 data GCounter a = Increment
 
 instance Num a => CmRDT (GCounter a) where
