@@ -17,9 +17,5 @@ instance Arbitrary a => Arbitrary (Vector a) where
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
 
-deriving instance Show a => Show (GCounter a)
-
 instance Arbitrary a => Arbitrary (PNCounter a) where
     arbitrary = PNCounter <$> arbitrary <*> arbitrary
-
-deriving instance Show a => Show (PNCounter a)

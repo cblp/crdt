@@ -1,7 +1,5 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-{-# LANGUAGE StandaloneDeriving #-}
-
 module Instances.Cm () where
 
 import Test.QuickCheck (Arbitrary, arbitrary, arbitraryBoundedEnum)
@@ -14,7 +12,3 @@ instance Arbitrary (PNCounter a) where
 
 instance Arbitrary a => Arbitrary (LWW a) where
     arbitrary = Write <$> arbitrary <*> arbitrary
-
-deriving instance Show (PNCounter a)
-
-deriving instance Show a => Show (LWW a)

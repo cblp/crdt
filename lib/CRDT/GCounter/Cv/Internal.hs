@@ -8,7 +8,7 @@ import CRDT.Cv (CvRDT)
 
 -- | Grow-only counter.
 newtype GCounter a = GCounter (Vector a)
-    deriving Eq
+    deriving (Eq, Show)
 
 instance Ord a => Semigroup (GCounter a) where
     GCounter x <> GCounter y = GCounter $ Vector.zipWith max x y

@@ -19,7 +19,7 @@ data LWW a = Write
     { timestamp :: !Timestamp
     , value     :: !a
     }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 instance Ord a => Semigroup (LWW a) where
     (<>) = max

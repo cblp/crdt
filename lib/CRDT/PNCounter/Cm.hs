@@ -10,7 +10,7 @@ import CRDT.Cm (CmRDT, State, update)
 
 -- | Positive-negative counter. Allows incrementing and decrementing.
 data PNCounter a = Increment | Decrement
-    deriving (Bounded, Enum)
+    deriving (Bounded, Enum, Show)
 
 instance Num a => CmRDT (PNCounter a) where
     type State (PNCounter a) = a

@@ -14,7 +14,7 @@ data PNCounter a = PNCounter
     { positive :: !(GCounter a)
     , negative :: !(GCounter a)
     }
-    deriving Eq
+    deriving (Eq, Show)
 
 instance Ord a => Semigroup (PNCounter a) where
     PNCounter p1 n1 <> PNCounter p2 n2 = PNCounter (p1 <> p2) (n1 <> n2)
