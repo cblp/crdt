@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Data.Proxy            (Proxy (..))
-import Data.Semigroup        ((<>))
+import Data.Semilattice      (Semilattice, (<>))
 import Test.QuickCheck       (Arbitrary, Small (..))
 import Test.Tasty            (TestTree, defaultMain, testGroup)
 import Test.Tasty.QuickCheck (testProperty)
@@ -42,18 +42,18 @@ pnCounter = testGroup "PNCounter"
                 PncCv.query (PncCv.decrement i c) == pred (PncCv.query c)
         ]
     , testGroup "Cm"
-        [ cmrdtCommutativity (Proxy :: Proxy (PncCm.PNCounter Int)) ]
+        [ cmrdtLaws (Proxy :: Proxy (PncCm.PNCounter Int)) ]
     ]
 
 lww :: TestTree
 lww = testGroup "LWW"
-    [ testGroup "Cm" [ cmrdtCommutativity (Proxy :: Proxy (LWW Int)) ]
+    [ testGroup "Cm" [ cmrdtLaws (Proxy :: Proxy (LWW Int)) ]
     , testGroup "Cv" [ cvrdtLaws (Proxy :: Proxy (LWW Int)) ]
     ]
 
-cvrdtLaws
+semilatticeLaws
     :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => Proxy a -> TestTree
-cvrdtLaws _ = testGroup "CvRDT laws"
+semilatticeLaws _ = testGroup "Semilattice laws"
     [ testProperty "associativity" associativity
     , testProperty "commutativity" commutativity
     , testProperty "idempotency"   idempotency
@@ -68,13 +68,16 @@ cvrdtLaws _ = testGroup "CvRDT laws"
     idempotency :: a -> Bool
     idempotency x = x <> x == x
 
-cmrdtCommutativity
+cvrdtLaws :: (Arbitrary a, Semilattice a, Eq a, Show a) => Proxy a -> TestTree
+cvrdtLaws = semilatticeLaws
+
+cmrdtLaws
     :: forall op
     . ( Arbitrary op, CmRDT op, Show op
       , Arbitrary (State op), Eq (State op), Show (State op)
       )
     => Proxy op -> TestTree
-cmrdtCommutativity _ = testProperty "CmRDT law: commutativity" commutativity
+cmrdtLaws _ = testProperty "CmRDT law: commutativity" commutativity
   where
     commutativity :: op -> op -> State op -> Bool
     commutativity op1 op2 x =

@@ -2,10 +2,11 @@
 
 module CRDT.PNCounter.Cv
     ( PNCounter
-    , decrement
-    , increment
     , initial
     , query
+    -- * Operations
+    , decrement
+    , increment
     ) where
 
 import qualified CRDT.GCounter.Cv as GCounter

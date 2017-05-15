@@ -1,8 +1,9 @@
 module CRDT.GCounter.Cv
     ( GCounter
-    , increment
     , initial
     , query
+    -- * Operation
+    , increment
     ) where
 
 import           Data.Monoid         ((<>))
