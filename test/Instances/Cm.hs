@@ -1,18 +1,19 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Instances.Cm () where
 
-import Data.DeriveTH   (derives, makeArbitrary)
-import Test.QuickCheck (Arbitrary, arbitrary, choose)
+import Test.QuickCheck (Arbitrary, arbitrary, arbitraryBoundedEnum)
 
 import CRDT.LWW          (LWW (..))
 import CRDT.PNCounter.Cm (PNCounter (..))
 
-derives [makeArbitrary] [''PNCounter, ''LWW]
+instance Arbitrary (PNCounter a) where
+    arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary a => Arbitrary (LWW a) where
+    arbitrary = Write <$> arbitrary <*> arbitrary
 
 deriving instance Show (PNCounter a)
 

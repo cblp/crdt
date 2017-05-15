@@ -13,6 +13,8 @@ Operation-based, or commutative (Cm) replicated data type.
 [Commutativity law]
 
     @'update' op1 . 'update' op2 == 'update' op2 . 'update' op1@
+
+Idempotency doesn't need to hold.
 -}
 class CmRDT op where
 

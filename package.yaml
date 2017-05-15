@@ -19,7 +19,6 @@ library:
 tests:
   test:
     dependencies:
-      - derive
       - QuickCheck
       - tasty
       - tasty-quickcheck
