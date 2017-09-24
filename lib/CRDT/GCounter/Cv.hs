@@ -6,10 +6,9 @@ module CRDT.GCounter.Cv
     , increment
     ) where
 
-import           Data.Monoid         ((<>))
-import qualified Data.IntMap         as IntMap
+import qualified Data.IntMap.Strict as IntMap
 
-import CRDT.GCounter.Cv.Internal
+import           CRDT.GCounter.Cv.Internal
 
 -- | Increment counter
 increment

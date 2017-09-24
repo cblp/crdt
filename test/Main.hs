@@ -1,21 +1,21 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-import Data.Proxy            (Proxy (..))
-import Data.Semilattice      (Semilattice, (<>))
-import Test.QuickCheck       (Arbitrary, Small (..))
-import Test.Tasty            (TestTree, defaultMain, testGroup)
-import Test.Tasty.QuickCheck (testProperty)
+import           Data.Proxy (Proxy (..))
+import           Data.Semilattice (Semilattice, (<>))
+import           Test.QuickCheck (Arbitrary, Small (..))
+import           Test.Tasty (TestTree, defaultMain, testGroup)
+import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cm           (CmRDT, State)
-import qualified CRDT.Cm           as Cm
-import           CRDT.Cv           (CvRDT)
-import qualified CRDT.GCounter.Cv  as GcCv
-import           CRDT.LWW          (LWW)
+import           CRDT.Cm (CmRDT, State)
+import qualified CRDT.Cm as Cm
+import           CRDT.Cv (CvRDT)
+import qualified CRDT.GCounter.Cv as GcCv
+import           CRDT.LWW (LWW)
 import qualified CRDT.PNCounter.Cm as PncCm
 import qualified CRDT.PNCounter.Cv as PncCv
 
-import Instances ()
+import           Instances ()
 
 main :: IO ()
 main = defaultMain $ testGroup "" [gCounter, pnCounter, lww]
