@@ -3,7 +3,7 @@
 
 import           Data.Proxy (Proxy (..))
 import           Data.Semilattice (Semilattice, (<>))
-import           Test.QuickCheck (Arbitrary, Small (..))
+import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, defaultMain, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
@@ -25,7 +25,7 @@ gCounter = testGroup "GCounter"
     [ testGroup "Cv"
         [ cvrdtLaws (Proxy :: Proxy (GcCv.GCounter Int))
         , testProperty "increment" $
-            \(c :: GcCv.GCounter Int) (Small i) ->
+            \(c :: GcCv.GCounter Int) i ->
                 GcCv.query (GcCv.increment i c) == succ (GcCv.query c)
         ]
     ]
@@ -35,10 +35,10 @@ pnCounter = testGroup "PNCounter"
     [ testGroup "Cv"
         [ cvrdtLaws (Proxy :: Proxy (PncCv.PNCounter Int))
         , testProperty "increment" $
-            \(c :: PncCv.PNCounter Int) (Small i) ->
+            \(c :: PncCv.PNCounter Int) i ->
                 PncCv.query (PncCv.increment i c) == succ (PncCv.query c)
         , testProperty "decrement" $
-            \(c :: PncCv.PNCounter Int) (Small i) ->
+            \(c :: PncCv.PNCounter Int) i ->
                 PncCv.query (PncCv.decrement i c) == pred (PncCv.query c)
         ]
     , testGroup "Cm"
