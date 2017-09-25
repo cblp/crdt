@@ -1,6 +1,7 @@
 name: crdt
 version: '0.3' # ComVer
 category: Distributed Systems
+author: Yuriy Syrovetskiy <cblp@cblp.su>
 maintainer: Yuriy Syrovetskiy <cblp@cblp.su>
 license: BSD3
 license-file: LICENSE
