@@ -1,19 +1,20 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
-import           Data.Proxy (Proxy (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, slappend)
 import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, defaultMain, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (Positive (..), testProperty)
 
-import           CRDT.Cm (CmRDT, State)
-import qualified CRDT.Cm as Cm
+import           CRDT.Cm (CmRDT, State, update)
 import           CRDT.Cv (CvRDT)
 import qualified CRDT.GCounter.Cm as GcCm
 import qualified CRDT.GCounter.Cv as GcCv
 import           CRDT.LWW (LWW)
+import qualified CRDT.LWW as LWW
 import qualified CRDT.PNCounter.Cm as PncCm
 import qualified CRDT.PNCounter.Cv as PncCv
 
@@ -25,49 +26,90 @@ main = defaultMain $ testGroup "" [gCounter, pnCounter, lww]
 gCounter :: TestTree
 gCounter = testGroup "GCounter"
     [ testGroup "Cv"
-        [ cvrdtLaws (Proxy :: Proxy (GcCv.GCounter Int))
+        [ cvrdtLaws @(GcCv.GCounter Int)
         , testProperty "increment" $
-            \(c :: GcCv.GCounter Int) i ->
-                GcCv.query (GcCv.increment i c) == succ (GcCv.query c)
+            \(counter :: GcCv.GCounter Int) i ->
+                GcCv.query (GcCv.increment i counter)
+                == succ (GcCv.query counter)
         ]
-    , testGroup "Cm" [cmrdtLaws (Proxy :: Proxy (GcCm.GCounter Int))]
+    , testGroup "Cm"
+        [ cmrdtLaws @(GcCm.GCounter Int)
+        , testProperty "increment" $
+            \(counter :: Int) -> update GcCm.Increment counter == succ counter
+        ]
     ]
 
 pnCounter :: TestTree
 pnCounter = testGroup "PNCounter"
     [ testGroup "Cv"
-        [ cvrdtLaws (Proxy :: Proxy (PncCv.PNCounter Int))
+        [ cvrdtLaws @(PncCv.PNCounter Int)
         , testProperty "increment" $
-            \(c :: PncCv.PNCounter Int) i ->
-                PncCv.query (PncCv.increment i c) == succ (PncCv.query c)
+            \(counter :: PncCv.PNCounter Int) i ->
+                PncCv.query (PncCv.increment i counter)
+                == succ (PncCv.query counter)
         , testProperty "decrement" $
-            \(c :: PncCv.PNCounter Int) i ->
-                PncCv.query (PncCv.decrement i c) == pred (PncCv.query c)
+            \(counter :: PncCv.PNCounter Int) i ->
+                PncCv.query (PncCv.decrement i counter)
+                == pred (PncCv.query counter)
         ]
     , testGroup "Cm"
-        [ cmrdtLaws (Proxy :: Proxy (PncCm.PNCounter Int)) ]
+        [ cmrdtLaws @(PncCm.PNCounter Int)
+        , testProperty "increment" $
+            \(counter :: Int) -> update PncCm.Increment counter == succ counter
+        , testProperty "decrement" $
+            \(counter :: Int) -> update PncCm.Decrement counter == pred counter
+        ]
     ]
 
 lww :: TestTree
 lww = testGroup "LWW"
-    [ testGroup "Cm" [ cmrdtLaws (Proxy :: Proxy (LWW Int)) ]
-    , testGroup "Cv" [ cvrdtLaws (Proxy :: Proxy (LWW Int)) ]
+    [ testGroup "Cm"
+        [ cmrdtLaws @(LWW Int)
+        , testProperty "write latter" $
+            \formerTime (formerValue :: Int) (Positive dt) latterValue -> let
+                latterTime = formerTime + dt
+                state = LWW.point formerTime formerValue
+                state' = update (LWW.Write latterTime latterValue) state
+                in
+                LWW.query state' == latterValue
+        , testProperty "write former" $
+            \formerTime (formerValue :: Int) (Positive dt) latterValue -> let
+                latterTime = formerTime + dt
+                state = LWW.point latterTime formerValue
+                state' = update (LWW.Write formerTime latterValue) state
+                in
+                LWW.query state' == formerValue
+        ]
+    , testGroup "Cv"
+        [ cvrdtLaws @(LWW Int)
+        , testProperty "write latter" $
+            \formerTime (formerValue :: Int) (Positive dt) latterValue -> let
+                latterTime = formerTime + dt
+                state = LWW.point formerTime formerValue
+                state' = LWW.write latterTime latterValue state
+                in
+                LWW.query state' == latterValue
+        , testProperty "write former" $
+            \formerTime (formerValue :: Int) (Positive dt) latterValue -> let
+                latterTime = formerTime + dt
+                state = LWW.point latterTime formerValue
+                state' = LWW.write formerTime latterValue state
+                in
+                LWW.query state' == formerValue
+        ]
     ]
 
-semigroupLaw
-    :: forall a
-    . (Arbitrary a, Semigroup a, Eq a, Show a) => Proxy a -> TestTree
-semigroupLaw _ =
+semigroupLaw :: forall a . (Arbitrary a, Semigroup a, Eq a, Show a) => TestTree
+semigroupLaw =
     testGroup "Semigroup law" [testProperty "associativity" associativity]
   where
     associativity :: a -> a -> a -> Bool
     associativity x y z = (x <> y) <> z == x <> (y <> z)
 
 semilatticeLaws
-    :: forall a
-    . (Arbitrary a, Semilattice a, Eq a, Show a) => Proxy a -> TestTree
-semilatticeLaws proxy = testGroup "Semilattice laws"
-    [ semigroupLaw proxy
+    :: forall a . (Arbitrary a, Semilattice a, Eq a, Show a) => TestTree
+semilatticeLaws = testGroup "Semilattice laws"
+    [ semigroupLaw @a
     , testProperty "commutativity" commutativity
     , testProperty "idempotency"   idempotency
     ]
@@ -78,17 +120,17 @@ semilatticeLaws proxy = testGroup "Semilattice laws"
     idempotency :: a -> Bool
     idempotency x = x `slappend` x == x
 
-cvrdtLaws :: (Arbitrary a, CvRDT a, Eq a, Show a) => Proxy a -> TestTree
-cvrdtLaws = semilatticeLaws
+cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
+cvrdtLaws = semilatticeLaws @a
 
 cmrdtLaws
     :: forall op
     . ( Arbitrary op, CmRDT op, Show op
       , Arbitrary (State op), Eq (State op), Show (State op)
       )
-    => Proxy op -> TestTree
-cmrdtLaws _ = testProperty "CmRDT law: commutativity" commutativity
+    => TestTree
+cmrdtLaws = testProperty "CmRDT law: commutativity" commutativity
   where
     commutativity :: op -> op -> State op -> Bool
     commutativity op1 op2 x =
-        (Cm.update op1 . Cm.update op2) x == (Cm.update op2 . Cm.update op1) x
+        (update op1 . update op2) x == (update op2 . update op1) x

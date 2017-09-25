@@ -2,10 +2,9 @@
 
 module CRDT.Cm
     ( CmRDT (..)
-    , query
     ) where
 
-import Data.Kind (Type)
+import           Data.Kind (Type)
 
 {- |
 Operation-based, or commutative (Cm) replicated data type.
@@ -23,7 +22,3 @@ class CmRDT op where
 
     -- | Apply operation to a value
     update :: op -> State op -> State op
-
--- | Build state from a series of operations.
-query :: (Foldable f, CmRDT op) => f op -> State op -> State op
-query ops initial = foldr update initial ops
