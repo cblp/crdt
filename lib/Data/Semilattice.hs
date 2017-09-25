@@ -1,10 +1,9 @@
 module Data.Semilattice
     ( Semilattice
-    , (<>)
+    , slappend
     ) where
 
-import           Data.Semigroup (Semigroup)
-import qualified Data.Semigroup as Semigroup
+import           Data.Semigroup (Semigroup, (<>))
 
 {- |
 A semilattice.
@@ -26,7 +25,7 @@ In addition to 'Semigroup', Semilattice defines this laws:
 class Semigroup a => Semilattice a
 
 -- | Just ('Semigroup.<>'), specialized to 'Semilattice'.
-(<>) :: Semilattice a => a -> a -> a
-(<>) = (Semigroup.<>)
-infixr 6 <>
-{-# INLINE (<>) #-}
+slappend :: Semilattice a => a -> a -> a
+slappend = (<>)
+infixr 6 `slappend`
+{-# INLINE slappend #-}

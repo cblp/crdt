@@ -2,7 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import           Data.Proxy (Proxy (..))
-import           Data.Semilattice (Semilattice, (<>))
+import           Data.Semigroup (Semigroup, (<>))
+import           Data.Semilattice (Semilattice, slappend)
 import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, defaultMain, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
@@ -51,24 +52,31 @@ lww = testGroup "LWW"
     , testGroup "Cv" [ cvrdtLaws (Proxy :: Proxy (LWW Int)) ]
     ]
 
-semilatticeLaws
-    :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => Proxy a -> TestTree
-semilatticeLaws _ = testGroup "Semilattice laws"
-    [ testProperty "associativity" associativity
-    , testProperty "commutativity" commutativity
-    , testProperty "idempotency"   idempotency
-    ]
+semigroupLaw
+    :: forall a
+    . (Arbitrary a, Semigroup a, Eq a, Show a) => Proxy a -> TestTree
+semigroupLaw _ =
+    testGroup "Semigroup law" [testProperty "associativity" associativity]
   where
     associativity :: a -> a -> a -> Bool
     associativity x y z = (x <> y) <> z == x <> (y <> z)
 
+semilatticeLaws
+    :: forall a
+    . (Arbitrary a, Semilattice a, Eq a, Show a) => Proxy a -> TestTree
+semilatticeLaws proxy = testGroup "Semilattice laws"
+    [ semigroupLaw proxy
+    , testProperty "commutativity" commutativity
+    , testProperty "idempotency"   idempotency
+    ]
+  where
     commutativity :: a -> a -> Bool
-    commutativity x y = x <> y == y <> x
+    commutativity x y = x `slappend` y == y `slappend` x
 
     idempotency :: a -> Bool
-    idempotency x = x <> x == x
+    idempotency x = x `slappend` x == x
 
-cvrdtLaws :: (Arbitrary a, Semilattice a, Eq a, Show a) => Proxy a -> TestTree
+cvrdtLaws :: (Arbitrary a, CvRDT a, Eq a, Show a) => Proxy a -> TestTree
 cvrdtLaws = semilatticeLaws
 
 cmrdtLaws
