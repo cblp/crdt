@@ -1,14 +1,13 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
+
 module CRDT.GSet.Cv.Internal where
 
-import Data.Set       (Set)
-import Data.Semigroup (Semigroup)
+import Data.Set (Set)
 
-import CRDT.Cv (CvRDT)
+import CRDT.Cv  (CvRDT)
 
 -- | Grow-only set
-newtype GSet a = GSet (Set a)
-  deriving (Semigroup, Eq, Show)
+type GSet = Set
 
-instance Ord a => CvRDT(GSet a)
+instance Ord a => CvRDT (Set a)
