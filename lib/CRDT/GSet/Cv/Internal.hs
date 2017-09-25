@@ -1,4 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module CRDT.GSet.Cv.Internal where

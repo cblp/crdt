@@ -1,8 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 
 module GSet
@@ -24,6 +22,5 @@ gSet = testGroup "GSet"
         , testProperty "increment" $
             \(set :: Cv.GSet Int) i ->
                 Cv.query i (Cv.add i set)
-                == True
         ]
     ]
