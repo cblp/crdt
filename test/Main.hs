@@ -9,37 +9,14 @@ import           Test.Tasty.QuickCheck (Positive (..), testProperty)
 import           CRDT.Cm (update)
 import           CRDT.LWW (LWW)
 import qualified CRDT.LWW as LWW
-import qualified CRDT.PNCounter.Cm as PncCm
-import qualified CRDT.PNCounter.Cv as PncCv
 
 import           GCounter (gCounter)
 import           Instances ()
 import           Laws (cmrdtLaws, cvrdtLaws)
+import           PNCounter (pnCounter)
 
 main :: IO ()
 main = defaultMain $ testGroup "" [gCounter, pnCounter, lww]
-
-pnCounter :: TestTree
-pnCounter = testGroup "PNCounter"
-    [ testGroup "Cv"
-        [ cvrdtLaws @(PncCv.PNCounter Int)
-        , testProperty "increment" $
-            \(counter :: PncCv.PNCounter Int) i ->
-                PncCv.query (PncCv.increment i counter)
-                == succ (PncCv.query counter)
-        , testProperty "decrement" $
-            \(counter :: PncCv.PNCounter Int) i ->
-                PncCv.query (PncCv.decrement i counter)
-                == pred (PncCv.query counter)
-        ]
-    , testGroup "Cm"
-        [ cmrdtLaws @(PncCm.PNCounter Int)
-        , testProperty "increment" $
-            \(counter :: Int) -> update PncCm.Increment counter == succ counter
-        , testProperty "decrement" $
-            \(counter :: Int) -> update PncCm.Decrement counter == pred counter
-        ]
-    ]
 
 lww :: TestTree
 lww = testGroup "LWW"
