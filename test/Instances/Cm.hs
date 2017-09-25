@@ -2,10 +2,15 @@
 
 module Instances.Cm () where
 
-import Test.QuickCheck (Arbitrary, arbitrary, arbitraryBoundedEnum)
+import           Test.QuickCheck (Arbitrary, arbitrary, arbitraryBoundedEnum)
 
-import CRDT.LWW          (LWW (..))
-import CRDT.PNCounter.Cm (PNCounter (..))
+import           CRDT.GCounter.Cm (GCounter (..))
+import qualified CRDT.GCounter.Cm as GCounter
+import           CRDT.LWW (LWW (..))
+import           CRDT.PNCounter.Cm (PNCounter (..))
+
+instance Arbitrary (GCounter a) where
+    arbitrary = pure GCounter.Increment
 
 instance Arbitrary (PNCounter a) where
     arbitrary = arbitraryBoundedEnum

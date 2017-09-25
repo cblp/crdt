@@ -11,6 +11,7 @@ import           Test.Tasty.QuickCheck (testProperty)
 import           CRDT.Cm (CmRDT, State)
 import qualified CRDT.Cm as Cm
 import           CRDT.Cv (CvRDT)
+import qualified CRDT.GCounter.Cm as GcCm
 import qualified CRDT.GCounter.Cv as GcCv
 import           CRDT.LWW (LWW)
 import qualified CRDT.PNCounter.Cm as PncCm
@@ -29,6 +30,7 @@ gCounter = testGroup "GCounter"
             \(c :: GcCv.GCounter Int) i ->
                 GcCv.query (GcCv.increment i c) == succ (GcCv.query c)
         ]
+    , testGroup "Cm" [cmrdtLaws (Proxy :: Proxy (GcCm.GCounter Int))]
     ]
 
 pnCounter :: TestTree

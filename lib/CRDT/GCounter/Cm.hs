@@ -5,12 +5,13 @@ module CRDT.GCounter.Cm
     , initial
     ) where
 
-import CRDT.Cm (CmRDT, State, update)
+import           CRDT.Cm (CmRDT, State, update)
 
 -- | Grow-only counter.
 --
 -- Commutativity: 'Increment' obviously commutes with itself.
 data GCounter a = Increment
+    deriving (Show)
 
 instance Num a => CmRDT (GCounter a) where
     type State (GCounter a) = a
