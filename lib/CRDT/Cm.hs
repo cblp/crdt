@@ -9,6 +9,9 @@ import           Data.Kind (Type)
 {- |
 Operation-based, or commutative (Cm) replicated data type.
 
+Values of the type must be "operations",
+i. e. they must be applicable to the state via the 'update' method.
+
 [Commutativity law]
 
     @'update' op1 . 'update' op2 == 'update' op2 . 'update' op1@
