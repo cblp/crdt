@@ -1,6 +1,9 @@
 name: crdt
 version: '0.4' # ComVer
 category: Distributed Systems
+author:
+  Yuriy Syrovetskiy <cblp@cblp.su>,
+  Nikolay Loginov <kemphack@mail.ru>
 copyright:
   © 2017  Yuriy Syrovetskiy <cblp@cblp.su>, Nikolay Loginov <kemphack@mail.ru>
 maintainer: Yuriy Syrovetskiy <cblp@cblp.su>
