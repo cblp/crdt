@@ -11,7 +11,6 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty, (==>))
 
 import qualified CRDT.GSet.Cv as Cv
-import qualified CRDT.GSet.Cv.Internal as Cv
 
 import           Laws (cvrdtLaws)
 
