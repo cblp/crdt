@@ -2,20 +2,17 @@
 
 module CRDT.LWW
     ( LWW (..)
-    , Timestamp
     , point
     , write
     , query
     ) where
 
 import           Data.Semigroup (Semigroup (..))
-import           Numeric.Natural (Natural)
 
 import           CRDT.Cm (CmRDT, State)
 import qualified CRDT.Cm as Cm
 import           CRDT.Cv (CvRDT)
-
-type Timestamp = Natural
+import           CRDT.Timestamp (Timestamp)
 
 -- | Last write wins. Interesting, this type is both 'CmRDT' and 'CvRDT'.
 data LWW a = Write
