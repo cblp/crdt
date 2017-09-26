@@ -19,8 +19,7 @@ gSet :: TestTree
 gSet = testGroup "GSet"
     [ testGroup "Cv"
         [ cvrdtLaws @(Cv.GSet Int)
-        , testProperty "increment" $
-            \(set :: Cv.GSet Int) i ->
-                Cv.query i (Cv.add i set)
+        , testProperty "add" $
+            \(set :: Cv.GSet Int) i -> Cv.query i (Cv.add i set)
         ]
     ]
