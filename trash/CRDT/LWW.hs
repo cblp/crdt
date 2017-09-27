@@ -9,6 +9,8 @@ module CRDT.LWW
 
 import           Data.Semigroup (Semigroup (..))
 
+import           CRDT.Cm (CmRDT, State)
+import qualified CRDT.Cm as Cm
 import           CRDT.Cv (CvRDT)
 import           CRDT.Timestamp (Timestamp)
 
@@ -22,6 +24,10 @@ data LWW a = Write
 -- | Merge by choosing more recent timestamp.
 instance Ord a => Semigroup (LWW a) where
     (<>) = max
+
+instance Ord a => CmRDT (LWW a) where
+    type State (LWW a) = LWW a
+    update = max
 
 instance Ord a => CvRDT (LWW a)
 

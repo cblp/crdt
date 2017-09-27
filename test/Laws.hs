@@ -4,10 +4,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Laws
-    ( cmrdtLaws
-    , cvrdtLaws
-    , semigroupLaw
-    , semilatticeLaws
+    ( cvrdtLaws
     ) where
 
 import           Data.Semigroup (Semigroup, (<>))
@@ -16,7 +13,6 @@ import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cm (CmRDT, State, update)
 import           CRDT.Cv (CvRDT)
 
 semigroupLaw :: forall a . (Arbitrary a, Semigroup a, Eq a, Show a) => TestTree
@@ -42,15 +38,3 @@ semilatticeLaws = testGroup "Semilattice laws"
 
 cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
-
-cmrdtLaws
-    :: forall op
-    . ( Arbitrary op, CmRDT op, Show op
-      , Arbitrary (State op), Eq (State op), Show (State op)
-      )
-    => TestTree
-cmrdtLaws = testProperty "CmRDT law: commutativity" commutativity
-  where
-    commutativity :: op -> op -> State op -> Bool
-    commutativity op1 op2 x =
-        (update op1 . update op2) x == (update op2 . update op1) x

@@ -25,3 +25,15 @@ class CmRDT op where
 
     -- | Apply operation to a value
     update :: op -> State op -> State op
+
+cmrdtLaws
+    :: forall op
+    . ( Arbitrary op, CmRDT op, Show op
+      , Arbitrary (State op), Eq (State op), Show (State op)
+      )
+    => TestTree
+cmrdtLaws = testProperty "CmRDT law: commutativity" commutativity
+  where
+    commutativity :: op -> op -> State op -> Bool
+    commutativity op1 op2 x =
+        (update op1 . update op2) x == (update op2 . update op1) x
