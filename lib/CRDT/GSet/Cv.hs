@@ -1,21 +1,20 @@
 module CRDT.GSet.Cv
-    ( GSet
-    , add
+    ( add
     , initial
     , query
     ) where
 
 import qualified Data.Set as Set
 
-import           CRDT.GSet.Cv.Internal
+import CRDT.GSet.Cv.Internal
 
 -- | update
 add :: Ord a => a -> GSet a -> GSet a
-add = Set.insert
+add e (GSet set) = GSet (Set.insert e set)
 
 -- | initialization
 initial :: GSet a
-initial = Set.empty
+initial = GSet Set.empty
 
 query :: Ord a => a -> GSet a -> Bool
-query = Set.member
+query e (GSet set) = Set.member e set
