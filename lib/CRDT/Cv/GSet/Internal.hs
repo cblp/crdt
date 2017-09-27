@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module CRDT.GSet.Cv.Internal where
+module CRDT.Cv.GSet.Internal where
 
-import Data.Set (Set)
+import           Data.Set (Set)
 
-import CRDT.Cv  (CvRDT)
+import           CRDT.Cv (CvRDT)
 
 -- | Grow-only set
 type GSet = Set

@@ -11,7 +11,7 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Max (Max, point, query)
+import           CRDT.Cv.Max (Max, point, query)
 import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)

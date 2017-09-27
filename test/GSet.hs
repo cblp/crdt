@@ -10,16 +10,13 @@ module GSet
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty, (==>))
 
-import qualified CRDT.GSet.Cv as Cv
+import           CRDT.Cv.GSet (GSet, add, query)
 
 import           Laws (cvrdtLaws)
 
 gSet :: TestTree
 gSet = testGroup "GSet"
-    [ testGroup "Cv"
-        [ cvrdtLaws @(Cv.GSet Int)
-        , testProperty "add" $
-            \(set :: Cv.GSet Int) i ->
-                not (Cv.query i set) ==> Cv.query i (Cv.add i set)
-        ]
+    [ cvrdtLaws @(GSet Int)
+    , testProperty "add" $
+        \(set :: GSet Int) i -> not (query i set) ==> query i (add i set)
     ]

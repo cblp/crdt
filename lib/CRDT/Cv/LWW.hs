@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module CRDT.LWW
+module CRDT.Cv.LWW
     ( LWW (..)
     , point
     , write

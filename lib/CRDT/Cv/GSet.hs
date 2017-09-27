@@ -1,4 +1,4 @@
-module CRDT.GSet.Cv
+module CRDT.Cv.GSet
     ( GSet
     , add
     , initial
@@ -7,7 +7,7 @@ module CRDT.GSet.Cv
 
 import qualified Data.Set as Set
 
-import           CRDT.GSet.Cv.Internal
+import           CRDT.Cv.GSet.Internal
 
 -- | update
 add :: Ord a => a -> GSet a -> GSet a

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module CRDT.Max
+module CRDT.Cv.Max
     ( Max
     , point
     , query

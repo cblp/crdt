@@ -1,9 +1,9 @@
-module CRDT.PNCounter.Cv.Internal where
+module CRDT.Cv.PNCounter.Internal where
 
-import Data.Semigroup (Semigroup (..))
+import           Data.Semigroup (Semigroup (..))
 
-import CRDT.Cv          (CvRDT)
-import CRDT.GCounter.Cv (GCounter)
+import           CRDT.Cv (CvRDT)
+import           CRDT.Cv.GCounter (GCounter)
 
 {- |
 Positive-negative counter. Allows incrementing and decrementing.

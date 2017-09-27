@@ -1,10 +1,10 @@
-module CRDT.GCounter.Cv.Internal where
+module CRDT.Cv.GCounter.Internal where
 
-import           Data.Semigroup (Semigroup ((<>)))
 import           Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IntMap
+import           Data.Semigroup (Semigroup ((<>)))
 
-import CRDT.Cv (CvRDT)
+import           CRDT.Cv (CvRDT)
 
 -- | Grow-only counter.
 newtype GCounter a = GCounter (IntMap a)

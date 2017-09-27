@@ -11,22 +11,22 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import qualified CRDT.PNCounter.Cv as Cv
-import qualified CRDT.PNCounter.Cv.Internal as Cv
+import           CRDT.Cv.PNCounter (decrement, increment, query)
+import           CRDT.Cv.PNCounter.Internal
 
 import           GCounter ()
 import           Laws (cvrdtLaws)
 
-instance Arbitrary a => Arbitrary (Cv.PNCounter a) where
-    arbitrary = Cv.PNCounter <$> arbitrary <*> arbitrary
+instance Arbitrary a => Arbitrary (PNCounter a) where
+    arbitrary = PNCounter <$> arbitrary <*> arbitrary
 
 pnCounter :: TestTree
 pnCounter = testGroup "PNCounter"
-    [ cvrdtLaws @(Cv.PNCounter Int)
+    [ cvrdtLaws @(PNCounter Int)
     , testProperty "increment" $
-        \(counter :: Cv.PNCounter Int) i ->
-            Cv.query (Cv.increment i counter) == succ (Cv.query counter)
+        \(counter :: PNCounter Int) i ->
+            query (increment i counter) == succ (query counter)
     , testProperty "decrement" $
-        \(counter :: Cv.PNCounter Int) i ->
-            Cv.query (Cv.decrement i counter) == pred (Cv.query counter)
+        \(counter :: PNCounter Int) i ->
+            query (decrement i counter) == pred (query counter)
     ]

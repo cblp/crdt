@@ -10,7 +10,7 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (Positive (..), testProperty)
 
-import           CRDT.LWW (LWW (Write), point, query, write)
+import           CRDT.Cv.LWW (LWW (Write), point, query, write)
 
 import           Laws (cvrdtLaws)
 

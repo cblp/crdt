@@ -1,4 +1,4 @@
-module CRDT.GCounter.Cv
+module CRDT.Cv.GCounter
     ( GCounter
     , initial
     , query
@@ -8,7 +8,7 @@ module CRDT.GCounter.Cv
 
 import qualified Data.IntMap.Strict as IntMap
 
-import           CRDT.GCounter.Cv.Internal
+import           CRDT.Cv.GCounter.Internal
 
 -- | Increment counter
 increment

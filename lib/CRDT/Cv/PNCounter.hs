@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module CRDT.PNCounter.Cv
+module CRDT.Cv.PNCounter
     ( PNCounter
     , initial
     , query
@@ -9,9 +9,9 @@ module CRDT.PNCounter.Cv
     , increment
     ) where
 
-import qualified CRDT.GCounter.Cv as GCounter
+import qualified CRDT.Cv.GCounter as GCounter
 
-import CRDT.PNCounter.Cv.Internal
+import           CRDT.Cv.PNCounter.Internal
 
 -- | Get value from the state
 query :: Num a => PNCounter a -> a
