@@ -11,7 +11,7 @@ module Laws
     ) where
 
 import           Data.Semigroup (Semigroup, (<>))
-import           Data.Semilattice (Semilattice, slappend)
+import           Data.Semilattice (Semilattice, merge)
 import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
@@ -35,10 +35,10 @@ semilatticeLaws = testGroup "Semilattice laws"
     ]
   where
     commutativity :: a -> a -> Bool
-    commutativity x y = x `slappend` y == y `slappend` x
+    commutativity x y = x `merge` y == y `merge` x
 
     idempotency :: a -> Bool
-    idempotency x = x `slappend` x == x
+    idempotency x = x `merge` x == x
 
 cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a

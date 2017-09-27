@@ -1,6 +1,6 @@
 module Data.Semilattice
     ( Semilattice
-    , slappend
+    , merge
     ) where
 
 import           Data.Semigroup (Semigroup, (<>))
@@ -25,7 +25,7 @@ In addition to 'Semigroup', Semilattice defines this laws:
 class Semigroup a => Semilattice a
 
 -- | Just ('Semigroup.<>'), specialized to 'Semilattice'.
-slappend :: Semilattice a => a -> a -> a
-slappend = (<>)
-infixr 6 `slappend`
-{-# INLINE slappend #-}
+merge :: Semilattice a => a -> a -> a
+merge = (<>)
+infixr 6 `merge`
+{-# INLINE merge #-}
