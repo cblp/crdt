@@ -1,19 +1,22 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cv.LWW
-    ( LWW (..)
-    , point
-    , write
+    ( LWW
+    , initial
+    , assign
     , query
     ) where
 
-import           Data.Semigroup (Semigroup (..))
+import           Control.Monad.Reader (MonadReader, ask)
+import           Data.Semigroup (Semigroup, (<>))
 
 import           CRDT.Cv (CvRDT)
 import           CRDT.Timestamp (Timestamp)
 
--- | Last write wins. Interesting, this type is both 'CmRDT' and 'CvRDT'.
-data LWW a = Write
+-- | Last write wins.
+data LWW a = LWW
     { timestamp :: !Timestamp
     , value     :: !a
     }
@@ -26,12 +29,16 @@ instance Ord a => Semigroup (LWW a) where
 instance Ord a => CvRDT (LWW a)
 
 -- | Initialize state
-point :: Timestamp -> a -> LWW a
-point = Write
+initial :: MonadReader Timestamp m => a -> m (LWW a)
+initial value = do
+    timestamp <- ask
+    pure LWW{timestamp, value}
 
 -- | Change state
-write :: Ord a => Timestamp -> a -> LWW a -> LWW a
-write t v s = Write t v <> s
+assign :: (Ord a, MonadReader Timestamp m) => a -> LWW a -> m (LWW a)
+assign value cur = do
+    timestamp <- ask
+    pure $ cur <> LWW{timestamp, value}
 
 -- | Query state
 query :: LWW a -> a

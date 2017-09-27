@@ -8,3 +8,4 @@ steps:
 language_extensions:
   - DataKinds
   - ExplicitNamespaces
+  - MultiParamTypeClasses
