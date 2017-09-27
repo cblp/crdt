@@ -1,9 +1,10 @@
 import           Test.Tasty (defaultMain, testGroup)
 
 import           GCounter (gCounter)
+import           GSet (gSet)
 import           LWW (lww)
+import           Max (maxTest)
 import           PNCounter (pnCounter)
-import           GSet      (gSet)
 
 main :: IO ()
-main = defaultMain $ testGroup "" [gCounter, gSet, lww, pnCounter]
+main = defaultMain $ testGroup "" [gCounter, gSet, lww, maxTest, pnCounter]
