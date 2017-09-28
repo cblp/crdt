@@ -17,10 +17,6 @@ type Version = IntMap (Ordered Natural)
 -- | Multi-value register
 data MV a = MV (Set (a, Version))
 
--- payload set S
---     ⊲ set of (x, V) pairs; x ∈ X; V its version vector
---     initial {(⊥, [0, . . . , 0])}
-
 -- query incVV () : integer[n] V′
 --     let g = myID()
 --     let V = {V |∃x : (x, V) ∈ S}
@@ -38,6 +34,7 @@ query (MV a) = a
 -- compare (A, B) : boolean b
 --     let b = (∀(x, V) ∈ A, (x′, V′) ∈ B : V ≤ V′)
 
+-- | TODO(Syrovetsky, 2017-09-28) Just 1 `leq` Nothing??? check presence
 instance Ord a => Semigroup (MV a) where
     MV a <> MV b =
         let a' = Set.filter (not . dominatedBy b) a
