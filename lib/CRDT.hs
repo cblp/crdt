@@ -27,12 +27,12 @@ data Timestamp = Timestamp !Time !Pid
     deriving (Eq, Ord, Show)
 
 class MonadTimestamp m where
-    getTimestamp :: m Timestamp
+    newTimestamp :: m Timestamp
 
 type Process = ReaderT Pid PidClock
 
 instance MonadTimestamp Process where
-    getTimestamp = do
+    newTimestamp = do
         pid <- ask
         time <- at pid . non 0 <<+= 1
         pure $ Timestamp time pid
