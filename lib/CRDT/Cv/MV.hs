@@ -3,42 +3,23 @@ module CRDT.Cv.MV
     , query
     ) where
 
-import           Algebra.Lattice.Ordered (Ordered)
-import           Algebra.PartialOrd (PartialOrd (leq))
-import           Data.Foldable (toList)
-import           Data.IntMap (IntMap)
-import           Data.Semigroup (Semigroup ((<>)))
 import           Data.Set (Set)
-import qualified Data.Set as Set
-import           Numeric.Natural (Natural)
 
-type Version = IntMap (Ordered Natural)
+import           CRDT.Cv.MV.Internal
 
--- | Multi-value register
-data MV a = MV (Set (a, Version))
-
--- query incVV () : integer[n] V′
+-- query incVV() : integer[n] V'
 --     let g = myID()
---     let V = {V |∃x : (x, V) ∈ S}
---     let V′ = [max V ∈V (V [j])] j /= g
---     let V′ [g] = max V ∈V (V [g]) + 1
+--     let V1 = {V | ∃x : (x, V) ∈ S}
+--     let V' = [ max (V ∈ V1) (V[j]) ] j /= g
+--     let V' [g] = max (V ∈ V1) (V[g]) + 1
 
 -- update assign (set R)
 --     ⊲ set of elements of type X
---     let V = incVV ()
---     S := R × {V }
+--     let V = incVV()
+--     S := R × {V}
 
 query :: MV a -> Set (a, Version)
 query (MV a) = a
 
 -- compare (A, B) : boolean b
---     let b = (∀(x, V) ∈ A, (x′, V′) ∈ B : V ≤ V′)
-
--- | TODO(Syrovetsky, 2017-09-28) Just 1 `leq` Nothing??? check presence
-instance Ord a => Semigroup (MV a) where
-    MV a <> MV b =
-        let a' = Set.filter (not . dominatedBy b) a
-            b' = Set.filter (not . dominatedBy a) b
-        in  MV $ Set.union a' b'
-      where
-        dominatedBy c (_, v) = or [leq v w | (_, w) <- toList c]
+--     let b = (∀(x, V) ∈ A, (x', V') ∈ B : V ≤ V')
