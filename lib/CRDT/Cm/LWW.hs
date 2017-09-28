@@ -15,7 +15,7 @@ import           CRDT (MonadTimestamp (newTimestamp))
 import           CRDT.Cv.LWW (query)
 import           CRDT.Cv.LWW.Internal
 
-data Update a = Assign a
+newtype Update a = Assign a
 
 type Intermediate = LWW
 
