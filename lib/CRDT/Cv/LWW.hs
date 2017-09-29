@@ -12,15 +12,15 @@ module CRDT.Cv.LWW
 import           Data.Semigroup ((<>))
 import           Lens.Micro ((<&>))
 
-import           CRDT (MonadTimestamp (newTimestamp))
 import           CRDT.Cv.LWW.Internal
+import           LamportClock (Clock (newTimestamp))
 
 -- | Initialize state
-initial :: (Functor m, MonadTimestamp m) => a -> m (LWW a)
+initial :: Clock f => a -> f (LWW a)
 initial value = newTimestamp <&> \timestamp -> LWW{timestamp = timestamp, value}
 
 -- | Change state
-assign :: (Functor m, MonadTimestamp m) => a -> LWW a -> m (LWW a)
+assign :: Clock f => a -> LWW a -> f (LWW a)
 assign value cur = newTimestamp <&> \timestamp -> cur <> LWW{timestamp, value}
 
 -- | Query state

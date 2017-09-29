@@ -3,8 +3,8 @@ module CRDT.Cv.LWW.Internal where
 import           Data.Function (on)
 import           Data.Semigroup (Semigroup, (<>))
 
-import           CRDT (Timestamp)
 import           CRDT.Cv (CvRDT)
+import           LamportClock (Timestamp)
 
 -- | Last write wins. Assuming timestamp is unique.
 data LWW a = LWW

@@ -11,16 +11,15 @@ module CRDT.Cm.LWW
 import           Data.Semigroup ((<>))
 import           Lens.Micro ((<&>))
 
-import           CRDT (MonadTimestamp (newTimestamp))
 import           CRDT.Cv.LWW (query)
 import           CRDT.Cv.LWW.Internal
+import           LamportClock (Clock (newTimestamp))
 
 newtype Update a = Assign a
 
 type Intermediate = LWW
 
-updateAtSource
-    :: (MonadTimestamp m, Functor m) => Update a -> m (Intermediate a)
+updateAtSource :: Clock f => Update a -> f (Intermediate a)
 updateAtSource (Assign value) =
     newTimestamp <&> \timestamp -> LWW{timestamp = timestamp, value}
 

@@ -2,10 +2,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module CRDT
+module LamportClock
     ( Pid
     , Timestamp
-    , MonadTimestamp (..)
+    , Clock (..)
     -- * Lamport clock
     , LamportClock
     , runLamportClock
@@ -17,7 +17,7 @@ import           Control.Monad.State.Strict (evalState)
 import           Lens.Micro (at, non)
 import           Lens.Micro.Extra ((<<+=))
 
-import           CRDT.Internal
+import           LamportClock.Internal (LamportClock, Pid, Time)
 
 -- | Timestamps are assumed unique, totally ordered,
 -- and consistent with causal order;
@@ -26,12 +26,13 @@ import           CRDT.Internal
 data Timestamp = Timestamp !Time !Pid
     deriving (Eq, Ord, Show)
 
-class MonadTimestamp m where
-    newTimestamp :: m Timestamp
+class Functor f => Clock f where
+    -- | Get another unique timestamp
+    newTimestamp :: f Timestamp
 
 type Process = ReaderT Pid LamportClock
 
-instance MonadTimestamp Process where
+instance Clock Process where
     newTimestamp = do
         pid <- ask
         time <- at pid . non 0 <<+= 1

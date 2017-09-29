@@ -33,5 +33,4 @@ updateDownstream :: Ord a => Update a -> TPSet a -> TPSet a
 updateDownstream op TPSet{payload} = case op of
     Add element     -> TPSet{payload = Set.insert element payload}
     Remove element  ->
-        -- TODO(cblp, 2017-09-29) pre add(e) has been delivered ⊲ Causal order suffices
         TPSet{payload = Set.delete element payload}

@@ -14,10 +14,10 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT (runLamportClock, runProcess)
 import           CRDT.Cv.LWW (assign, initial, query)
 import           CRDT.Cv.LWW.Internal (LWW (..))
-import           CRDT.Internal (Pid (..), barrier)
+import           LamportClock (runLamportClock, runProcess)
+import           LamportClock.Internal (Pid (..), barrier)
 
 import           Laws (cvrdtLaws)
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module CRDT.Internal where
+module LamportClock.Internal where
 
 import           Control.Monad.State.Strict (State, modify)
 import           Data.EnumMap.Strict (EnumMap)
@@ -18,7 +18,7 @@ newtype Pid = Pid Word32
 -- | TODO(cblp, 2017-09-28) Use bounded-intmap
 type LamportClock = State (EnumMap Pid Time)
 
--- | Make sure all subsequent calls to 'getTimestamp' return timestamps
+-- | Make sure all subsequent calls to 'newTimestamp' return timestamps
 -- greater than all prior calls.
 barrier :: [Pid] -> LamportClock ()
 barrier pids =
