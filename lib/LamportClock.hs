@@ -9,6 +9,7 @@ module LamportClock
     -- * Lamport clock
     , LamportClock
     , runLamportClock
+    , Process
     , runProcess
     ) where
 

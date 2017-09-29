@@ -1,7 +1,9 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module CRDT.Cm.GSet
-    ( initial
+    ( GSet
+    , Update
+    , initial
     , lookup
     , updateAtSource
     , updateDownstream

@@ -2,6 +2,8 @@
 
 module CRDT.Cm.LWW
     ( LWW
+    , Update
+    , Intermediate
     , query
     , updateAtSource
     , updateDownstream
