@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
+-- | TODO(cblp, 2017-09-29) USet?
 module CRDT.Cm.TPSet
     ( initial
     , lookup

@@ -16,11 +16,11 @@ newtype Pid = Pid Word32
     deriving (Enum, Eq, Ord, Show)
 
 -- | TODO(cblp, 2017-09-28) Use bounded-intmap
-type PidClock = State (EnumMap Pid Time)
+type LamportClock = State (EnumMap Pid Time)
 
 -- | Make sure all subsequent calls to 'getTimestamp' return timestamps
 -- greater than all prior calls.
-barrier :: [Pid] -> PidClock ()
+barrier :: [Pid] -> LamportClock ()
 barrier pids =
     modify $ \clocks -> let
         selectedClocks = EnumMap.fromList

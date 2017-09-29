@@ -6,9 +6,9 @@ module CRDT
     ( Pid
     , Timestamp
     , MonadTimestamp (..)
-    -- * Pid clock
-    , PidClock
-    , runPidClock
+    -- * Lamport clock
+    , LamportClock
+    , runLamportClock
     , runProcess
     ) where
 
@@ -29,7 +29,7 @@ data Timestamp = Timestamp !Time !Pid
 class MonadTimestamp m where
     newTimestamp :: m Timestamp
 
-type Process = ReaderT Pid PidClock
+type Process = ReaderT Pid LamportClock
 
 instance MonadTimestamp Process where
     newTimestamp = do
@@ -37,8 +37,8 @@ instance MonadTimestamp Process where
         time <- at pid . non 0 <<+= 1
         pure $ Timestamp time pid
 
-runPidClock :: PidClock a -> a
-runPidClock action = evalState action mempty
+runLamportClock :: LamportClock a -> a
+runLamportClock action = evalState action mempty
 
-runProcess :: Pid -> Process a -> PidClock a
+runProcess :: Pid -> Process a -> LamportClock a
 runProcess pid action = runReaderT action pid
