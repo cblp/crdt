@@ -1,8 +1,8 @@
 module CRDT.Cm
-    ( Update (..)
+    ( UpdateHandler (..)
     ) where
 
-data Update atSource downstream = Update
+data UpdateHandler atSource downstream = UpdateHandler
     { atSource :: atSource
     , downstream :: downstream
     }
