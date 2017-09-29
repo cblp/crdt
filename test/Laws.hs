@@ -4,15 +4,18 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Laws
-    ( cvrdtLaws
+    ( cmrdtLaw
+    , cvrdtLaws
     ) where
 
+import           Data.Function ((&))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (testProperty, (==>))
 
+import           CRDT.Cm (CmRDT (..), concurrent, query, updateLocally)
 import           CRDT.Cv (CvRDT)
 
 semigroupLaw :: forall a . (Arbitrary a, Semigroup a, Eq a, Show a) => TestTree
@@ -38,3 +41,13 @@ semilatticeLaws = testGroup "Semilattice laws"
 
 cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
+
+cmrdtLaw
+    :: forall a
+    . (CmRDT a, Arbitrary a, Show a, Arbitrary (Op a), Show (Op a)) => TestTree
+cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
+    \(state0 :: a) op1 op2 -> let
+        state12 = state0 & updateLocally op1 & updateLocally op2
+        state21 = state0 & updateLocally op2 & updateLocally op1
+        in
+        concurrent op1 op2 ==> query state12 == query state21
