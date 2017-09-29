@@ -13,14 +13,14 @@ github: cblp/crdt
 dependencies:
   - base >= 4.9 && < 4.10
   - containers
-  - enummapset
-  - lattices
-  - microlens
-  - microlens-ghc
-  - microlens-mtl
-  - mtl
 
 library:
+  dependencies:
+    - enummapset
+    - microlens
+    - microlens-ghc
+    - microlens-mtl
+    - mtl
   source-dirs: lib
 
 tests:
