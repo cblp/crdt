@@ -5,7 +5,7 @@ module CRDT.Cv.MV
 
 import           Data.Set (Set)
 
-import           CRDT.Cv.MV.Internal
+import           CRDT.Cv.MV.Internal (Item, MV (..))
 
 -- query incVV() : integer[n] V'
 --     let g = myID()
@@ -18,7 +18,7 @@ import           CRDT.Cv.MV.Internal
 --     let V = incVV()
 --     S := R × {V}
 
-query :: MV a -> Set (a, Version)
+query :: MV a -> Set (Item a)
 query (MV a) = a
 
 -- compare (A, B) : boolean b
