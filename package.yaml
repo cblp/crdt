@@ -22,6 +22,8 @@ library:
     - microlens-ghc
     - microlens-mtl
     - mtl
+  other-modules:
+    - Lens.Micro.Extra
   source-dirs: lib
 
 tests:

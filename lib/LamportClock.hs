@@ -5,6 +5,7 @@
 
 module LamportClock
     ( Pid (..)
+    , Time
     , Timestamp (..)
     , Clock (..)
     , LamportClock
