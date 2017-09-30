@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module CRDT.Cv.GSet
     ( GSet
     , add
@@ -5,9 +7,14 @@ module CRDT.Cv.GSet
     , query
     ) where
 
+import           Data.Semilattice (Semilattice)
+import           Data.Set (Set)
 import qualified Data.Set as Set
 
-import           CRDT.Cv.GSet.Internal
+-- | Grow-only set
+type GSet = Set
+
+instance Ord a => Semilattice (Set a)
 
 -- | update
 add :: Ord a => a -> GSet a -> GSet a
