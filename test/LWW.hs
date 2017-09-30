@@ -15,8 +15,8 @@ import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 import           CRDT.Cv.LWW (LWW (..), assign, initial, query)
-import           LamportClock (Timestamp (..), runLamportClock, runProcess)
-import           LamportClock.Internal (Pid (..), barrier)
+import           LamportClock (Pid (..), Timestamp (..), barrier,
+                               runLamportClock, runProcess)
 
 import           Laws (cvrdtLaws)
 
