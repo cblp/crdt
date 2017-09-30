@@ -13,8 +13,7 @@ import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cv.GCounter (GCounter, increment, query)
-import           CRDT.Cv.GCounter.Internal
+import           CRDT.Cv.GCounter (GCounter (..), increment, query)
 
 import           Laws (cvrdtLaws)
 
