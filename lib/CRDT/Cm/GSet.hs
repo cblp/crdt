@@ -1,33 +1,43 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm.GSet
     ( GSet
-    , Update
+    , GSetOp (..)
     , initial
     , lookup
-    , updateAtSource
-    , updateDownstream
     ) where
 
 import           Prelude hiding (lookup)
 
+import           Algebra.PartialOrd (PartialOrd (leq))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-newtype GSet element = GSet{payload :: Set element}
+import           CRDT.Cm (CmRDT (..), Update (..))
+import           CRDT.Cv.GSet (GSet)
 
-newtype Update element = Add element
+newtype GSetOp element = Add element
+    deriving (Eq, Show)
 
 initial :: GSet element
-initial = GSet Set.empty
+initial = Set.empty
 
 -- | query lookup
 lookup :: Ord element => element -> GSet element -> Bool
-lookup element GSet{payload} = Set.member element payload
+lookup = Set.member
 
-updateAtSource :: ()
-updateAtSource = ()
+instance Ord a => CmRDT (Set a) where
+    type Op (Set a) = GSetOp a
 
-updateDownstream :: Ord a => Update a -> GSet a -> GSet a
-updateDownstream (Add element) GSet{payload} =
-    GSet{payload = Set.insert element payload}
+    update (Add element) =
+        Update{atSource = id, downstream = Set.insert element}
+
+    type Query (Set a) = Set a
+
+    query = id
+
+instance Eq a => PartialOrd (GSetOp a) where
+    leq _ _ = False
