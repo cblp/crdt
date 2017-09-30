@@ -11,8 +11,7 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cv.PNCounter (decrement, increment, query)
-import           CRDT.Cv.PNCounter.Internal
+import           CRDT.Cv.PNCounter (PNCounter (..), decrement, increment, query)
 
 import           GCounter ()
 import           Laws (cvrdtLaws)
