@@ -4,7 +4,7 @@
 
 module LamportClock
     ( Pid
-    , Timestamp
+    , Timestamp (..)
     , Clock (..)
     -- * Lamport clock
     , LamportClock

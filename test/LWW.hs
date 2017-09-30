@@ -14,18 +14,19 @@ import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cv.LWW (assign, initial, query)
-import           CRDT.Cv.LWW.Internal (LWW (..))
-import           LamportClock (runLamportClock, runProcess)
+import           CRDT.Cv.LWW (LWW (..), assign, initial, query)
+import           LamportClock (Timestamp (..), runLamportClock, runProcess)
 import           LamportClock.Internal (Pid (..), barrier)
 
 import           Laws (cvrdtLaws)
 
 deriving instance Arbitrary Pid
 
+instance Arbitrary Timestamp where
+    arbitrary = Timestamp <$> arbitrary <*> arbitrary
+
 instance Arbitrary a => Arbitrary (LWW a) where
-    arbitrary = initial' <$> arbitrary <*> arbitrary where
-        initial' p v = runLamportClock . runProcess p $ initial v
+    arbitrary = LWW <$> arbitrary <*> arbitrary
 
 lww :: TestTree
 lww = testGroup "LWW"

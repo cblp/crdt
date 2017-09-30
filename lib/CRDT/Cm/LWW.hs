@@ -1,7 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module CRDT.Cm.LWW
-    ( LWW
+    ( LWW (..)
     , Update
     , Intermediate
     , query
@@ -13,8 +13,7 @@ module CRDT.Cm.LWW
 import           Data.Semigroup ((<>))
 import           Lens.Micro ((<&>))
 
-import           CRDT.Cv.LWW (query)
-import           CRDT.Cv.LWW.Internal
+import           CRDT.Cv.LWW (LWW (..), query)
 import           LamportClock (Clock (newTimestamp))
 
 newtype Update a = Assign a
