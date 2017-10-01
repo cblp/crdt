@@ -1,31 +1,31 @@
+{-# OPTIONS_GHC -Wno-orphans #-} -- TODO(cblp, 2017-10-02) join with Cv.LWW
+
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm.LWW
     ( LWW (..)
-    , Update
-    , Intermediate
-    , query
-    , updateAtSource
-    , updateDownstream
-    , before
+    , Assign (..)
     ) where
 
+import           Algebra.PartialOrd (PartialOrd (..))
 import           Data.Semigroup ((<>))
 import           Lens.Micro ((<&>))
 
-import           CRDT.Cv.LWW (LWW (..), query)
+import           CRDT.Cm (CmRDT (..))
+import           CRDT.Cv.LWW (LWW (..))
 import           LamportClock (Clock (newTimestamp))
 
-newtype Update a = Assign a
+instance PartialOrd (LWW a) where
+    leq _ _ = False
 
-type Intermediate = LWW
+newtype Assign a = Assign a
+    deriving (Eq, Show)
 
-updateAtSource :: Clock f => Update a -> f (Intermediate a)
-updateAtSource (Assign value) =
-    newTimestamp <&> \timestamp -> LWW{timestamp = timestamp, value}
-
-updateDownstream :: Intermediate a -> LWW a -> LWW a
-updateDownstream = (<>)
-
-before :: a -> a -> Bool
-before _ _ = False
+instance Eq a => CmRDT (LWW a) (Assign a) (LWW a) a where
+    updateAtSource (Assign value) =
+        newTimestamp <&> \t -> LWW{timestamp = t, value}
+    updateDownstream = (<>)
+    view = value

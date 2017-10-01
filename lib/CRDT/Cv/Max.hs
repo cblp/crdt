@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module CRDT.Cv.Max
-    ( Max
+    ( Max (..)
     , point
     , query
     ) where

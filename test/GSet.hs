@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -10,14 +8,12 @@ module GSet
     ) where
 
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (Arbitrary, testProperty, (==>))
+import           Test.Tasty.QuickCheck (testProperty, (==>))
 
-import           CRDT.Cm.GSet (GSet, GSetOp (..))
+import           CRDT.Cm.GSet (GSet)
 import           CRDT.Cv.GSet (add, query)
 
 import           Laws (cmrdtLaw, cvrdtLaws)
-
-deriving instance Arbitrary a => Arbitrary (GSetOp a)
 
 gSet :: TestTree
 gSet = testGroup "GSet"

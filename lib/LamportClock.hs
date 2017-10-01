@@ -56,7 +56,7 @@ barrier pids =
 data Timestamp = Timestamp !Time !Pid
     deriving (Eq, Ord, Show)
 
-class Functor f => Clock f where
+class Applicative f => Clock f where
     -- | Get another unique timestamp
     newTimestamp :: f Timestamp
 

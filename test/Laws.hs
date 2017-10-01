@@ -1,6 +1,8 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Laws
@@ -15,8 +17,11 @@ import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty, (==>))
 
-import           CRDT.Cm (CmRDT (..), concurrent, query, updateLocally)
+import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
+import           LamportClock (runLamportClock, runProcess)
+
+import           ArbitraryOrphans ()
 
 semigroupLaw :: forall a . (Arbitrary a, Semigroup a, Eq a, Show a) => TestTree
 semigroupLaw =
@@ -43,11 +48,16 @@ cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
 
 cmrdtLaw
-    :: forall a
-    . (CmRDT a, Arbitrary a, Show a, Arbitrary (Op a), Show (Op a)) => TestTree
+    :: forall state op up view
+    . ( CmRDT state op up view, Arbitrary state, Show state
+      , Arbitrary op, Show op
+      )
+    => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
-    \(state0 :: a) op1 op2 -> let
-        state12 = state0 & updateLocally op1 & updateLocally op2
-        state21 = state0 & updateLocally op2 & updateLocally op1
-        in
-        concurrent op1 op2 ==> query state12 == query state21
+    \(state0 :: state) (op1 :: op) (op2 :: op) pid ->
+        runLamportClock $ runProcess pid $ do
+            up1 <- updateAtSource op1
+            up2 <- updateAtSource op2
+            let state12 = state0 & updateDownstream up1 & updateDownstream up2
+            let state21 = state0 & updateDownstream up2 & updateDownstream up1
+            pure $ concurrent up1 up2 ==> view state12 == view state21

@@ -1,11 +1,12 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm.GSet
     ( GSet
-    , GSetOp (..)
+    , Add (..)
     , initial
     , lookup
     ) where
@@ -16,28 +17,23 @@ import           Algebra.PartialOrd (PartialOrd (leq))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-import           CRDT.Cm (CmRDT (..), Update (..))
+import           CRDT.Cm (CmRDT (..))
 import           CRDT.Cv.GSet (GSet)
 
-newtype GSetOp element = Add element
-    deriving (Eq, Show)
-
-initial :: GSet element
+initial :: GSet a
 initial = Set.empty
 
 -- | query lookup
-lookup :: Ord element => element -> GSet element -> Bool
+lookup :: Ord a => a -> GSet a -> Bool
 lookup = Set.member
 
-instance Ord a => CmRDT (Set a) where
-    type Op (Set a) = GSetOp a
+newtype Add a = Add a
+    deriving (Eq, Show)
 
-    update (Add element) =
-        Update{atSource = id, downstream = Set.insert element}
+instance Ord a => CmRDT (Set a) (Add a) (Add a) (Set a) where
+    updateAtSource = pure
+    updateDownstream (Add a) = Set.insert a
+    view = id
 
-    type Query (Set a) = Set a
-
-    query = id
-
-instance Eq a => PartialOrd (GSetOp a) where
+instance Eq a => PartialOrd (Add a) where
     leq _ _ = False

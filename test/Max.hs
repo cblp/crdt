@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -7,7 +5,6 @@ module Max
     ( maxTest
     ) where
 
-import           Test.QuickCheck (Arbitrary, arbitrary)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
@@ -15,9 +12,6 @@ import           CRDT.Cv.Max (Max, point, query)
 import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)
-
-instance Arbitrary a => Arbitrary (Max a) where
-    arbitrary = point <$> arbitrary
 
 maxTest :: TestTree
 maxTest = testGroup "Max"
