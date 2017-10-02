@@ -53,12 +53,12 @@ cmrdtLaw
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
     \pid (state0 :: payload) op1 op2 ->
         runLamportClock $ runProcess pid $ do
-            up1 <- updateAtSource' op1 state0
-            up2 <- updateAtSource' op2 state0
+            up1 <- updateAtSourceIfCan op1 state0
+            up2 <- updateAtSourceIfCan op2 state0
             let state12 = state0 & updateDownstream up1 & updateDownstream up2
             let state21 = state0 & updateDownstream up2 & updateDownstream up1
             pure $ concurrent up1 up2 ==> view state12 === view state21
   where
-    updateAtSource' op state = do
+    updateAtSourceIfCan op state = do
         unless (updateAtSourcePre op state) discard
         updateAtSource op
