@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -20,9 +19,7 @@ data CounterOp a = Increment | Decrement
 
 instance (Num a, Eq a) => CmRDT (Counter a) (CounterOp a) (CounterOp a) a where
     updateAtSource = pure
-    updateDownstream = \case
-        Increment -> \(Counter c) -> Counter (c + 1)
-        Decrement -> \(Counter c) -> Counter (c - 1)
+    updateDownstream = opToFunc
     view (Counter c) = c
 
 -- | Empty order, allowing arbitrary reordering
@@ -31,3 +28,9 @@ instance PartialOrd (CounterOp a) where
 
 initial :: Num a => Counter a
 initial = Counter 0
+
+opToFunc :: Num a => CounterOp a -> Counter a -> Counter a
+opToFunc op (Counter c) =
+    Counter $ case op of
+        Increment -> c + 1
+        Decrement -> c - 1

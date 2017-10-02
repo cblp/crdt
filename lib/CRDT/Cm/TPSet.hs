@@ -1,9 +1,10 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
 -- | TODO(cblp, 2017-09-29) USet?
 module CRDT.Cm.TPSet
-    ( TPSet
-    , Update
+    ( TPSet (..)
+    , TPSetOp (..)
     , initial
     , lookup
     , updateAtSource
@@ -12,27 +13,37 @@ module CRDT.Cm.TPSet
 
 import           Prelude hiding (lookup)
 
+import           Algebra.PartialOrd (PartialOrd (..))
+import           CRDT.Cm (CmRDT (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-newtype TPSet element = TPSet{payload :: Set element}
+newtype TPSet a = TPSet{payload :: Set a}
+    deriving (Show)
 
-data Update element = Add element | Remove element
+data TPSetOp a = Add a | Remove a
+    deriving (Eq, Show)
 
-initial :: TPSet element
+initial :: TPSet a
 initial = TPSet Set.empty
 
 -- | query lookup
-lookup :: Ord element => element -> TPSet element -> Bool
-lookup element TPSet{payload} = Set.member element payload
+lookup :: Ord a => a -> TPSet a -> Bool
+lookup a TPSet{payload} = Set.member a payload
 
-updateAtSource :: Ord element => Update element -> TPSet element -> Bool
-updateAtSource op payload = case op of
-    Add _           -> True
-    Remove element  -> lookup element payload
+instance Ord a => CmRDT (TPSet a) (TPSetOp a) (TPSetOp a) (Set a) where
+    updateAtSourcePre op payload = case op of
+        Add _     -> True
+        Remove a  -> lookup a payload
 
-updateDownstream :: Ord a => Update a -> TPSet a -> TPSet a
-updateDownstream op TPSet{payload} = case op of
-    Add element     -> TPSet{payload = Set.insert element payload}
-    Remove element  ->
-        TPSet{payload = Set.delete element payload}
+    updateAtSource = pure
+
+    updateDownstream op TPSet{payload} = case op of
+        Add a     -> TPSet{payload = Set.insert a payload}
+        Remove a  -> TPSet{payload = Set.delete a payload}
+
+    view = payload
+
+instance Eq a => PartialOrd (TPSetOp a) where
+    leq (Remove a) (Add b) = a == b -- `Remove e` can occur only after `Add e`
+    leq _ _ = False -- Any other are not ordered

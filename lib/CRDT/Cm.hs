@@ -7,11 +7,9 @@
 module CRDT.Cm
     ( CmRDT (..)
     , concurrent
-    , updateLocally
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (leq))
-import           Lens.Micro ((<&>))
 
 import           LamportClock (Clock)
 
@@ -22,11 +20,15 @@ comparable a b = a `leq` b || b `leq` a
 concurrent :: PartialOrd a => a -> a -> Bool
 concurrent a b = not $ comparable a b
 
-class (PartialOrd up, Eq view) => CmRDT state op up view
-        | state -> op, op -> state, op -> up, state -> view where
-    updateAtSource :: Clock m => op -> m up
-    updateDownstream :: up -> state -> state
-    view :: state -> view
+class (PartialOrd up, Eq view) => CmRDT payload op up view
+        | payload -> op, op -> payload, op -> up, payload -> view where
 
-updateLocally :: (CmRDT state op up view, Clock m) => op -> state -> m state
-updateLocally op state = updateAtSource op <&> \up -> updateDownstream up state
+    -- | Precondition
+    updateAtSourcePre :: op -> payload -> Bool
+    updateAtSourcePre _ _ = True
+
+    updateAtSource :: Clock m => op -> m up
+
+    updateDownstream :: up -> payload -> payload
+
+    view :: payload -> view

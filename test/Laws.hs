@@ -1,5 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -8,16 +9,17 @@ module Laws
     , cvrdtLaws
     ) where
 
+import           Control.Monad (unless)
 import           Data.Function ((&))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
-import           Test.QuickCheck (Arbitrary)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty, (==>))
+import           Test.Tasty.QuickCheck (Arbitrary (..), Property, discard,
+                                        testProperty, (===), (==>))
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (runLamportClock, runProcess)
+import           LamportClock (Pid, runLamportClock, runProcess)
 
 import           ArbitraryOrphans ()
 
@@ -36,26 +38,41 @@ semilatticeLaws = testGroup "Semilattice laws"
     , testProperty "idempotency"   idempotency
     ]
   where
-    commutativity :: a -> a -> Bool
-    commutativity x y = x `merge` y == y `merge` x
+    commutativity :: a -> a -> Property
+    commutativity x y = x `merge` y === y `merge` x
 
-    idempotency :: a -> Bool
-    idempotency x = x `merge` x == x
+    idempotency :: a -> Property
+    idempotency x = x `merge` x === x
 
 cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
 
+data CmrdtLawParams payload op = CmrdtLawParams
+    { pid :: Pid
+    , state0 :: payload
+    , op1, op2 :: op
+    }
+    deriving (Show)
+
+instance (Arbitrary payload, Arbitrary op)
+        => Arbitrary (CmrdtLawParams payload op) where
+    arbitrary =
+        CmrdtLawParams <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+
 cmrdtLaw
-    :: forall state op up view
-    . ( CmRDT state op up view, Arbitrary state, Show state
+    :: forall payload op up view
+    . ( CmRDT payload op up view, Arbitrary payload, Show payload
       , Arbitrary op, Show op
+      , Show view
       )
     => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
-    \(state0 :: state) (op1 :: op) (op2 :: op) pid ->
+    \(CmrdtLawParams{pid, state0, op1, op2} :: CmrdtLawParams payload op) ->
         runLamportClock $ runProcess pid $ do
+            unless (updateAtSourcePre op1 state0) discard
             up1 <- updateAtSource op1
+            unless (updateAtSourcePre op2 state0) discard
             up2 <- updateAtSource op2
             let state12 = state0 & updateDownstream up1 & updateDownstream up2
             let state21 = state0 & updateDownstream up2 & updateDownstream up1
-            pure $ concurrent up1 up2 ==> view state12 == view state21
+            pure $ concurrent up1 up2 ==> view state12 === view state21
