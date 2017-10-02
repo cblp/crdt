@@ -19,7 +19,7 @@ import           Test.Tasty.QuickCheck (Arbitrary (..), discard, testProperty,
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (Pid, runLamportClock, runProcess)
+import           LamportClock (runLamportClock, runProcess)
 
 import           ArbitraryOrphans ()
 
@@ -43,18 +43,6 @@ semilatticeLaws = testGroup "Semilattice laws"
 cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
 
-data CmrdtLawParams payload op = CmrdtLawParams
-    { pid :: Pid
-    , state0 :: payload
-    , op1, op2 :: op
-    }
-    deriving (Show)
-
-instance (Arbitrary payload, Arbitrary op)
-        => Arbitrary (CmrdtLawParams payload op) where
-    arbitrary =
-        CmrdtLawParams <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
-
 cmrdtLaw
     :: forall payload op up view
     . ( CmRDT payload op up view, Arbitrary payload, Show payload
@@ -63,7 +51,7 @@ cmrdtLaw
       )
     => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
-    \(CmrdtLawParams{pid, state0, op1, op2} :: CmrdtLawParams payload op) ->
+    \pid (state0 :: payload) op1 op2 ->
         runLamportClock $ runProcess pid $ do
             up1 <- updateAtSource' op1 state0
             up2 <- updateAtSource' op2 state0
