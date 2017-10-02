@@ -1,5 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | TODO(cblp, 2017-09-29) USet?
 module CRDT.Cm.TPSet
@@ -14,9 +15,11 @@ module CRDT.Cm.TPSet
 import           Prelude hiding (lookup)
 
 import           Algebra.PartialOrd (PartialOrd (..))
-import           CRDT.Cm (CmRDT (..))
+import           Data.Observe (Observe (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
+
+import           CRDT.Cm (CmRDT (..))
 
 newtype TPSet a = TPSet{payload :: Set a}
     deriving (Show)
@@ -31,7 +34,7 @@ initial = TPSet Set.empty
 lookup :: Ord a => a -> TPSet a -> Bool
 lookup a TPSet{payload} = Set.member a payload
 
-instance Ord a => CmRDT (TPSet a) (TPSetOp a) (TPSetOp a) (Set a) where
+instance Ord a => CmRDT (TPSet a) (TPSetOp a) (TPSetOp a) where
     updateAtSourcePre op payload = case op of
         Add _     -> True
         Remove a  -> lookup a payload
@@ -42,7 +45,9 @@ instance Ord a => CmRDT (TPSet a) (TPSetOp a) (TPSetOp a) (Set a) where
         Add a     -> TPSet{payload = Set.insert a payload}
         Remove a  -> TPSet{payload = Set.delete a payload}
 
-    view = payload
+instance Observe (TPSet a) where
+    type Observed (TPSet a) = Set a
+    observe = payload
 
 instance Eq a => PartialOrd (TPSetOp a) where
     leq (Remove a) (Add b) = a == b -- `Remove e` can occur only after `Add e`

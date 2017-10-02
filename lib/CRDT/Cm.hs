@@ -10,6 +10,7 @@ module CRDT.Cm
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (leq))
+import           Data.Observe (Observe (..))
 
 import           LamportClock (Clock)
 
@@ -20,8 +21,8 @@ comparable a b = a `leq` b || b `leq` a
 concurrent :: PartialOrd a => a -> a -> Bool
 concurrent a b = not $ comparable a b
 
-class (PartialOrd up, Eq view) => CmRDT payload op up view
-        | payload -> op, op -> payload, op -> up, payload -> view where
+class (Observe payload, PartialOrd up) => CmRDT payload op up
+        | payload -> op, op -> up, up -> payload where
 
     -- | Precondition
     updateAtSourcePre :: op -> payload -> Bool
@@ -30,5 +31,3 @@ class (PartialOrd up, Eq view) => CmRDT payload op up view
     updateAtSource :: Clock m => op -> m up
 
     updateDownstream :: up -> payload -> payload
-
-    view :: payload -> view

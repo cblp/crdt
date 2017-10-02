@@ -11,6 +11,7 @@ module CRDT.Cm.LWW
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (..))
+import           Data.Observe (Observe (..))
 import           Data.Semigroup ((<>))
 import           Lens.Micro ((<&>))
 
@@ -24,8 +25,11 @@ instance PartialOrd (LWW a) where
 newtype Assign a = Assign a
     deriving (Eq, Show)
 
-instance Eq a => CmRDT (LWW a) (Assign a) (LWW a) a where
+instance Eq a => CmRDT (LWW a) (Assign a) (LWW a) where
     updateAtSource (Assign value) =
         newTimestamp <&> \t -> LWW{timestamp = t, value}
     updateDownstream = (<>)
-    view = value
+
+instance Observe (LWW a) where
+    type Observed (LWW a) = a
+    observe = value

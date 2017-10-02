@@ -9,6 +9,8 @@ module CRDT.Cm.Counter
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (..))
+import           Data.Observe (Observe (..))
+
 import           CRDT.Cm (CmRDT (..))
 
 newtype Counter a = Counter a
@@ -17,10 +19,13 @@ newtype Counter a = Counter a
 data CounterOp a = Increment | Decrement
     deriving (Bounded, Enum, Eq, Show)
 
-instance (Num a, Eq a) => CmRDT (Counter a) (CounterOp a) (CounterOp a) a where
+instance (Num a, Eq a) => CmRDT (Counter a) (CounterOp a) (CounterOp a) where
     updateAtSource = pure
     updateDownstream = opToFunc
-    view (Counter c) = c
+
+instance Observe (Counter a) where
+    type Observed (Counter a) = a
+    observe (Counter c) = c
 
 -- | Empty order, allowing arbitrary reordering
 instance PartialOrd (CounterOp a) where

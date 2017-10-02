@@ -14,6 +14,7 @@ module CRDT.Cm.GSet
 import           Prelude hiding (lookup)
 
 import           Algebra.PartialOrd (PartialOrd (leq))
+import           Data.Observe (Observe (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -30,10 +31,13 @@ lookup = Set.member
 newtype Add a = Add a
     deriving (Eq, Show)
 
-instance Ord a => CmRDT (Set a) (Add a) (Add a) (Set a) where
+instance Ord a => CmRDT (Set a) (Add a) (Add a) where
     updateAtSource = pure
     updateDownstream (Add a) = Set.insert a
-    view = id
+
+instance Observe (GSet a) where
+    type Observed (GSet a) = Set a
+    observe = id
 
 instance Eq a => PartialOrd (Add a) where
     leq _ _ = False

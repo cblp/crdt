@@ -11,6 +11,7 @@ module Laws
 
 import           Control.Monad (unless)
 import           Data.Function ((&))
+import           Data.Observe (Observe (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
@@ -19,7 +20,7 @@ import           Test.Tasty.QuickCheck (Arbitrary (..), discard, testProperty,
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (runLamportClock, runProcess)
+import           LamportClock (Clock, runLamportClock, runProcess)
 
 import           ArbitraryOrphans ()
 
@@ -44,21 +45,22 @@ cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
 
 cmrdtLaw
-    :: forall payload op up view
-    . ( CmRDT payload op up view, Arbitrary payload, Show payload
+    :: forall payload op up
+    . ( CmRDT payload op up
+      , Arbitrary payload, Show payload
       , Arbitrary op, Show op
-      , Show view
+      , Observe payload, Eq (Observed payload), Show (Observed payload)
       )
     => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
-    \pid (state0 :: payload) op1 op2 ->
+    \pid (state0 :: payload) (op1, op2 :: op) ->
         runLamportClock $ runProcess pid $ do
             up1 <- updateAtSourceIfCan op1 state0
             up2 <- updateAtSourceIfCan op2 state0
             let state12 = state0 & updateDownstream up1 & updateDownstream up2
             let state21 = state0 & updateDownstream up2 & updateDownstream up1
-            pure $ concurrent up1 up2 ==> view state12 === view state21
+            pure $ concurrent up1 up2 ==> observe state12 === observe state21
   where
-    updateAtSourceIfCan op state = do
-        unless (updateAtSourcePre op state) discard
-        updateAtSource op
+    updateAtSourceIfCan :: Clock m => op -> payload -> m up
+    updateAtSourceIfCan op state =
+        unless (updateAtSourcePre op state) discard *> updateAtSource op
