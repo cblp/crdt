@@ -49,7 +49,7 @@ cmrdtLaw
     . ( CmRDT payload op up
       , Arbitrary payload, Show payload
       , Arbitrary op, Show op
-      , Observe payload, Eq (Observed payload), Show (Observed payload)
+      , Show (Observed payload)
       )
     => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $

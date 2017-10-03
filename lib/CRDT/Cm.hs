@@ -21,8 +21,8 @@ comparable a b = a `leq` b || b `leq` a
 concurrent :: PartialOrd a => a -> a -> Bool
 concurrent a b = not $ comparable a b
 
-class (Observe payload, PartialOrd up) => CmRDT payload op up
-        | payload -> op, op -> up, up -> payload where
+class (Observe payload, Eq (Observed payload), PartialOrd up)
+        => CmRDT payload op up | payload -> op, op -> up, up -> payload where
 
     -- | Precondition
     updateAtSourcePre :: op -> payload -> Bool
