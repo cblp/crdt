@@ -15,9 +15,7 @@ data Counter a = Increment | Decrement
     deriving (Bounded, Enum, Eq, Show)
 
 instance (Num a, Eq a) => CmRDT (Counter a) where
-    type Op       (Counter a) = Counter a
     type Payload  (Counter a) = a
-    type View     (Counter a) = a
 
     updateDownstream = \case
         Increment -> (+ 1)

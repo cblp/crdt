@@ -20,9 +20,7 @@ data TPSet a = Add a | Remove a
     deriving (Eq, Show)
 
 instance Ord a => CmRDT (TPSet a) where
-    type Op       (TPSet a) = TPSet a
     type Payload  (TPSet a) = Set a
-    type View     (TPSet a) = Set a
 
     updateAtSourcePre op payload = case op of
         Add _     -> True

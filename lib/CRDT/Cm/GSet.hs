@@ -18,9 +18,7 @@ newtype GSet a = Add a
     deriving (Eq, Show)
 
 instance Ord a => CmRDT (GSet a) where
-    type Op       (GSet a) = GSet a
     type Payload  (GSet a) = Set a
-    type View     (GSet a) = Set a
 
     updateDownstream (Add a) = Set.insert a
 

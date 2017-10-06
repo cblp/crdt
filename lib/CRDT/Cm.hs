@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module CRDT.Cm
     ( CmRDT (..)
@@ -56,9 +57,13 @@ Idempotency doesn't need to hold.
 -}
 
 class (PartialOrd u, Eq (View u)) => CmRDT u where
-    type Op       u
-    type Payload  u
-    type View     u
+    type Op u
+    type Op u = u -- default case
+
+    type Payload u
+
+    type View u
+    type View u = Payload u -- default case
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
@@ -70,6 +75,7 @@ class (PartialOrd u, Eq (View u)) => CmRDT u where
     --
     -- May or may not use clock.
     updateAtSource :: Clock m => Op u -> m u
+
     default updateAtSource :: Applicative m => u -> m u
     updateAtSource = pure
 
@@ -79,5 +85,6 @@ class (PartialOrd u, Eq (View u)) => CmRDT u where
 
     -- | Extract user-visible value from payload
     view :: Payload u -> View u
+
     default view :: (Payload u ~ View u) => Payload u -> View u
     view = id
