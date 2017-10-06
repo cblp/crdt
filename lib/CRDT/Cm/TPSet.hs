@@ -11,7 +11,6 @@ module CRDT.Cm.TPSet
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (..))
-import           Data.Proxy (Proxy (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -25,7 +24,7 @@ instance Ord a => CmRDT (TPSet a) where
     type Payload  (TPSet a) = Set a
     type View     (TPSet a) = Set a
 
-    updateAtSourcePre Proxy op payload = case op of
+    updateAtSourcePre op payload = case op of
         Add _     -> True
         Remove a  -> Set.member a payload
 

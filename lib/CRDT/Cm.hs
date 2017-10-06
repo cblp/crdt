@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -11,7 +12,6 @@ module CRDT.Cm
 
 import           Algebra.PartialOrd (PartialOrd (leq))
 import           Data.Kind (Type)
-import           Data.Proxy (Proxy (..))
 
 import           LamportClock (Clock)
 
@@ -63,8 +63,8 @@ class (PartialOrd u, Eq (View u)) => CmRDT u where
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
-    updateAtSourcePre :: Proxy u -> Op u -> Payload u -> Bool
-    updateAtSourcePre Proxy _ _ = True
+    updateAtSourcePre :: Op u -> Payload u -> Bool
+    updateAtSourcePre _ _ = True
 
     -- | Generate an update to the local and remote replicas.
     -- Doesn't have sense if 'updateAtSourcePre' is false.
@@ -79,6 +79,6 @@ class (PartialOrd u, Eq (View u)) => CmRDT u where
     updateDownstream :: u -> Payload u -> Payload u
 
     -- | Extract user-visible value from payload
-    view :: Proxy u -> Payload u -> View u
-    default view :: (Payload u ~ View u) => Proxy u -> Payload u -> View u
-    view Proxy = id
+    view :: Payload u -> View u
+    default view :: (Payload u ~ View u) => Payload u -> View u
+    view = id

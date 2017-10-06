@@ -14,7 +14,6 @@ module CRDT.LWW
 
 import           Algebra.PartialOrd (PartialOrd (..))
 import           Data.Function (on)
-import           Data.Proxy (Proxy (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Lens.Micro ((<&>))
 
@@ -76,4 +75,4 @@ instance Eq a => CmRDT (LWW a) where
 
     updateDownstream = (<>)
 
-    view Proxy = value
+    view = value
