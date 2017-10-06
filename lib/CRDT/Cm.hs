@@ -11,7 +11,6 @@ module CRDT.Cm
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (leq))
-import           Data.Kind (Type)
 
 import           LamportClock (Clock)
 
@@ -57,9 +56,9 @@ Idempotency doesn't need to hold.
 -}
 
 class (PartialOrd u, Eq (View u)) => CmRDT u where
-    type Op       u :: Type
-    type Payload  u :: Type
-    type View     u :: Type
+    type Op       u
+    type Payload  u
+    type View     u
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
