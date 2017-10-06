@@ -1,43 +1,28 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm.GSet
-    ( GSet
-    , Add (..)
-    , initial
-    , lookup
+    ( GSet (..)
     ) where
 
 import           Prelude hiding (lookup)
 
 import           Algebra.PartialOrd (PartialOrd (leq))
-import           Data.Observe (Observe (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
 import           CRDT.Cm (CmRDT (..))
-import           CRDT.Cv.GSet (GSet)
 
-initial :: GSet a
-initial = Set.empty
-
--- | query lookup
-lookup :: Ord a => a -> GSet a -> Bool
-lookup = Set.member
-
-newtype Add a = Add a
+newtype GSet a = Add a
     deriving (Eq, Show)
 
-instance Ord a => CmRDT (Set a) (Add a) (Add a) where
-    updateAtSource = pure
+instance Ord a => CmRDT (GSet a) where
+    type Op       (GSet a) = GSet a
+    type Payload  (GSet a) = Set a
+    type View     (GSet a) = Set a
+
     updateDownstream (Add a) = Set.insert a
 
-instance Observe (GSet a) where
-    type Observed (GSet a) = Set a
-    observe = id
-
-instance Eq a => PartialOrd (Add a) where
+instance Eq a => PartialOrd (GSet a) where
     leq _ _ = False

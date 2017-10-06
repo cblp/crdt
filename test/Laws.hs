@@ -11,7 +11,7 @@ module Laws
 
 import           Control.Monad (unless)
 import           Data.Function ((&))
-import           Data.Observe (Observe (..))
+import           Data.Proxy (Proxy (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
@@ -45,22 +45,23 @@ cvrdtLaws :: forall a . (Arbitrary a, CvRDT a, Eq a, Show a) => TestTree
 cvrdtLaws = semilatticeLaws @a
 
 cmrdtLaw
-    :: forall payload op up
-    . ( CmRDT payload op up
-      , Arbitrary payload, Show payload
-      , Arbitrary op, Show op
-      , Show (Observed payload)
+    :: forall up
+    . ( CmRDT up
+      , Arbitrary (Op up), Show (Op up)
+      , Arbitrary (Payload up), Show (Payload up)
+      , Show (View up)
       )
     => TestTree
 cmrdtLaw = testProperty "CmRDT law: concurrent ops commute" $
-    \pid (state0 :: payload) (op1, op2 :: op) ->
+    \pid (state0 :: Payload up) (op1, op2 :: Op up) ->
         runLamportClock $ runProcess pid $ do
             up1 <- updateAtSourceIfCan op1 state0
             up2 <- updateAtSourceIfCan op2 state0
             let state12 = state0 & updateDownstream up1 & updateDownstream up2
             let state21 = state0 & updateDownstream up2 & updateDownstream up1
-            pure $ concurrent up1 up2 ==> observe state12 === observe state21
+            pure $ concurrent up1 up2 ==> view p state12 === view p state21
   where
-    updateAtSourceIfCan :: Clock m => op -> payload -> m up
+    p = Proxy :: Proxy up
+    updateAtSourceIfCan :: Clock m => Op up -> Payload up -> m up
     updateAtSourceIfCan op state =
-        unless (updateAtSourcePre op state) discard *> updateAtSource op
+        unless (updateAtSourcePre p op state) discard *> updateAtSource op

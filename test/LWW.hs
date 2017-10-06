@@ -9,8 +9,7 @@ import           Data.Semigroup ((<>))
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cm.LWW (LWW (..))
-import           CRDT.Cv.LWW (assign, initial, query)
+import           CRDT.LWW (LWW (..), assign, initial, query)
 import           LamportClock (barrier, runLamportClock, runProcess)
 
 import           Laws (cmrdtLaw, cvrdtLaws)

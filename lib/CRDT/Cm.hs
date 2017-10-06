@@ -1,5 +1,5 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -10,7 +10,8 @@ module CRDT.Cm
     ) where
 
 import           Algebra.PartialOrd (PartialOrd (leq))
-import           Data.Observe (Observe (..))
+import           Data.Kind (Type)
+import           Data.Proxy (Proxy (..))
 
 import           LamportClock (Clock)
 
@@ -55,22 +56,29 @@ Concurrent updates are observed equally.
 Idempotency doesn't need to hold.
 -}
 
-class (Observe payload, Eq (Observed payload), PartialOrd update)
-        => CmRDT payload op update
-        | payload -> op, op -> update, update -> payload
-        where
+class (PartialOrd u, Eq (View u)) => CmRDT u where
+    type Op       u :: Type
+    type Payload  u :: Type
+    type View     u :: Type
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
-    updateAtSourcePre :: op -> payload -> Bool
-    updateAtSourcePre _ _ = True
+    updateAtSourcePre :: Proxy u -> Op u -> Payload u -> Bool
+    updateAtSourcePre Proxy _ _ = True
 
     -- | Generate an update to the local and remote replicas.
     -- Doesn't have sense if 'updateAtSourcePre' is false.
     --
     -- May or may not use clock.
-    updateAtSource :: Clock m => op -> m update
+    updateAtSource :: Clock m => Op u -> m u
+    default updateAtSource :: Applicative m => u -> m u
+    updateAtSource = pure
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.
-    updateDownstream :: update -> payload -> payload
+    updateDownstream :: u -> Payload u -> Payload u
+
+    -- | Extract user-visible value from payload
+    view :: Proxy u -> Payload u -> View u
+    default view :: (Payload u ~ View u) => Proxy u -> Payload u -> View u
+    view Proxy = id
