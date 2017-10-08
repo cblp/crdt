@@ -1,7 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module LamportClock
     ( Pid (..)
@@ -15,36 +13,42 @@ module LamportClock
     , barrier
     ) where
 
+import           Control.Arrow (first)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (MonadState, State, evalState,
                                              modify, state)
-import           Data.EnumMap.Strict (EnumMap)
-import qualified Data.EnumMap.Strict as EnumMap
 import           Data.Functor (($>))
+import           Data.IntMap.Strict (IntMap)
+import qualified Data.IntMap.Strict as IntMap
 import           Data.Maybe (fromMaybe)
-import           Data.Word (Word32)
 
 type Time = Word
 
 -- | Unique process identifier
-newtype Pid = Pid Word32
-    deriving (Enum, Eq, Ord, Show)
+newtype Pid = Pid Int
+    deriving (Eq, Ord, Show)
 
--- | TODO(cblp, 2017-09-28) Use bounded-intmap
-type LamportClock = State (EnumMap Pid Time)
+unPid :: Pid -> Int
+unPid (Pid pid) = pid
+
+-- | Key is 'Pid'. Non-present value is equivalent to 0.
+-- TODO(cblp, 2017-09-28) Use bounded-intmap
+type LamportTime = IntMap Time
+
+type LamportClock = State LamportTime
 
 -- | XXX Make sure all subsequent calls to 'newTimestamp' return timestamps
 -- greater than all prior calls.
 barrier :: [Pid] -> LamportClock ()
 barrier pids =
     modify $ \clocks -> let
-        selectedClocks = EnumMap.fromList
-            [(pid, fromMaybe 0 $ EnumMap.lookup pid clocks) | pid <- pids]
+        selectedClocks = lamportTimeFromList
+            [(pid, fromMaybe 0 $ lamportTimeLookup pid clocks) | pid <- pids]
         in
         if null selectedClocks then
             clocks
         else
-            EnumMap.union
+            IntMap.union
                 (selectedClocks $> succ (maximum selectedClocks))
                 clocks
 
@@ -73,7 +77,13 @@ runLamportClock action = evalState action mempty
 runProcess :: Pid -> Process a -> LamportClock a
 runProcess pid action = runReaderT action pid
 
-postIncrementAt :: (MonadState (EnumMap k v) m, Enum k, Num v) => k -> m v
-postIncrementAt k = state $ \m ->
-    let v = fromMaybe 0 $ EnumMap.lookup k m
-    in  (v, EnumMap.insert k (v + 1) m)
+postIncrementAt :: MonadState LamportTime m => Pid -> m Time
+postIncrementAt (Pid pid) = state $ \m ->
+    let v = fromMaybe 0 $ IntMap.lookup pid m
+    in  (v, IntMap.insert pid (v + 1) m)
+
+lamportTimeFromList :: [(Pid, Time)] -> LamportTime
+lamportTimeFromList = IntMap.fromList . map (first unPid)
+
+lamportTimeLookup :: Pid -> LamportTime -> Maybe Time
+lamportTimeLookup = IntMap.lookup . unPid

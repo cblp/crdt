@@ -16,7 +16,6 @@ dependencies:
 
 library:
   dependencies:
-    - enummapset
     - mtl
   source-dirs: lib
 
