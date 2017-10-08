@@ -22,6 +22,7 @@ import           CRDT.Cv (CvRDT)
 import           LamportClock (Clock (newTimestamp), Timestamp)
 
 -- | Last write wins. Assuming timestamp is unique.
+-- This type is both 'CmRDT' and 'CvRDT'.
 data LWW a = LWW
     { timestamp :: !Timestamp
     , value     :: !a
