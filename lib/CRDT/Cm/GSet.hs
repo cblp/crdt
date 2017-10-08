@@ -8,11 +8,10 @@ module CRDT.Cm.GSet
 
 import           Prelude hiding (lookup)
 
-import           Algebra.PartialOrd (PartialOrd (leq))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-import           CRDT.Cm (CmRDT (..))
+import           CRDT.Cm (CausalOrd (..), CmRDT (..))
 
 newtype GSet a = Add a
     deriving (Eq, Show)
@@ -22,5 +21,5 @@ instance Ord a => CmRDT (GSet a) where
 
     updateDownstream (Add a) = Set.insert a
 
-instance Eq a => PartialOrd (GSet a) where
-    leq _ _ = False
+instance Eq a => CausalOrd (GSet a) where
+    before _ _ = False

@@ -17,7 +17,6 @@ dependencies:
 library:
   dependencies:
     - enummapset
-    - lattices
     - microlens
     - microlens-ghc
     - microlens-mtl

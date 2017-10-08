@@ -12,12 +12,11 @@ module CRDT.LWW
     , Assign (..)
     ) where
 
-import           Algebra.PartialOrd (PartialOrd (..))
 import           Data.Function (on)
 import           Data.Semigroup (Semigroup, (<>))
 import           Lens.Micro ((<&>))
 
-import           CRDT.Cm (CmRDT (..))
+import           CRDT.Cm (CausalOrd (..), CmRDT (..))
 import           CRDT.Cv (CvRDT)
 import           LamportClock (Clock (newTimestamp), Timestamp)
 
@@ -59,8 +58,8 @@ query = value
 --------------------------------------------------------------------------------
 -- CmRDT -----------------------------------------------------------------------
 
-instance PartialOrd (LWW a) where
-    leq _ _ = False
+instance CausalOrd (LWW a) where
+    before _ _ = False
 
 -- | Change state as CmRDT operation
 newtype Assign a = Assign a

@@ -7,20 +7,23 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module CRDT.Cm
-    ( CmRDT (..)
+    ( CausalOrd (..)
+    , CmRDT (..)
     , concurrent
     ) where
 
-import           Algebra.PartialOrd (PartialOrd (leq))
-
 import           LamportClock (Clock)
 
--- | TODO(cblp, 2017-09-29) import from lattices >= 1.6
-comparable :: PartialOrd a => a -> a -> Bool
-comparable a b = a `leq` b || b `leq` a
+-- | Partial order for causal semantics.
+-- Values of some type may be ordered and causally-ordered different ways.
+class CausalOrd a where
+    before :: a -> a -> Bool
+
+comparable :: CausalOrd a => a -> a -> Bool
+comparable a b = a `before` b || b `before` a
 
 -- | Not comparable, i. e. ¬(a ≤ b) ∧ ¬(b ≤ a).
-concurrent :: PartialOrd a => a -> a -> Bool
+concurrent :: CausalOrd a => a -> a -> Bool
 concurrent a b = not $ comparable a b
 
 {- |
@@ -56,7 +59,7 @@ Concurrent updates are observed equally.
 Idempotency doesn't need to hold.
 -}
 
-class (PartialOrd u, Eq (View u)) => CmRDT u where
+class (CausalOrd u, Eq (View u)) => CmRDT u where
     type Op u
     type Op u = u -- default case
 

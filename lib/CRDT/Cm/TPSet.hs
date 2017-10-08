@@ -10,11 +10,10 @@ module CRDT.Cm.TPSet
     , updateDownstream
     ) where
 
-import           Algebra.PartialOrd (PartialOrd (..))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-import           CRDT.Cm (CmRDT (..))
+import           CRDT.Cm (CausalOrd (..), CmRDT (..))
 
 data TPSet a = Add a | Remove a
     deriving (Eq, Show)
@@ -30,6 +29,6 @@ instance Ord a => CmRDT (TPSet a) where
         Add a     -> Set.insert a
         Remove a  -> Set.delete a
 
-instance Eq a => PartialOrd (TPSet a) where
-    leq (Remove a) (Add b) = a == b -- `Remove e` can occur only after `Add e`
-    leq _ _ = False -- Any other are not ordered
+instance Eq a => CausalOrd (TPSet a) where
+    Remove a `before` Add b = a == b -- `Remove e` can occur only after `Add e`
+    _        `before` _     = False  -- Any other are not ordered
