@@ -11,7 +11,7 @@ description:
 github: cblp/crdt
 
 dependencies:
-  - base >= 4.9 && < 4.10
+  - base >= 4.9 && < 4.11
   - containers
 
 library:
@@ -22,7 +22,6 @@ library:
 tests:
   test:
     dependencies:
-      - QuickCheck
       - tasty
       - tasty-quickcheck
 

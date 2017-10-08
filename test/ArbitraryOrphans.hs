@@ -5,7 +5,8 @@
 
 module ArbitraryOrphans () where
 
-import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum, oneof)
+import           Test.Tasty.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
+                                        oneof)
 
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))

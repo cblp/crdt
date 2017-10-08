@@ -10,8 +10,8 @@ module CRDT.Cv.PNCounter
     ) where
 
 import           Data.Semigroup (Semigroup (..))
+import           Data.Semilattice (Semilattice)
 
-import           CRDT.Cv (CvRDT)
 import           CRDT.Cv.GCounter (GCounter)
 import qualified CRDT.Cv.GCounter as GCounter
 
@@ -29,7 +29,8 @@ data PNCounter a = PNCounter
 instance Ord a => Semigroup (PNCounter a) where
     PNCounter p1 n1 <> PNCounter p2 n2 = PNCounter (p1 <> p2) (n1 <> n2)
 
-instance Ord a => CvRDT (PNCounter a)
+-- | See 'CvRDT'
+instance Ord a => Semilattice (PNCounter a)
 
 -- | Get value from the state
 query :: Num a => PNCounter a -> a

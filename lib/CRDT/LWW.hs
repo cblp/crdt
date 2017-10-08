@@ -14,9 +14,9 @@ module CRDT.LWW
 
 import           Data.Function (on)
 import           Data.Semigroup (Semigroup, (<>))
+import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           CRDT.Cv (CvRDT)
 import           LamportClock (Clock (newTimestamp), Timestamp)
 
 -- | Last write wins. Assuming timestamp is unique.
@@ -40,7 +40,8 @@ instance Ord (LWW a) where
 instance Semigroup (LWW a) where
     (<>) = max
 
-instance CvRDT (LWW a)
+-- | See 'CvRDT'
+instance Semilattice (LWW a)
 
 -- | Initialize state
 initial :: Clock f => a -> f (LWW a)

@@ -9,8 +9,7 @@ module CRDT.Cv.GCounter
 import           Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IntMap
 import           Data.Semigroup (Semigroup ((<>)))
-
-import           CRDT.Cv (CvRDT)
+import           Data.Semilattice (Semilattice)
 
 -- | Grow-only counter.
 newtype GCounter a = GCounter (IntMap a)
@@ -19,7 +18,8 @@ newtype GCounter a = GCounter (IntMap a)
 instance Ord a => Semigroup (GCounter a) where
     GCounter x <> GCounter y = GCounter $ IntMap.unionWith max x y
 
-instance Ord a => CvRDT (GCounter a)
+-- | See 'CvRDT'
+instance Ord a => Semilattice (GCounter a)
 
 -- | Increment counter
 increment
