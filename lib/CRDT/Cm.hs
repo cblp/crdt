@@ -79,7 +79,7 @@ class (CausalOrd u, Eq (View u)) => CmRDT u where
     -- May or may not use clock.
     updateAtSource :: Clock m => Op u -> m u
 
-    default updateAtSource :: Applicative m => u -> m u
+    default updateAtSource :: (Clock m, Op u ~ u) => Op u -> m u
     updateAtSource = pure
 
     -- | Apply an update to the payload.
