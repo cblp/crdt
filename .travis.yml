@@ -14,6 +14,9 @@ addons:
   apt:
     packages:
       - libgmp-dev
+      - z3  # for liquidhaskell
+    sources:
+      - debian-sid  # for z3
 
 before_install:
   # Download and unpack the stack executable
@@ -32,6 +35,7 @@ matrix:
       script:
         # Build the package, its tests, and its docs and run the tests
         - test/script
+        - test/liquid
     - compiler: hlint
       install:
         - $STACK build hlint

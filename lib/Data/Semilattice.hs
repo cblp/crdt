@@ -26,6 +26,7 @@ In addition to 'Semigroup', Semilattice defines this laws:
 class Semigroup a => Semilattice a
 
 -- | Just ('Semigroup.<>'), specialized to 'Semilattice'.
+{-@ axiomatize merge @-}
 merge :: Semilattice a => a -> a -> a
 merge = (<>)
 infixr 6 `merge`
@@ -36,3 +37,11 @@ infixr 6 `merge`
 instance Ord a => Semilattice (Max a)
 
 instance Ord a => Semilattice (Set a)
+
+{-@
+type Associativity a
+    =  x : a
+    -> y : a
+    -> z : a
+    -> {merge (merge x y) z == merge x (merge y z)}
+@-}

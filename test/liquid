@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eux -o pipefail
+
+${STACK:-stack} build liquidhaskell
+${STACK:-stack}           \
+    exec --               \
+        liquid            \
+            --idirs=lib   \
+            --idirs=test  \
+            proof/Max.hs
