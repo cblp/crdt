@@ -16,14 +16,13 @@ module LamportClock
     ) where
 
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
-import           Control.Monad.State.Strict (State, evalState, modify)
+import           Control.Monad.State.Strict (MonadState, State, evalState,
+                                             modify, state)
 import           Data.EnumMap.Strict (EnumMap)
 import qualified Data.EnumMap.Strict as EnumMap
 import           Data.Functor (($>))
 import           Data.Maybe (fromMaybe)
 import           Data.Word (Word32)
-import           Lens.Micro (at, non)
-import           Lens.Micro.Extra ((<<+=))
 
 type Time = Word
 
@@ -65,7 +64,7 @@ type Process = ReaderT Pid LamportClock
 instance Clock Process where
     newTimestamp = do
         pid <- ask
-        time <- at pid . non 0 <<+= 1
+        time <- postIncrementAt pid
         pure $ Timestamp time pid
 
 runLamportClock :: LamportClock a -> a
@@ -73,3 +72,8 @@ runLamportClock action = evalState action mempty
 
 runProcess :: Pid -> Process a -> LamportClock a
 runProcess pid action = runReaderT action pid
+
+postIncrementAt :: (MonadState (EnumMap k v) m, Enum k, Num v) => k -> m v
+postIncrementAt k = state $ \m ->
+    let v = fromMaybe 0 $ EnumMap.lookup k m
+    in  (v, EnumMap.insert k (v + 1) m)

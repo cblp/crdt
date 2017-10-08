@@ -14,7 +14,6 @@ module CRDT.LWW
 
 import           Data.Function (on)
 import           Data.Semigroup (Semigroup, (<>))
-import           Lens.Micro ((<&>))
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
 import           CRDT.Cv (CvRDT)
@@ -23,8 +22,8 @@ import           LamportClock (Clock (newTimestamp), Timestamp)
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
 data LWW a = LWW
-    { timestamp :: !Timestamp
-    , value     :: !a
+    { value     :: !a
+    , timestamp :: !Timestamp
     }
     deriving (Show)
 
@@ -45,11 +44,12 @@ instance CvRDT (LWW a)
 
 -- | Initialize state
 initial :: Clock f => a -> f (LWW a)
-initial value = newTimestamp <&> \timestamp -> LWW{timestamp = timestamp, value}
+initial value = LWW value <$> newTimestamp
 
--- | Change state as CvRDT operation
+-- | Change state as CvRDT operation.
+-- Current value is ignored, because new timestamp is always greater.
 assign :: Clock f => a -> LWW a -> f (LWW a)
-assign value cur = newTimestamp <&> \timestamp -> cur <> LWW{timestamp, value}
+assign value _ = LWW value <$> newTimestamp
 
 -- | Query state
 query :: LWW a -> a
@@ -70,8 +70,7 @@ instance Eq a => CmRDT (LWW a) where
     type Payload  (LWW a) = LWW a
     type View     (LWW a) = a
 
-    updateAtSource (Assign value) =
-        newTimestamp <&> \t -> LWW{timestamp = t, value}
+    updateAtSource (Assign value) = LWW value <$> newTimestamp
 
     updateDownstream = (<>)
 
