@@ -26,7 +26,7 @@ initial :: TPSet a
 initial = TPSet GSet.initial GSet.initial
 
 query :: Ord a => a -> TPSet a -> Bool
-query e (TPSet a r) = GSet.query e a && (not $ GSet.query e r)
+query e (TPSet a r) = GSet.query e a && not ( GSet.query e r)
 
 remove :: Ord a => a -> TPSet a -> TPSet a
 remove e (TPSet a r) = TPSet a (GSet.add e r)
