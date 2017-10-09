@@ -6,8 +6,9 @@ import           GSet (gSet)
 import           LWW (lww)
 import           Max (maxTest)
 import           PNCounter (pnCounter)
-import           TPSet (tpSet)
+import qualified TPSet as Cm
+import qualified Cv.TPSet as Cv
 
 main :: IO ()
 main = defaultMain $
-    testGroup "" [counter, gCounter, gSet, lww, maxTest, pnCounter, tpSet]
+    testGroup "" [counter, gCounter, gSet, lww, maxTest, pnCounter, Cv.tpSet, Cm.tpSet]
