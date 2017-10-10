@@ -8,20 +8,18 @@ module Cv.TPSet
     ) where
 
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (Arbitrary(..), testProperty)
+import           Test.Tasty.QuickCheck (testProperty)
 
-import           CRDT.Cv.TPSet (TPSet (..), add, query, remove)
+import           CRDT.Cv.TPSet (TPSet (..))
+import           CRDT.Cv.TPSet as TPSet
 
 import           Laws (cvrdtLaws)
-
-instance (Ord a, Arbitrary a) => Arbitrary (TPSet a) where
-    arbitrary = TPSet <$> arbitrary <*> arbitrary
 
 tpSet :: TestTree
 tpSet = testGroup "TPSet"
     [ cvrdtLaws @(TPSet Int)
     , testProperty "remove" $ \(tpset :: TPSet Int) i ->
-        not $ query i (remove i tpset)
-    , testProperty "add after remove" $ \(tpset :: TPSet Int) i ->
-        not $ query i (add i (remove i tpset))
+        not $ TPSet.lookup i (TPSet.remove i tpset)
+    , testProperty "remove after add" $ \(tpset :: TPSet Int) i ->
+        not $ TPSet.lookup i (TPSet.remove i (TPSet.add i tpset))
     ]

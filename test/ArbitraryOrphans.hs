@@ -15,6 +15,7 @@ import qualified CRDT.Cm.TPSet as TPSet
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
+import qualified CRDT.Cv.TPSet as Cv
 import           CRDT.LWW (Assign (..), LWW (..))
 import           LamportClock (Pid (..), Timestamp (..))
 
@@ -42,3 +43,6 @@ deriving instance Arbitrary Pid
 
 instance Arbitrary Timestamp where
     arbitrary = Timestamp <$> arbitrary <*> arbitrary
+
+instance (Ord a, Arbitrary a) => Arbitrary (Cv.TPSet a) where
+    arbitrary = Cv.TPSet <$> arbitrary <*> arbitrary
