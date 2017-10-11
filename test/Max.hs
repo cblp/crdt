@@ -1,23 +1,18 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Max
-    ( maxTest
-    ) where
+module Max where
 
-import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (property, (===))
 
 import           CRDT.Cv.Max (Max, point, query)
 import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)
 
-maxTest :: TestTree
-maxTest = testGroup "Max"
-    [ testGroup "Cv"
-        [ cvrdtLaws @(Max Int)
-        , testProperty "merge" $
-            \(m :: Max Int) i -> query (point i `merge` m) == max i (query m)
-        ]
-    ]
+test_Cv = cvrdtLaws @(Max Int)
+
+prop_merge = property $ \(m :: Max Int) i ->
+    query (point i `merge` m) === max i (query m)

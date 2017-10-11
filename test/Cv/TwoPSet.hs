@@ -1,26 +1,23 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Cv.TwoPSet
-    ( twoPSet
-    ) where
+module Cv.TwoPSet where
 
-import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (property)
 
 import           CRDT.Cv.TwoPSet (TwoPSet (..))
 import           CRDT.Cv.TwoPSet as TwoPSet
 
 import           Laws (cvrdtLaws)
 
-twoPSet :: TestTree
-twoPSet = testGroup "TwoPSet"
-    [ cvrdtLaws @(TwoPSet Int)
-    -- TODO test addition after and not-after removal
-    , testProperty "remove" $ \(s :: TwoPSet Int) i ->
-        not . TwoPSet.lookup i $ TwoPSet.remove i s
-    , testProperty "remove after add" $ \(s :: TwoPSet Int) i ->
-        not . TwoPSet.lookup i . TwoPSet.remove i $ TwoPSet.add i s
-    ]
+-- TODO test addition after and not-after removal
+
+prop_remove = property $ \(s :: TwoPSet Int) i ->
+    not . TwoPSet.lookup i $ TwoPSet.remove i s
+
+prop_remove_after_add = property $ \(s :: TwoPSet Int) i ->
+    not . TwoPSet.lookup i . TwoPSet.remove i $ TwoPSet.add i s
+
+test_Cv = cvrdtLaws @(TwoPSet Int)

@@ -1,22 +1,19 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module GSet
-    ( gSet
-    ) where
+module GSet where
 
-import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty, (==>))
+import           Test.Tasty.QuickCheck (property)
 
 import qualified CRDT.Cm.GSet as Cm
 import qualified CRDT.Cv.GSet as Cv
 
 import           Laws (cmrdtLaw, cvrdtLaws)
 
-gSet :: TestTree
-gSet = testGroup "GSet"
-    [ cmrdtLaw @(Cm.GSet Int)
-    , cvrdtLaws @(Cv.GSet Int)
-    , testProperty "Cv.add" $ \(set :: Cv.GSet Int) i ->
-        not (Cv.lookup i set) ==> Cv.lookup i (Cv.add i set)
-    ]
+prop_Cm = cmrdtLaw @(Cm.GSet Int)
+
+test_Cv = cvrdtLaws @(Cv.GSet Int)
+
+prop_add = property $ \(set :: Cv.GSet Int) i -> Cv.lookup i (Cv.add i set)

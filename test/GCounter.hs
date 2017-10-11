@@ -1,21 +1,17 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module GCounter
-    ( gCounter
-    ) where
+module GCounter where
 
-import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (property, (===))
 
 import           CRDT.Cv.GCounter (GCounter (..), increment, query)
 
 import           Laws (cvrdtLaws)
 
-gCounter :: TestTree
-gCounter = testGroup "GCounter"
-    [ cvrdtLaws @(GCounter Int)
-    , testProperty "increment" $
-        \(counter :: GCounter Int) i ->
-            query (increment i counter) == succ (query counter)
-    ]
+test_Cv = cvrdtLaws @(GCounter Int)
+
+prop_increment = property $ \(counter :: GCounter Int) i ->
+    query (increment i counter) === succ (query counter)

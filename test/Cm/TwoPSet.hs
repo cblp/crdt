@@ -1,13 +1,11 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE TypeApplications #-}
 
-module Cm.TwoPSet
-    ( twoPSet
-    ) where
+module Cm.TwoPSet where
 
 import           CRDT.Cm.TwoPSet (TwoPSet)
-import           Test.Tasty (TestTree, testGroup)
 
 import           Laws (cmrdtLaw)
 
-twoPSet :: TestTree
-twoPSet = testGroup "TwoPSet" [cmrdtLaw @(TwoPSet Int)]
+prop_Cm = cmrdtLaw @(TwoPSet Int)

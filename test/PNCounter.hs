@@ -1,25 +1,21 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module PNCounter
-    ( pnCounter
-    ) where
+module PNCounter where
 
-import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.QuickCheck (property, (===))
 
 import           CRDT.Cv.PNCounter (PNCounter (..), decrement, increment, query)
 
 import           GCounter ()
 import           Laws (cvrdtLaws)
 
-pnCounter :: TestTree
-pnCounter = testGroup "PNCounter"
-    [ cvrdtLaws @(PNCounter Int)
-    , testProperty "increment" $
-        \(counter :: PNCounter Int) i ->
-            query (increment i counter) == succ (query counter)
-    , testProperty "decrement" $
-        \(counter :: PNCounter Int) i ->
-            query (decrement i counter) == pred (query counter)
-    ]
+test_Cv = cvrdtLaws @(PNCounter Int)
+
+prop_increment = property $ \(counter :: PNCounter Int) i ->
+    query (increment i counter) === succ (query counter)
+
+prop_decrement = property $ \(counter :: PNCounter Int) i ->
+    query (decrement i counter) === pred (query counter)

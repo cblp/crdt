@@ -1,13 +1,11 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+
 {-# LANGUAGE TypeApplications #-}
 
-module Counter
-    ( counter
-    ) where
+module Counter where
 
 import           CRDT.Cm.Counter (Counter)
-import           Test.Tasty (TestTree, testGroup)
 
 import           Laws (cmrdtLaw)
 
-counter :: TestTree
-counter = testGroup "Counter" [cmrdtLaw @(Counter Int)]
+prop_Cm = cmrdtLaw @(Counter Int)
