@@ -18,5 +18,5 @@ gSet = testGroup "GSet"
     [ cmrdtLaw @(Cm.GSet Int)
     , cvrdtLaws @(Cv.GSet Int)
     , testProperty "Cv.add" $ \(set :: Cv.GSet Int) i ->
-        not (Cv.query i set) ==> Cv.query i (Cv.add i set)
+        not (Cv.lookup i set) ==> Cv.lookup i (Cv.add i set)
     ]

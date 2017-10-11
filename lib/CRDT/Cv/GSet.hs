@@ -4,8 +4,10 @@ module CRDT.Cv.GSet
     ( GSet
     , add
     , initial
-    , query
+    , lookup
     ) where
+
+import           Prelude hiding (lookup)
 
 import           Data.Semilattice (Semilattice)
 import           Data.Set (Set)
@@ -24,5 +26,6 @@ add = Set.insert
 initial :: GSet a
 initial = Set.empty
 
-query :: Ord a => a -> GSet a -> Bool
-query = Set.member
+-- | lookup query
+lookup :: Ord a => a -> GSet a -> Bool
+lookup = Set.member
