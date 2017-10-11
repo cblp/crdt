@@ -2,7 +2,7 @@
 
 module CRDT.Cv.Max
     ( Max (..)
-    , point
+    , initial
     , query
     ) where
 
@@ -12,8 +12,8 @@ import           Data.Semilattice (Semilattice)
 instance Ord a => Semilattice (Max a)
 
 -- | Construct new value
-point :: a -> Max a
-point = Max
+initial :: a -> Max a
+initial = Max
 
 query :: Max a -> a
 query = getMax
