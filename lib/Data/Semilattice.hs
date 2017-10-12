@@ -3,7 +3,8 @@ module Data.Semilattice
     , merge
     ) where
 
-import           Data.Semigroup (Semigroup, (<>))
+import           Data.Semigroup (Max, Semigroup, (<>))
+import           Data.Set (Set)
 
 {- |
 A semilattice.
@@ -29,3 +30,9 @@ merge :: Semilattice a => a -> a -> a
 merge = (<>)
 infixr 6 `merge`
 {-# INLINE merge #-}
+
+-- instances for external types
+
+instance Ord a => Semilattice (Max a)
+
+instance Ord a => Semilattice (Set a)

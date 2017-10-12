@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
 module CRDT.Cv.GSet
     ( GSet
     , add
@@ -9,14 +7,11 @@ module CRDT.Cv.GSet
 
 import           Prelude hiding (lookup)
 
-import           Data.Semilattice (Semilattice)
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
 -- | Grow-only set
 type GSet = Set
-
-instance Ord a => Semilattice (Set a)
 
 -- | update
 add :: Ord a => a -> GSet a -> GSet a

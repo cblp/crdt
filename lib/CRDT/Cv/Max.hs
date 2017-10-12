@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
-
 module CRDT.Cv.Max
     ( Max (..)
     , initial
@@ -7,9 +5,6 @@ module CRDT.Cv.Max
     ) where
 
 import           Data.Semigroup (Max (..))
-import           Data.Semilattice (Semilattice)
-
-instance Ord a => Semilattice (Max a)
 
 -- | Construct new value
 initial :: a -> Max a
