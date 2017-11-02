@@ -16,13 +16,11 @@ import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as Cv
-import           CRDT.LWW (Assign (..), LWW (..))
+import           CRDT.LWW (LWW (..))
 import           LamportClock (Pid (..), Timestamp (..))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
-
-deriving instance Arbitrary a => Arbitrary (Assign a)
 
 instance Arbitrary a => Arbitrary (LWW a) where
     arbitrary = LWW <$> arbitrary <*> arbitrary

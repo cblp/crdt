@@ -8,8 +8,6 @@ module CRDT.LWW
     , initial
     , assign
     , query
-      -- * CmRDT
-    , Assign (..)
     ) where
 
 import           Data.Function (on)
@@ -62,16 +60,12 @@ query = value
 instance CausalOrd (LWW a) where
     before _ _ = False
 
--- | Change state as CmRDT operation
-newtype Assign a = Assign a
-    deriving (Eq, Show)
-
 instance Eq a => CmRDT (LWW a) where
-    type Op       (LWW a) = Assign a
+    type Op       (LWW a) = a
     type Payload  (LWW a) = LWW a
     type View     (LWW a) = a
 
-    updateAtSource (Assign value) = LWW value <$> newTimestamp
+    updateAtSource value = LWW value <$> newTimestamp
 
     updateDownstream = (<>)
 
