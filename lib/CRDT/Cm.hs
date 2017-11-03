@@ -74,10 +74,10 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     -- Doesn't have sense if 'updateAtSourcePre' is false.
     --
     -- May or may not use clock.
-    updateAtSource :: Timestamp -> Intent op -> op
+    updateAtSource :: Intent op -> Timestamp -> op
 
-    default updateAtSource :: (Intent op ~ op) => Timestamp -> Intent op -> op
-    updateAtSource _ = id
+    default updateAtSource :: (Intent op ~ op) => Intent op -> Timestamp -> op
+    updateAtSource = const
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.

@@ -72,6 +72,6 @@ instance Eq a => CmRDT (LWW a) where
     type Intent   (LWW a) = a
     type Payload  (LWW a) = LWW a
 
-    updateAtSource timestamp value = LWW{value, timestamp}
+    updateAtSource = LWW
 
     updateDownstream = (<>)

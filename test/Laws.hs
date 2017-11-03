@@ -51,16 +51,16 @@ cmrdtLaw
       )
     => Property
 cmrdtLaw = property $ \state0 i1 i2 t1 t2 -> let
-    op1 = updateAtSourceIfCan t1 i1 state0
-    op2 = updateAtSourceIfCan t2 i2 state0
+    op1 = updateAtSourceIfCan i1 t1 state0
+    op2 = updateAtSourceIfCan i2 t2 state0
     state12 = state0 & updateDownstream op1 & updateDownstream op2
     state21 = state0 & updateDownstream op2 & updateDownstream op1
     in
     concurrent op1 op2 ==> state12 === state21
   where
-    updateAtSourceIfCan :: Timestamp -> Intent op -> Payload op -> op
-    updateAtSourceIfCan t i state =
+    updateAtSourceIfCan :: Intent op -> Timestamp -> Payload op -> op
+    updateAtSourceIfCan i t state =
         if updateAtSourcePre @op i state then
-            updateAtSource t i
+            updateAtSource i t
         else
             discard
