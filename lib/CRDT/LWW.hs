@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.LWW
@@ -48,15 +46,15 @@ initial :: a -> Timestamp -> LWW a
 initial = LWW
 
 initialP :: a -> Process (LWW a)
-initialP value = LWW value <$> newTimestamp
+initialP v = LWW v <$> newTimestamp
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
 assign :: a -> LWW a -> Timestamp -> LWW a
-assign value _ = LWW value
+assign v _ = LWW v
 
 assignP :: a -> LWW a -> Process (LWW a)
-assignP value _ = LWW value <$> newTimestamp
+assignP v _ = LWW v <$> newTimestamp
 
 -- | Query state
 query :: LWW a -> a
