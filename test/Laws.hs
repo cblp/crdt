@@ -9,7 +9,6 @@ module Laws
     , cvrdtLaws
     ) where
 
-import           Data.Function ((&))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
@@ -50,8 +49,6 @@ cmrdtLaw
       , Arbitrary (Payload op), Show (Payload op)
       )
     => Property
-cmrdtLaw = property $ \state0 (op1, op2 :: op) -> let
-    state12 = state0 & apply op1 & apply op2
-    state21 = state0 & apply op2 & apply op1
-    in
-    concurrent op1 op2 ==> state12 === state21
+cmrdtLaw = property $ \s (op1, op2 :: op) ->
+    concurrent op1 op2 ==>
+        (apply op1 . apply op2) s === (apply op2 . apply op1) s
