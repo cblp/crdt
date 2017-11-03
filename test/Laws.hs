@@ -13,12 +13,11 @@ import           Data.Function ((&))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
-import           Test.Tasty.QuickCheck (Arbitrary (..), Property, discard,
-                                        property, testProperty, (===), (==>))
+import           Test.Tasty.QuickCheck (Arbitrary (..), Property, property,
+                                        testProperty, (===), (==>))
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (Timestamp)
 
 import           ArbitraryOrphans ()
 
@@ -46,21 +45,13 @@ cvrdtLaws = semilatticeLaws @a
 cmrdtLaw
     :: forall op
     . ( CmRDT op
+      , Arbitrary op, Show op
       , Arbitrary (Intent op), Show (Intent op)
       , Arbitrary (Payload op), Show (Payload op)
       )
     => Property
-cmrdtLaw = property $ \state0 i1 i2 t1 t2 -> let
-    op1 = makeOpIfCan i1 t1 state0
-    op2 = makeOpIfCan i2 t2 state0
+cmrdtLaw = property $ \state0 (op1, op2 :: op) -> let
     state12 = state0 & apply op1 & apply op2
     state21 = state0 & apply op2 & apply op1
     in
     concurrent op1 op2 ==> state12 === state21
-  where
-    makeOpIfCan :: Intent op -> Timestamp -> Payload op -> op
-    makeOpIfCan i t state =
-        if precondition @op i state then
-            makeOp i t
-        else
-            discard
