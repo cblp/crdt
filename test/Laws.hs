@@ -14,12 +14,11 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (Arbitrary (..), Property, discard,
-                                        property, testProperty, vector, (===),
-                                        (==>))
+                                        property, testProperty, (===), (==>))
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (Timestamp, runLamportClock, runProcess)
+import           LamportClock (Timestamp)
 
 import           ArbitraryOrphans ()
 
@@ -51,14 +50,13 @@ cmrdtLaw
       , Arbitrary (Payload u), Show (Payload u)
       )
     => Property
-cmrdtLaw = property $ \pid state0 op1 op2 -> do
-    [t1, t2] <- vector 2
-    pure $ runLamportClock $ runProcess pid $ do
-        let up1 = updateAtSourceIfCan t1 op1 state0
-        let up2 = updateAtSourceIfCan t2 op2 state0
-        let state12 = state0 & updateDownstream up1 & updateDownstream up2
-        let state21 = state0 & updateDownstream up2 & updateDownstream up1
-        pure $ concurrent up1 up2 ==> state12 === state21
+cmrdtLaw = property $ \state0 op1 op2 t1 t2 -> let
+    up1 = updateAtSourceIfCan t1 op1 state0
+    up2 = updateAtSourceIfCan t2 op2 state0
+    state12 = state0 & updateDownstream up1 & updateDownstream up2
+    state21 = state0 & updateDownstream up2 & updateDownstream up1
+    in
+    concurrent up1 up2 ==> state12 === state21
   where
     updateAtSourceIfCan :: Timestamp -> Op u -> Payload u -> u
     updateAtSourceIfCan t op state =
