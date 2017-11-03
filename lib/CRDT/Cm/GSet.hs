@@ -17,9 +17,9 @@ newtype GSet a = Add a
     deriving (Eq, Show)
 
 instance Ord a => CmRDT (GSet a) where
-    type Payload  (GSet a) = Set a
+    type Payload (GSet a) = Set a
 
-    updateDownstream (Add a) = Set.insert a
+    apply (Add a) = Set.insert a
 
 instance Eq a => CausalOrd (GSet a) where
-    before _ _ = False
+    affects _ _ = False

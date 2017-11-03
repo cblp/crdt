@@ -17,10 +17,12 @@ import           LamportClock (Timestamp)
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
 class CausalOrd a where
-    before :: a -> a -> Bool
+    -- | @x `affects` y@ means that
+    -- @x@ must go before @y@ and @y@ can not go before @x@.
+    affects :: a -> a -> Bool
 
 comparable :: CausalOrd a => a -> a -> Bool
-comparable a b = a `before` b || b `before` a
+comparable a b = a `affects` b || b `affects` a
 
 -- | Not comparable, i. e. ¬(a ≤ b) ∧ ¬(b ≤ a).
 concurrent :: CausalOrd a => a -> a -> Bool
@@ -51,9 +53,7 @@ Concurrent updates are observed equally.
 
 @
 ∀ op1 op2 .
-'concurrent' op1 op2 ==>
-    'updateDownstream' op1 . 'updateDownstream' op2 ==
-    'updateDownstream' op2 . 'updateDownstream' op1
+'concurrent' op1 op2 ==> 'apply' op1 . 'apply' op2 == 'apply' op2 . 'apply' op1
 @
 
 Idempotency doesn't need to hold.
@@ -65,20 +65,20 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
 
     type Payload op
 
-    -- | Precondition for 'updateAtSource'.
+    -- | Precondition for 'makeOp'.
     -- Calculates if the operation is applicable to the current state.
-    updateAtSourcePre :: Intent op -> Payload op -> Bool
-    updateAtSourcePre _ _ = True
+    precondition :: Intent op -> Payload op -> Bool
+    precondition _ _ = True
 
     -- | Generate an update to the local and remote replicas.
-    -- Doesn't have sense if 'updateAtSourcePre' is false.
+    -- Doesn't have sense if 'precondition' is false.
     --
     -- May or may not use clock.
-    updateAtSource :: Intent op -> Timestamp -> op
+    makeOp :: Intent op -> Timestamp -> op
 
-    default updateAtSource :: (Intent op ~ op) => Intent op -> Timestamp -> op
-    updateAtSource = const
+    default makeOp :: (Intent op ~ op) => Intent op -> Timestamp -> op
+    makeOp = const
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.
-    updateDownstream :: op -> Payload op -> Payload op
+    apply :: op -> Payload op -> Payload op

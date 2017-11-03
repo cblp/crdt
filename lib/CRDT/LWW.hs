@@ -66,12 +66,12 @@ query = value
 -- CmRDT -----------------------------------------------------------------------
 
 instance CausalOrd (LWW a) where
-    before _ _ = False
+    affects _ _ = False
 
 instance Eq a => CmRDT (LWW a) where
     type Intent   (LWW a) = a
     type Payload  (LWW a) = LWW a
 
-    updateAtSource = LWW
+    makeOp = LWW
 
-    updateDownstream = (<>)
+    apply = (<>)

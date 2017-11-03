@@ -13,12 +13,12 @@ data Counter a = Increment | Decrement
     deriving (Bounded, Enum, Eq, Show)
 
 instance (Num a, Eq a) => CmRDT (Counter a) where
-    type Payload  (Counter a) = a
+    type Payload (Counter a) = a
 
-    updateDownstream = \case
+    apply = \case
         Increment -> (+ 1)
         Decrement -> subtract 1
 
 -- | Empty order, allowing arbitrary reordering
 instance CausalOrd (Counter a) where
-    before _ _ = False
+    affects _ _ = False
