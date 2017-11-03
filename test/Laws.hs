@@ -42,12 +42,8 @@ cvrdtLaws = semilatticeLaws @a
 
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw
-    :: forall op
-    . ( CmRDT op
-      , Arbitrary op, Show op
-      , Arbitrary (Intent op), Show (Intent op)
-      , Arbitrary (Payload op), Show (Payload op)
-      )
+    :: forall op.
+    (CmRDT op, Arbitrary op, Show op, Arbitrary (Payload op), Show (Payload op))
     => Property
 cmrdtLaw = property $ \s (op1, op2 :: op) ->
     concurrent op1 op2 ==>
