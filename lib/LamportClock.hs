@@ -4,12 +4,16 @@
 module LamportClock
     ( Pid (..)
     , Time
+    -- * Lamport's timestamp (for a single process)
     , Timestamp (..)
-    , Clock (..)
+    , newTimestamp
+    -- * Lamport's clock (for a whole multi-process system)
     , LamportClock
     , runLamportClock
+    -- * Lamport's process
     , Process
     , runProcess
+    -- * Debug tool
     , barrier
     ) where
 
@@ -59,17 +63,13 @@ barrier pids =
 data Timestamp = Timestamp !Time !Pid
     deriving (Eq, Ord, Show)
 
-class Applicative f => Clock f where
-    -- | Get another unique timestamp
-    newTimestamp :: f Timestamp
-
 type Process = ReaderT Pid LamportClock
 
-instance Clock Process where
-    newTimestamp = do
-        pid <- ask
-        time <- postIncrementAt pid
-        pure $ Timestamp time pid
+newTimestamp :: Process Timestamp
+newTimestamp = do
+    pid <- ask
+    time <- postIncrementAt pid
+    pure $ Timestamp time pid
 
 runLamportClock :: LamportClock a -> a
 runLamportClock action = evalState action mempty

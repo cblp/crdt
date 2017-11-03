@@ -6,7 +6,9 @@ module CRDT.LWW
     ( LWW (..)
       -- * CvRDT
     , initial
+    , initialP
     , assign
+    , assignP
     , query
     ) where
 
@@ -15,7 +17,7 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           LamportClock (Clock (newTimestamp), Timestamp)
+import           LamportClock (Process, Timestamp, newTimestamp)
 
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
@@ -42,13 +44,19 @@ instance Semigroup (LWW a) where
 instance Semilattice (LWW a)
 
 -- | Initialize state
-initial :: Clock f => a -> f (LWW a)
-initial value = LWW value <$> newTimestamp
+initial :: a -> Timestamp -> LWW a
+initial = LWW
+
+initialP :: a -> Process (LWW a)
+initialP value = LWW value <$> newTimestamp
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
-assign :: Clock f => a -> LWW a -> f (LWW a)
-assign value _ = LWW value <$> newTimestamp
+assign :: a -> LWW a -> Timestamp -> LWW a
+assign value _ = LWW value
+
+assignP :: a -> LWW a -> Process (LWW a)
+assignP value _ = LWW value <$> newTimestamp
 
 -- | Query state
 query :: LWW a -> a
@@ -61,7 +69,7 @@ instance CausalOrd (LWW a) where
     before _ _ = False
 
 instance Eq a => CmRDT (LWW a) where
-    type Op       (LWW a) = a
+    type Intent   (LWW a) = a
     type Payload  (LWW a) = LWW a
 
     updateAtSource timestamp value = LWW{value, timestamp}

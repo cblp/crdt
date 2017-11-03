@@ -44,23 +44,23 @@ cvrdtLaws = semilatticeLaws @a
 
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw
-    :: forall u
-    . ( CmRDT u
-      , Arbitrary (Op u), Show (Op u)
-      , Arbitrary (Payload u), Show (Payload u)
+    :: forall op
+    . ( CmRDT op
+      , Arbitrary (Intent op), Show (Intent op)
+      , Arbitrary (Payload op), Show (Payload op)
       )
     => Property
-cmrdtLaw = property $ \state0 op1 op2 t1 t2 -> let
-    up1 = updateAtSourceIfCan t1 op1 state0
-    up2 = updateAtSourceIfCan t2 op2 state0
-    state12 = state0 & updateDownstream up1 & updateDownstream up2
-    state21 = state0 & updateDownstream up2 & updateDownstream up1
+cmrdtLaw = property $ \state0 i1 i2 t1 t2 -> let
+    op1 = updateAtSourceIfCan t1 i1 state0
+    op2 = updateAtSourceIfCan t2 i2 state0
+    state12 = state0 & updateDownstream op1 & updateDownstream op2
+    state21 = state0 & updateDownstream op2 & updateDownstream op1
     in
-    concurrent up1 up2 ==> state12 === state21
+    concurrent op1 op2 ==> state12 === state21
   where
-    updateAtSourceIfCan :: Timestamp -> Op u -> Payload u -> u
-    updateAtSourceIfCan t op state =
-        if updateAtSourcePre @u op state then
-            updateAtSource t op
+    updateAtSourceIfCan :: Timestamp -> Intent op -> Payload op -> op
+    updateAtSourceIfCan t i state =
+        if updateAtSourcePre @op i state then
+            updateAtSource t i
         else
             discard

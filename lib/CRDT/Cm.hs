@@ -32,16 +32,16 @@ Operation-based, or commutative (Cm) replicated data type.
 == Implementation
 
 In Haskell, a CmRDT implementation consists of 3 types —
-a __payload__, an __operation__ (@op@) and an __update__.
+a __payload__, an __operation__ (@op@) and an __intent__.
 
 [Payload]
     Internal state of a replica.
-[Operation]
+[Intent]
     User's request to update.
-[Update]
+[Operation (Op)]
     Operation to be applied to other replicas.
 
-For many types /operation/ and /update/ may be the same.
+For many types /operation/ and /intent/ may be the same.
 But for 'CRDT.Cm.LWW.LWW', for instance, this rule doesn't hold:
 user can request only value, and type attaches a timestamp to it.
 
@@ -50,35 +50,35 @@ user can request only value, and type attaches a timestamp to it.
 Concurrent updates are observed equally.
 
 @
-∀ up1 up2 .
-'concurrent' up1 up2 ==>
-    'updateDownstream' up1 . 'updateDownstream' up2 ==
-    'updateDownstream' up2 . 'updateDownstream' up1
+∀ op1 op2 .
+'concurrent' op1 op2 ==>
+    'updateDownstream' op1 . 'updateDownstream' op2 ==
+    'updateDownstream' op2 . 'updateDownstream' op1
 @
 
 Idempotency doesn't need to hold.
 -}
 
-class (CausalOrd u, Eq (Payload u)) => CmRDT u where
-    type Op u
-    type Op u = u -- default case
+class (CausalOrd op, Eq (Payload op)) => CmRDT op where
+    type Intent op
+    type Intent op = op -- default case
 
-    type Payload u
+    type Payload op
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
-    updateAtSourcePre :: Op u -> Payload u -> Bool
+    updateAtSourcePre :: Intent op -> Payload op -> Bool
     updateAtSourcePre _ _ = True
 
     -- | Generate an update to the local and remote replicas.
     -- Doesn't have sense if 'updateAtSourcePre' is false.
     --
     -- May or may not use clock.
-    updateAtSource :: Timestamp -> Op u -> u
+    updateAtSource :: Timestamp -> Intent op -> op
 
-    default updateAtSource :: (Op u ~ u) => Timestamp -> Op u -> u
+    default updateAtSource :: (Intent op ~ op) => Timestamp -> Intent op -> op
     updateAtSource _ = id
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.
-    updateDownstream :: u -> Payload u -> Payload u
+    updateDownstream :: op -> Payload op -> Payload op
