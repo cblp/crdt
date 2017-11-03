@@ -50,23 +50,20 @@ user can request only value, and type attaches a timestamp to it.
 Concurrent updates are observed equally.
 
 @
-∀ up1 up2 s .
+∀ up1 up2 .
 'concurrent' up1 up2 ==>
-    'observe' ('updateDownstream' up1 . 'updateDownstream' up2 $ s) ==
-    'observe' ('updateDownstream' up2 . 'updateDownstream' up1 $ s)
+    'updateDownstream' up1 . 'updateDownstream' up2 ==
+    'updateDownstream' up2 . 'updateDownstream' up1
 @
 
 Idempotency doesn't need to hold.
 -}
 
-class (CausalOrd u, Eq (View u)) => CmRDT u where
+class (CausalOrd u, Eq (Payload u)) => CmRDT u where
     type Op u
     type Op u = u -- default case
 
     type Payload u
-
-    type View u
-    type View u = Payload u -- default case
 
     -- | Precondition for 'updateAtSource'.
     -- Calculates if the operation is applicable to the current state.
@@ -85,9 +82,3 @@ class (CausalOrd u, Eq (View u)) => CmRDT u where
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.
     updateDownstream :: u -> Payload u -> Payload u
-
-    -- | Extract user-visible value from payload
-    view :: Payload u -> View u
-
-    default view :: (Payload u ~ View u) => Payload u -> View u
-    view = id

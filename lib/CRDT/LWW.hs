@@ -63,10 +63,7 @@ instance CausalOrd (LWW a) where
 instance Eq a => CmRDT (LWW a) where
     type Op       (LWW a) = a
     type Payload  (LWW a) = LWW a
-    type View     (LWW a) = a
 
     updateAtSource value = LWW value <$> newTimestamp
 
     updateDownstream = (<>)
-
-    view = value

@@ -49,16 +49,15 @@ cmrdtLaw
     . ( CmRDT u
       , Arbitrary (Op u), Show (Op u)
       , Arbitrary (Payload u), Show (Payload u)
-      , Show (View u)
       )
     => Property
-cmrdtLaw = property $ \pid (state0 :: Payload u) (op1, op2 :: Op u) ->
+cmrdtLaw = property $ \pid state0 op1 op2 ->
     runLamportClock $ runProcess pid $ do
         up1 <- updateAtSourceIfCan op1 state0
         up2 <- updateAtSourceIfCan op2 state0
         let state12 = state0 & updateDownstream up1 & updateDownstream up2
         let state21 = state0 & updateDownstream up2 & updateDownstream up1
-        pure $ concurrent up1 up2 ==> view @u state12 === view @u state21
+        pure $ concurrent up1 up2 ==> state12 === state21
   where
     updateAtSourceIfCan :: Clock m => Op u -> Payload u -> m u
     updateAtSourceIfCan op state =
