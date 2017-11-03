@@ -9,17 +9,17 @@ module Laws
     , cvrdtLaws
     ) where
 
-import           Control.Monad (unless)
 import           Data.Function ((&))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice, merge)
 import           Test.Tasty (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (Arbitrary (..), Property, discard,
-                                        property, testProperty, (===), (==>))
+                                        property, testProperty, vector, (===),
+                                        (==>))
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           LamportClock (Clock, runLamportClock, runProcess)
+import           LamportClock (Timestamp, runLamportClock, runProcess)
 
 import           ArbitraryOrphans ()
 
@@ -51,14 +51,18 @@ cmrdtLaw
       , Arbitrary (Payload u), Show (Payload u)
       )
     => Property
-cmrdtLaw = property $ \pid state0 op1 op2 ->
-    runLamportClock $ runProcess pid $ do
-        up1 <- updateAtSourceIfCan op1 state0
-        up2 <- updateAtSourceIfCan op2 state0
+cmrdtLaw = property $ \pid state0 op1 op2 -> do
+    [t1, t2] <- vector 2
+    pure $ runLamportClock $ runProcess pid $ do
+        let up1 = updateAtSourceIfCan t1 op1 state0
+        let up2 = updateAtSourceIfCan t2 op2 state0
         let state12 = state0 & updateDownstream up1 & updateDownstream up2
         let state21 = state0 & updateDownstream up2 & updateDownstream up1
         pure $ concurrent up1 up2 ==> state12 === state21
   where
-    updateAtSourceIfCan :: Clock m => Op u -> Payload u -> m u
-    updateAtSourceIfCan op state =
-        unless (updateAtSourcePre @u op state) discard *> updateAtSource op
+    updateAtSourceIfCan :: Timestamp -> Op u -> Payload u -> u
+    updateAtSourceIfCan t op state =
+        if updateAtSourcePre @u op state then
+            updateAtSource t op
+        else
+            discard

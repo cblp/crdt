@@ -12,7 +12,7 @@ module CRDT.Cm
     , concurrent
     ) where
 
-import           LamportClock (Clock)
+import           LamportClock (Timestamp)
 
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
@@ -74,10 +74,10 @@ class (CausalOrd u, Eq (Payload u)) => CmRDT u where
     -- Doesn't have sense if 'updateAtSourcePre' is false.
     --
     -- May or may not use clock.
-    updateAtSource :: Clock m => Op u -> m u
+    updateAtSource :: Timestamp -> Op u -> u
 
-    default updateAtSource :: (Clock m, Op u ~ u) => Op u -> m u
-    updateAtSource = pure
+    default updateAtSource :: (Op u ~ u) => Timestamp -> Op u -> u
+    updateAtSource _ = id
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.

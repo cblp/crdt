@@ -64,6 +64,6 @@ instance Eq a => CmRDT (LWW a) where
     type Op       (LWW a) = a
     type Payload  (LWW a) = LWW a
 
-    updateAtSource value = LWW value <$> newTimestamp
+    updateAtSource timestamp value = LWW{value, timestamp}
 
     updateDownstream = (<>)
