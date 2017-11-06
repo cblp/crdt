@@ -2,9 +2,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 module CRDT.Cv.LwwElementSet
-(
-    LwwElementSet(..)
-) where
+    ( LwwElementSet(..)
+    , add
+    , initial
+    , lookup
+    , remove
+    ) where
+
+import           Prelude hiding (lookup)
 
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
