@@ -37,6 +37,4 @@ initial = GCounter IntMap.empty
 
 -- | Get value from the state
 query :: Num a => GCounter a -> a
-query (GCounter v) = mapSum v
-  where
-    mapSum = IntMap.foldr (+) 0
+query (GCounter v) = sum v
