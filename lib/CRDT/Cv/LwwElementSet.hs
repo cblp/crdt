@@ -18,7 +18,7 @@ import           Data.Semilattice (Semilattice)
 
 import LamportClock (Timestamp)
 
-data LwwElementSet a = LES (Map a (Timestamp, Bool))
+newtype LwwElementSet a = LES (Map a (Timestamp, Bool))
 
 instance Ord a => Semigroup (LwwElementSet a) where
     LES m1 <> LES m2 =
