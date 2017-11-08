@@ -1,5 +1,5 @@
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module CRDT.Cv.LwwElementSet
     ( LwwElementSet(..)
@@ -13,41 +13,28 @@ import           Prelude hiding (lookup)
 
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Semigroup (Semigroup ((<>)))
+import           Data.Semigroup (Semigroup (..))
 import           Data.Semilattice (Semilattice)
 
-import LamportClock (Timestamp)
+import           GlobalTime (Time)
 
-newtype LwwElementSet a = LES (Map a (Timestamp, Bool))
+newtype LwwElementSet a = LES (Map a (Time, Bool))
 
 instance Ord a => Semigroup (LwwElementSet a) where
-    LES m1 <> LES m2 =
-        LES (Map.unionWith lastWriteWins m1 m2)
+    LES m1 <> LES m2 = LES (Map.unionWith lastWriteWins m1 m2)
 
 instance Ord a => Semilattice (LwwElementSet a)
 
-lastWriteWins :: (Timestamp, Bool)
-              -> (Timestamp, Bool)
-              -> (Timestamp, Bool)
-lastWriteWins e1 e2 =
-    if fst e1 > fst e2 then
-        e1
-    else
-        e2
+lastWriteWins :: (Time, a) -> (Time, a) -> (Time, a)
+lastWriteWins e1 e2 = if fst e1 > fst e2 then e1 else e2
 
 initial :: LwwElementSet a
 initial = LES Map.empty
 
-add :: Ord a => a
-    -> Timestamp
-    -> LwwElementSet a
-    -> LwwElementSet a
+add :: Ord a => a -> Time -> LwwElementSet a -> LwwElementSet a
 add e t (LES m) = LES (Map.insertWith lastWriteWins e (t, True) m)
 
-remove :: Ord a => a
-       -> Timestamp
-       -> LwwElementSet a
-       -> LwwElementSet a
+remove :: Ord a => a -> Time -> LwwElementSet a -> LwwElementSet a
 remove e t (LES m) = LES (Map.insertWith lastWriteWins e (t, False) m)
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool

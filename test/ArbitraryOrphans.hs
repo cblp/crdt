@@ -5,8 +5,8 @@
 
 module ArbitraryOrphans () where
 
-import           Test.Tasty.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
-                                        oneof)
+import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
+                                  elements)
 
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
@@ -17,7 +17,8 @@ import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as Cv
 import           CRDT.LWW (LWW (..))
-import           LamportClock (Pid (..), Timestamp (..))
+import           GlobalTime (Time (..))
+import           LamportTime (Pid (..), Time (..))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
@@ -28,7 +29,7 @@ instance Arbitrary a => Arbitrary (LWW a) where
 deriving instance Arbitrary a => Arbitrary (GSet a)
 
 instance Arbitrary a => Arbitrary (TwoPSet a) where
-    arbitrary = oneof [TwoPSet.Add <$> arbitrary, Remove <$> arbitrary]
+    arbitrary = elements [TwoPSet.Add, Remove] <*> arbitrary
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
 
@@ -39,8 +40,9 @@ instance Arbitrary a => Arbitrary (PNCounter a) where
 
 deriving instance Arbitrary Pid
 
-instance Arbitrary Timestamp where
-    arbitrary = Timestamp <$> arbitrary <*> arbitrary
+deriving instance Arbitrary LamportTime.Time
+
+deriving instance Arbitrary GlobalTime.Time
 
 instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a) where
     arbitrary = Cv.TwoPSet <$> arbitrary <*> arbitrary

@@ -14,10 +14,10 @@ import           Laws (cvrdtLaws)
 
 -- TODO test addition after and not-after removal
 
-prop_remove = property $ \(s :: TwoPSet Int) i ->
+prop_remove = property $ \(s :: TwoPSet Char) i ->
     not . TwoPSet.lookup i $ TwoPSet.remove i s
 
-prop_remove_after_add = property $ \(s :: TwoPSet Int) i ->
+prop_remove_after_add = property $ \(s :: TwoPSet Char) i ->
     not . TwoPSet.lookup i . TwoPSet.remove i $ TwoPSet.add i s
 
-test_Cv = cvrdtLaws @(TwoPSet Int)
+test_Cv = cvrdtLaws @(TwoPSet Char) Nothing

@@ -1,4 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -8,8 +7,6 @@ module CRDT.Cm
     , CmRDT (..)
     , concurrent
     ) where
-
-import           LamportClock (Timestamp)
 
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
@@ -62,19 +59,14 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
 
     type Payload op
 
-    -- | Precondition for 'makeOp'.
-    -- Calculates if the operation is applicable to the current state.
-    precondition :: Intent op -> Payload op -> Bool
-    precondition _ _ = True
-
     -- | Generate an update to the local and remote replicas.
     -- Doesn't have sense if 'precondition' is false.
     --
-    -- May or may not use clock.
-    makeOp :: Intent op -> Timestamp -> op
+    -- Returns 'Nothing' if the intended operation is not applicable.
+    makeOp :: Intent op -> Payload op -> Maybe op
 
-    default makeOp :: (Intent op ~ op) => Intent op -> Timestamp -> op
-    makeOp = const
+    default makeOp :: Intent op ~ op => Intent op -> Payload op -> Maybe op
+    makeOp i _ = Just i
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.

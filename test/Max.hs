@@ -12,7 +12,7 @@ import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(Max Int)
+test_Cv = cvrdtLaws @(Max Int) Nothing
 
 prop_merge = property $ \(x :: Int) y ->
     query (initial x `merge` initial y) === max x y

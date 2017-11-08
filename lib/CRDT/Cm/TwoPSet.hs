@@ -6,6 +6,7 @@ module CRDT.Cm.TwoPSet
     ( TwoPSet (..)
     ) where
 
+import           Control.Monad (guard)
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
@@ -17,9 +18,9 @@ data TwoPSet a = Add a | Remove a
 instance Ord a => CmRDT (TwoPSet a) where
     type Payload (TwoPSet a) = Set a
 
-    precondition = \case
-        Add _     -> const True
-        Remove a  -> Set.member a
+    makeOp op s = case op of
+        Add _     -> Just op
+        Remove a  -> guard (Set.member a s) *> Just op
 
     apply = \case
         Add a     -> Set.insert a

@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.LWW
@@ -10,51 +11,54 @@ module CRDT.LWW
     , query
     ) where
 
-import           Data.Function (on)
+import           Control.Monad (guard)
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           LamportClock (Process, Timestamp, newTimestamp)
+import           GlobalTime (Process, Time, newTime)
 
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
+--
+-- Timestamps are assumed unique, totally ordered,
+-- and consistent with causal order;
+-- i.e., if assignment 1 happened-before assignment 2,
+-- the former’s timestamp is less than the latter’s.
 data LWW a = LWW
     { value     :: !a
-    , timestamp :: !Timestamp
+    , timestamp :: !Time
     }
-    deriving (Show)
+    deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
 -- CvRDT -----------------------------------------------------------------------
 
-instance Eq (LWW a) where
-    (==) = (==) `on` timestamp
-
-instance Ord (LWW a) where
-    (<=) = (<=) `on` timestamp
-
 -- | Merge by choosing more recent timestamp.
-instance Semigroup (LWW a) where
-    (<>) = max
+instance Eq a => Semigroup (LWW a) where
+    x@(LWW xv xt) <> y@(LWW yv yt) = case compare xt yt of
+        LT -> y
+        GT -> x
+        EQ ->
+            if xv == yv then x else error "LWW assumes timestamps to be unique"
 
 -- | See 'CvRDT'
-instance Semilattice (LWW a)
+instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
-initial :: a -> Timestamp -> LWW a
+initial :: a -> Time -> LWW a
 initial = LWW
 
 initialP :: a -> Process (LWW a)
-initialP v = LWW v <$> newTimestamp
+initialP v = LWW v <$> newTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
-assign :: a -> LWW a -> Timestamp -> LWW a
+assign :: a -> LWW a -> Time -> LWW a
 assign v _ = LWW v
 
 assignP :: a -> LWW a -> Process (LWW a)
-assignP v _ = LWW v <$> newTimestamp
+assignP v _ = LWW v <$> newTime
 
 -- | Query state
 query :: LWW a -> a
@@ -67,9 +71,13 @@ instance CausalOrd (LWW a) where
     affects _ _ = False
 
 instance Eq a => CmRDT (LWW a) where
-    type Intent   (LWW a) = a
+    type Intent   (LWW a) = (a, Time)
     type Payload  (LWW a) = LWW a
 
-    makeOp = LWW
+    makeOp (newValue, newTimestamp) cur =
+        guard (newTimestamp > curTimestamp) *> Just new
+      where
+        LWW{timestamp = curTimestamp} = cur
+        new = LWW{value = newValue, timestamp = newTimestamp}
 
     apply = (<>)

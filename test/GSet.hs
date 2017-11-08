@@ -12,8 +12,8 @@ import qualified CRDT.Cv.GSet as Cv
 
 import           Laws (cmrdtLaw, cvrdtLaws)
 
-prop_Cm = cmrdtLaw @(Cm.GSet Int)
+prop_Cm = cmrdtLaw @(Cm.GSet Char) Nothing
 
-test_Cv = cvrdtLaws @(Cv.GSet Int)
+test_Cv = cvrdtLaws @(Cv.GSet Char) Nothing
 
-prop_add = property $ \(set :: Cv.GSet Int) i -> Cv.lookup i (Cv.add i set)
+prop_add = property $ \(set :: Cv.GSet Char) i -> Cv.lookup i (Cv.add i set)
