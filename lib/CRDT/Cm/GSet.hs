@@ -4,8 +4,6 @@ module CRDT.Cm.GSet
     ( GSet (..)
     ) where
 
-import           Prelude hiding (lookup)
-
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
