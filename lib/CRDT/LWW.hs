@@ -16,7 +16,7 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           GlobalTime (Process, Time, newTime)
+import           GlobalTime (GlobalTime, Process, newTime)
 
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
@@ -27,7 +27,7 @@ import           GlobalTime (Process, Time, newTime)
 -- the former’s timestamp is less than the latter’s.
 data LWW a = LWW
     { value     :: !a
-    , timestamp :: !Time
+    , timestamp :: !GlobalTime
     }
     deriving (Eq, Show)
 
@@ -50,7 +50,7 @@ instance Eq a => Semigroup (LWW a) where
 instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
-initial :: a -> Time -> LWW a
+initial :: a -> GlobalTime -> LWW a
 initial = LWW
 
 initialP :: a -> Process (LWW a)
@@ -58,7 +58,7 @@ initialP v = LWW v <$> newTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
-assign :: a -> LWW a -> Time -> LWW a
+assign :: a -> LWW a -> GlobalTime -> LWW a
 assign v _ = LWW v
 
 assignP :: a -> LWW a -> Process (LWW a)
@@ -75,7 +75,7 @@ instance CausalOrd (LWW a) where
     affects _ _ = False
 
 instance Eq a => CmRDT (LWW a) where
-    type Intent   (LWW a) = (a, Time)
+    type Intent   (LWW a) = (a, GlobalTime)
     type Payload  (LWW a) = LWW a
 
     makeOp (newValue, newTimestamp) cur =

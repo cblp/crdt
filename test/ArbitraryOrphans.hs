@@ -18,8 +18,8 @@ import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as Cv
 import           CRDT.LWW (LWW (..))
-import           GlobalTime (Time (..))
-import           LamportTime (Pid (..), Time (..))
+import           GlobalTime (GlobalTime (..))
+import           LamportTime (LamportTime (..), Pid (..))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
@@ -43,8 +43,8 @@ instance Arbitrary a => Arbitrary (PNCounter a) where
 
 deriving instance Arbitrary Pid
 
-deriving instance Arbitrary LamportTime.Time
+deriving instance Arbitrary LamportTime
 
-deriving instance Arbitrary GlobalTime.Time
+deriving instance Arbitrary GlobalTime
 
 deriving instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a)

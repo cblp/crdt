@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module GlobalTime
-    ( Time (..)
+    ( GlobalTime (..)
     , newTime
     , runSystem
       -- * Process
@@ -12,21 +12,21 @@ module GlobalTime
 import           Control.Monad.State.Strict (State, evalState, state)
 import           Numeric.Natural (Natural)
 
-newtype Time = Time Natural
+newtype GlobalTime = GlobalTime Natural
     deriving (Eq, Ord, Show)
 
-newtype Process a = Process (State Time a)
+newtype Process a = Process (State GlobalTime a)
     deriving Functor
 
-newtype System a = System (State Time a)
+newtype System a = System (State GlobalTime a)
     deriving (Applicative, Functor, Monad)
 
 runProcess :: Process a -> System a
 runProcess (Process s) = System s
 
 runSystem :: System a -> a
-runSystem (System s) = evalState s (Time 0)
+runSystem (System s) = evalState s (GlobalTime 0)
 
-newTime :: Process Time
+newTime :: Process GlobalTime
 newTime =
-    Process $ state $ \(Time t) -> let t' = Time (t + 1) in (t', t')
+    Process $ state $ \(GlobalTime t) -> let t' = GlobalTime (t + 1) in (t', t')

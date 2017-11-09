@@ -12,7 +12,7 @@ import           Data.Set (Set)
 import           Test.QuickCheck (Arbitrary, Gen, arbitrary, property, (===))
 
 import           CRDT.LWW (LWW (..), assignP, initialP, query)
-import           GlobalTime (Time, runProcess, runSystem)
+import           GlobalTime (GlobalTime, runProcess, runSystem)
 
 import           Laws (cmrdtLaw, cvrdtLaws, gen2)
 import           QCUtil (genUnique)
@@ -34,11 +34,12 @@ prop_merge_with_former = property $ \(formerValue :: Char) latterValue ->
         pure $ query (state1 <> state2) === latterValue
 
 -- | Generate specified number of 'LWW' with unique timestamps
-genUniquelyTimedLWW :: Arbitrary a => StateT (Set Time) Gen (LWW a)
+genUniquelyTimedLWW :: Arbitrary a => StateT (Set GlobalTime) Gen (LWW a)
 genUniquelyTimedLWW = uncurry LWW <$> genUniquelyTimedValueAndTime
 
 -- | Generate specified number of values with unique timestamps
-genUniquelyTimedValueAndTime :: Arbitrary a => StateT (Set Time) Gen (a, Time)
+genUniquelyTimedValueAndTime
+    :: Arbitrary a => StateT (Set GlobalTime) Gen (a, GlobalTime)
 genUniquelyTimedValueAndTime = (,) <$> lift arbitrary <*> genUnique
 
 swap :: (a, b) -> (b, a)
