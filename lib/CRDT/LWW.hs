@@ -36,11 +36,15 @@ data LWW a = LWW
 
 -- | Merge by choosing more recent timestamp.
 instance Eq a => Semigroup (LWW a) where
-    x@(LWW xv xt) <> y@(LWW yv yt) = case compare xt yt of
-        LT -> y
-        GT -> x
-        EQ ->
-            if xv == yv then x else error "LWW assumes timestamps to be unique"
+    x@(LWW xv xt) <> y@(LWW yv yt) =
+        case compare xt yt of
+            LT -> y
+            GT -> x
+            EQ ->
+                if xv == yv then
+                    x
+                else
+                    error "LWW assumes timestamps to be unique"
 
 -- | See 'CvRDT'
 instance Eq a => Semilattice (LWW a)

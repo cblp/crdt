@@ -36,10 +36,10 @@ semigroupLaw
     => Maybe (Gen (a, a, a)) -> TestTree
 semigroupLaw mgen = testProperty "associativity" $ associativity' mgen
   where
-    associativity (x, y, z :: a) = (x <> y) <> z === x <> (y <> z)
+    associativity x y (z :: a) = (x <> y) <> z === x <> (y <> z)
     associativity' = \case
         Nothing  -> property   associativity
-        Just gen -> forAll gen associativity
+        Just gen -> forAll gen $ uncurry3 associativity
 
 semilatticeLaws
     :: forall a s
@@ -82,3 +82,6 @@ cmrdtLaw mgen = property $ \(s :: Payload op) ->
     generate = fromMaybe ((,) <$> arbitrary <*> arbitrary) mgen
     whenJust Nothing  _ = discard
     whenJust (Just a) f = f a
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (a, b, c) = f a b c

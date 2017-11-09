@@ -6,18 +6,16 @@
 
 module LWW where
 
-import           Control.Monad.State.Strict (StateT, gets, lift, modify)
-import           Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
+import           Control.Monad.State.Strict (StateT, lift)
 import           Data.Semigroup ((<>))
-import qualified Data.Set as Set
-import           Test.QuickCheck (Arbitrary (..), Gen, property, suchThat,
-                                  (===))
+import           Data.Set (Set)
+import           Test.QuickCheck (Arbitrary, Gen, arbitrary, property, (===))
 
 import           CRDT.LWW (LWW (..), assignP, initialP, query)
 import           GlobalTime (Time, runProcess, runSystem)
 
 import           Laws (cmrdtLaw, cvrdtLaws, gen2)
+import           QCUtil (genUnique)
 
 prop_Cm =
     cmrdtLaw @(LWW Char) $ Just $ gen2 (genUniquelyTimedValueAndTime, mempty)
@@ -36,17 +34,12 @@ prop_merge_with_former = property $ \(formerValue :: Char) latterValue ->
         pure $ query (state1 <> state2) === latterValue
 
 -- | Generate specified number of 'LWW' with unique timestamps
-genUniquelyTimedLWW :: Arbitrary a => StateT (Map Time a) Gen (LWW a)
+genUniquelyTimedLWW :: Arbitrary a => StateT (Set Time) Gen (LWW a)
 genUniquelyTimedLWW = uncurry LWW <$> genUniquelyTimedValueAndTime
 
 -- | Generate specified number of values with unique timestamps
-genUniquelyTimedValueAndTime :: Arbitrary a => StateT (Map Time a) Gen (a, Time)
-genUniquelyTimedValueAndTime = do
-    usedTimestamps <- gets Map.keysSet
-    timestamp <- lift $ arbitrary `suchThat` (`Set.notMember` usedTimestamps)
-    value <- lift arbitrary
-    modify $ Map.insert timestamp value
-    pure (value, timestamp)
+genUniquelyTimedValueAndTime :: Arbitrary a => StateT (Set Time) Gen (a, Time)
+genUniquelyTimedValueAndTime = (,) <$> lift arbitrary <*> genUnique
 
 swap :: (a, b) -> (b, a)
 swap (a, b) = (b, a)
