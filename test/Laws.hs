@@ -38,7 +38,7 @@ semigroupLaw mgen = testProperty "associativity" $ associativity' mgen
   where
     associativity x y (z :: a) = (x <> y) <> z === x <> (y <> z)
     associativity' = \case
-        Nothing  -> property   associativity
+        Nothing  -> property associativity
         Just gen -> forAll gen $ uncurry3 associativity
 
 semilatticeLaws
@@ -46,22 +46,22 @@ semilatticeLaws
     . (Arbitrary a, Semilattice a, Eq a, Show a)
     => Maybe (StateT s Gen a, s) -> [TestTree]
 semilatticeLaws mgen =
-    [ semigroupLaw @a $ gen3 <$> mgen
+    [ semigroupLaw $ gen3 <$> mgen
     , testProperty "commutativity" $ commutativity' $ gen2 <$> mgen
     , testProperty "idempotency"   idempotency
     ]
   where
     idempotency (x :: a) = x `merge` x === x
-    commutativity (x, y :: a) = x `merge` y === y `merge` x
+    commutativity x (y :: a) = x `merge` y === y `merge` x
     commutativity' = \case
-        Nothing  -> property   commutativity
-        Just gen -> forAll gen commutativity
+        Nothing  -> property commutativity
+        Just gen -> forAll gen $ uncurry commutativity
 
 cvrdtLaws
     :: forall a s
     . (Arbitrary a, CvRDT a, Eq a, Show a)
     => Maybe (StateT s Gen a, s) -> [TestTree]
-cvrdtLaws = semilatticeLaws @a
+cvrdtLaws = semilatticeLaws
 
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw
