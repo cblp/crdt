@@ -47,5 +47,4 @@ deriving instance Arbitrary LamportTime.Time
 
 deriving instance Arbitrary GlobalTime.Time
 
-instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a) where
-    arbitrary = Cv.TwoPSet <$> arbitrary <*> arbitrary
+deriving instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a)
