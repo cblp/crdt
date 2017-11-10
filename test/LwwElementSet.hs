@@ -2,7 +2,9 @@
 
 {-# LANGUAGE TypeApplications #-}
 
-module LwwElementSet where
+module LwwElementSet
+    ( test_Cv
+    ) where
 
 import           Control.Monad (replicateM)
 import           Control.Monad.State.Strict (StateT, lift)
