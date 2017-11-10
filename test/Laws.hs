@@ -7,13 +7,10 @@
 module Laws
     ( cmrdtLaw
     , cvrdtLaws
-    , gen2
     ) where
 
 import           Control.Monad.State.Strict (StateT, evalStateT)
-import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup, (<>))
-import           Data.Semilattice (Semilattice, merge)
 import           Test.QuickCheck (Arbitrary (..), Gen, Property, discard,
                                   forAll, property, (===), (==>))
 import           Test.Tasty (TestTree)
@@ -21,6 +18,8 @@ import           Test.Tasty.QuickCheck (testProperty)
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
+import           CRDT.HybridClock (runHybridClock, runProcess)
+import           Data.Semilattice (Semilattice, merge)
 
 import           ArbitraryOrphans ()
 
@@ -71,15 +70,17 @@ cmrdtLaw
     , Arbitrary (Intent op), Show (Intent op)
     , Arbitrary (Payload op), Show (Payload op)
     )
-    => Maybe (Gen (Intent op, Intent op)) -> Property
-cmrdtLaw mgen = property $ \(s :: Payload op) ->
-    forAll generate $ \(in1, in2) ->
-    whenJust (makeOp @op in1 s) $ \op1 ->
-    whenJust (makeOp @op in2 s) $ \op2 ->
-    concurrent op1 op2 ==>
-        (apply op1 . apply op2) s === (apply op2 . apply op1) s
+    => Property
+cmrdtLaw = property $ \(s :: Payload op) in1 in2 pid1 pid2 ->
+    whenJust (makeOp @op in1 s) $ \getOp1 ->
+    whenJust (makeOp @op in2 s) $ \getOp2 -> let
+        (op1, op2) =
+            runHybridClock $
+            (,) <$> runProcess pid1 getOp1 <*> runProcess pid2 getOp2
+        in
+        concurrent op1 op2 ==>
+            (apply op1 . apply op2) s === (apply op2 . apply op1) s
   where
-    generate = fromMaybe ((,) <$> arbitrary <*> arbitrary) mgen
     whenJust Nothing  _ = discard
     whenJust (Just a) f = f a
 

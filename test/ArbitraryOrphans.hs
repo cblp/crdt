@@ -17,9 +17,8 @@ import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
 import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as Cv
+import           CRDT.HybridClock (HybridTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
-import           GlobalTime (GlobalTime (..))
-import           LamportTime (LamportTime (..), Pid (..))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
@@ -41,10 +40,9 @@ deriving instance Arbitrary a => Arbitrary (Max a)
 instance Arbitrary a => Arbitrary (PNCounter a) where
     arbitrary = PNCounter <$> arbitrary <*> arbitrary
 
-deriving instance Arbitrary Pid
-
-deriving instance Arbitrary LamportTime
-
-deriving instance Arbitrary GlobalTime
-
 deriving instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a)
+
+instance Arbitrary HybridTime where
+    arbitrary = HybridTime <$> arbitrary <*> arbitrary
+
+deriving instance Arbitrary Pid

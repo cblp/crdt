@@ -8,4 +8,4 @@ import           CRDT.Cm.Counter (Counter)
 
 import           Laws (cmrdtLaw)
 
-prop_Cm = cmrdtLaw @(Counter Int) Nothing
+prop_Cm = cmrdtLaw @(Counter Int)

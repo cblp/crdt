@@ -19,8 +19,8 @@ instance Ord a => CmRDT (TwoPSet a) where
     type Payload (TwoPSet a) = Set a
 
     makeOp op s = case op of
-        Add _     -> Just op
-        Remove a  -> guard (Set.member a s) *> Just op
+        Add _     -> Just (pure op)
+        Remove a  -> guard (Set.member a s) *> Just (pure op)
 
     apply = \case
         Add a     -> Set.insert a

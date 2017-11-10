@@ -14,11 +14,11 @@ import           Prelude hiding (lookup)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Semigroup (Semigroup (..))
+
+import           CRDT.HybridClock (HybridTime)
 import           Data.Semilattice (Semilattice)
 
-import           GlobalTime (GlobalTime)
-
-newtype LwwElementSet a = LES (Map a (GlobalTime, Bool))
+newtype LwwElementSet a = LES (Map a (HybridTime, Bool))
     deriving (Eq, Show)
 
 instance Ord a => Semigroup (LwwElementSet a) where
@@ -26,7 +26,7 @@ instance Ord a => Semigroup (LwwElementSet a) where
 
 instance Ord a => Semilattice (LwwElementSet a)
 
-lastWriteWins :: Eq a => (GlobalTime, a) -> (GlobalTime, a) -> (GlobalTime, a)
+lastWriteWins :: Eq a => (HybridTime, a) -> (HybridTime, a) -> (HybridTime, a)
 lastWriteWins e1@(t1, a1) e2@(t2, a2) =
     case compare t1 t2 of
         LT -> e2
@@ -40,10 +40,10 @@ lastWriteWins e1@(t1, a1) e2@(t2, a2) =
 initial :: LwwElementSet a
 initial = LES Map.empty
 
-add :: Ord a => a -> GlobalTime -> LwwElementSet a -> LwwElementSet a
+add :: Ord a => a -> HybridTime -> LwwElementSet a -> LwwElementSet a
 add e t (LES m) = LES (Map.insertWith lastWriteWins e (t, True) m)
 
-remove :: Ord a => a -> GlobalTime -> LwwElementSet a -> LwwElementSet a
+remove :: Ord a => a -> HybridTime -> LwwElementSet a -> LwwElementSet a
 remove e t (LES m) = LES (Map.insertWith lastWriteWins e (t, False) m)
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool
