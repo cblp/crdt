@@ -62,7 +62,6 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     type Payload op
 
     -- | Generate an update to the local and remote replicas.
-    -- Doesn't have sense if 'precondition' is false.
     --
     -- Returns 'Nothing' if the intended operation is not applicable.
     makeOp :: Intent op -> Payload op -> Maybe (Process op)
