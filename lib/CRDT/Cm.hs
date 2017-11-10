@@ -8,6 +8,8 @@ module CRDT.Cm
     , concurrent
     ) where
 
+import           CRDT.HybridClock (Process)
+
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
 class CausalOrd a where
@@ -63,10 +65,11 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     -- Doesn't have sense if 'precondition' is false.
     --
     -- Returns 'Nothing' if the intended operation is not applicable.
-    makeOp :: Intent op -> Payload op -> Maybe op
+    makeOp :: Intent op -> Payload op -> Maybe (Process op)
 
-    default makeOp :: Intent op ~ op => Intent op -> Payload op -> Maybe op
-    makeOp i _ = Just i
+    default makeOp
+        :: Intent op ~ op => Intent op -> Payload op -> Maybe (Process op)
+    makeOp i _ = Just $ pure i
 
     -- | Apply an update to the payload.
     -- An invalid update must be ignored.

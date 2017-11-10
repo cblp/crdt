@@ -4,43 +4,49 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module LWW where
+module LWW
+    ( prop_Cm
+    , prop_assign
+    , prop_merge_with_former
+    , test_Cv
+    ) where
 
-import           Control.Monad.State.Strict (StateT, lift)
+import           Control.Monad.State.Strict (StateT, get, lift)
 import           Data.Semigroup ((<>))
 import           Data.Set (Set)
-import           Test.QuickCheck (Arbitrary, Gen, arbitrary, property, (===))
+import qualified Data.Set as Set
+import           Test.QuickCheck (Arbitrary, Gen, arbitrary, counterexample,
+                                  property, (===))
 
-import           CRDT.LWW (LWW (..), assignP, initialP, query)
-import           GlobalTime (GlobalTime, runProcess, runSystem)
+import           CRDT.HybridClock (HybridClock (..), HybridTime, runHybridClock,
+                                   runProcess)
+import           CRDT.LWW (LWW (..), assign, initial, query)
 
-import           Laws (cmrdtLaw, cvrdtLaws, gen2)
+import           Laws (cmrdtLaw, cvrdtLaws)
 import           QCUtil (genUnique)
 
-prop_Cm =
-    cmrdtLaw @(LWW Char) $ Just $ gen2 (genUniquelyTimedValueAndTime, mempty)
+prop_Cm = cmrdtLaw @(LWW Char)
 
-test_Cv = cvrdtLaws @(LWW Char) $ Just (genUniquelyTimedLWW, mempty)
+test_Cv = cvrdtLaws @(LWW Char) $ Just (genUniquelyTimedLWW, Set.empty)
 
-prop_assign = property $ \(formerValue :: Char) latterValue -> runSystem $ do
-    state1 <- runProcess $ initialP formerValue
-    state2 <- runProcess $ assignP latterValue state1
-    pure $ query state2 === latterValue
+prop_assign = property $ \pid1 pid2 (formerValue :: Char) latterValue ->
+    runHybridClock $ do
+        state1 <- runProcess pid1 $ initial formerValue
+        state2 <- runProcess pid2 $ assign latterValue state1
+        pure $ query state2 === latterValue
 
-prop_merge_with_former = property $ \(formerValue :: Char) latterValue ->
-    runSystem $ do
-        state1 <- runProcess $ initialP formerValue
-        state2 <- runProcess $ assignP latterValue state1
-        pure $ query (state1 <> state2) === latterValue
+prop_merge_with_former = property $
+    \pid1 pid2 (formerValue :: Char) latterValue ->
+    runHybridClock $ do
+        state1 <- runProcess pid1 $ initial formerValue
+        state2 <- runProcess pid2 $ assign latterValue state1
+        clock <- HybridClock get
+        pure $
+            counterexample ("state1 = " ++ show state1) $
+            counterexample ("state2 = " ++ show state2) $
+            counterexample ("clock = " ++ show clock) $
+            query (state1 <> state2) === latterValue
 
 -- | Generate specified number of 'LWW' with unique timestamps
-genUniquelyTimedLWW :: Arbitrary a => StateT (Set GlobalTime) Gen (LWW a)
-genUniquelyTimedLWW = uncurry LWW <$> genUniquelyTimedValueAndTime
-
--- | Generate specified number of values with unique timestamps
-genUniquelyTimedValueAndTime
-    :: Arbitrary a => StateT (Set GlobalTime) Gen (a, GlobalTime)
-genUniquelyTimedValueAndTime = (,) <$> lift arbitrary <*> genUnique
-
-swap :: (a, b) -> (b, a)
-swap (a, b) = (b, a)
+genUniquelyTimedLWW :: Arbitrary a => StateT (Set HybridTime) Gen (LWW a)
+genUniquelyTimedLWW = LWW <$> lift arbitrary <*> genUnique
