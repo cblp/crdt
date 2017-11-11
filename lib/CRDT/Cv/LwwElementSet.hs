@@ -15,7 +15,7 @@ import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Semigroup (Semigroup (..))
 
-import           CRDT.HybridClock (Process)
+import           CRDT.LamportClock (Process)
 import           CRDT.LWW (LWW)
 import qualified CRDT.LWW as LWW
 import           Data.Semilattice (Semilattice)

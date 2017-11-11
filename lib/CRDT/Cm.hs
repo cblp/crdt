@@ -8,7 +8,7 @@ module CRDT.Cm
     , concurrent
     ) where
 
-import           CRDT.HybridClock (Process)
+import           CRDT.LamportClock (Process)
 
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.

@@ -1,14 +1,14 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module CRDT.HybridClock
+module CRDT.LamportClock
     ( Pid (..)
-    -- * Hybrid timestamp (for a single process)
-    , HybridTime (..)
+    -- * Lamport timestamp (for a single process)
+    , LamportTime (..)
     , getTime
     , advance
-    -- * Hybrid clock (for a whole multi-process system)
-    , HybridClock (..)
-    , runHybridClock
+    -- * Lamport clock (for a whole multi-process system)
+    , LamportClock (..)
+    , runLamportClock
     -- * Process
     , Process (..)
     , runProcess
@@ -24,7 +24,7 @@ import           Numeric.Natural (Natural)
 
 type LocalTime = Natural
 
-data HybridTime = HybridTime !LocalTime !Pid
+data LamportTime = LamportTime !LocalTime !Pid
     deriving (Eq, Ord, Show)
 
 -- | Unique process identifier
@@ -33,31 +33,31 @@ newtype Pid = Pid Int
 
 -- | Key is 'Pid'. Non-present value is equivalent to 0.
 -- TODO(cblp, 2017-09-28) Use bounded-intmap
-newtype HybridClock a = HybridClock (State (IntMap LocalTime) a)
+newtype LamportClock a = LamportClock (State (IntMap LocalTime) a)
     deriving (Applicative, Functor, Monad)
 
-newtype Process a = Process (ReaderT Pid HybridClock a)
+newtype Process a = Process (ReaderT Pid LamportClock a)
     deriving (Applicative, Functor, Monad)
 
-getTime :: Process HybridTime
+getTime :: Process LamportTime
 getTime = Process $ do
     pid <- ask
     time <- lift $ preIncrementAt pid
-    pure $ HybridTime time pid
+    pure $ LamportTime time pid
 
-runHybridClock :: HybridClock a -> a
-runHybridClock (HybridClock action) = evalState action mempty
+runLamportClock :: LamportClock a -> a
+runLamportClock (LamportClock action) = evalState action mempty
 
-runProcess :: Pid -> Process a -> HybridClock a
+runProcess :: Pid -> Process a -> LamportClock a
 runProcess pid (Process action) = runReaderT action pid
 
-preIncrementAt :: Pid -> HybridClock LocalTime
+preIncrementAt :: Pid -> LamportClock LocalTime
 preIncrementAt (Pid pid) =
-    HybridClock . state $ \m -> let
+    LamportClock . state $ \m -> let
         lt' = succ . fromMaybe 0 $ IntMap.lookup pid m
         in (lt', IntMap.insert pid lt' m)
 
-advance :: HybridTime -> Process ()
-advance (HybridTime time _) = Process $ do
+advance :: LamportTime -> Process ()
+advance (LamportTime time _) = Process $ do
     Pid pid <- ask
-    lift . HybridClock . modify $ IntMap.insertWith max pid time
+    lift . LamportClock . modify $ IntMap.insertWith max pid time

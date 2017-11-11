@@ -18,7 +18,7 @@ import           Test.Tasty.QuickCheck (testProperty)
 
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cv (CvRDT)
-import           CRDT.HybridClock (runHybridClock, runProcess)
+import           CRDT.LamportClock (runLamportClock, runProcess)
 import           Data.Semilattice (Semilattice, merge)
 
 import           ArbitraryOrphans ()
@@ -75,7 +75,7 @@ cmrdtLaw = property $ \(s :: Payload op) in1 in2 pid1 pid2 ->
     whenJust (makeOp @op in1 s) $ \getOp1 ->
     whenJust (makeOp @op in2 s) $ \getOp2 -> let
         (op1, op2) =
-            runHybridClock $
+            runLamportClock $
             (,) <$> runProcess pid1 getOp1 <*> runProcess pid2 getOp2
         in
         concurrent op1 op2 ==>

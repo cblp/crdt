@@ -14,7 +14,7 @@ import qualified Data.Set as Set
 import           Test.QuickCheck (Arbitrary, Gen, arbitrary)
 
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
-import           CRDT.HybridClock (HybridTime)
+import           CRDT.LamportClock (LamportTime)
 
 import           Laws (cvrdtLaws)
 import           LWW (genUniquelyTimedLWW)
@@ -24,7 +24,7 @@ test_Cv =
 
 -- | Generate specified number of 'LWW' with unique timestamps
 genUniquelyTimedLES
-    :: (Arbitrary a, Ord a) => StateT (Set HybridTime) Gen (LwwElementSet a)
+    :: (Arbitrary a, Ord a) => StateT (Set LamportTime) Gen (LwwElementSet a)
 genUniquelyTimedLES = do
     values <- lift arbitrary
     tags <- replicateM (length values) genUniquelyTimedLWW

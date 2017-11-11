@@ -14,7 +14,7 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           CRDT.HybridClock (HybridTime, Process, advance, getTime)
+import           CRDT.LamportClock (LamportTime, Process, advance, getTime)
 
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
@@ -25,7 +25,7 @@ import           CRDT.HybridClock (HybridTime, Process, advance, getTime)
 -- the former’s timestamp is less than the latter’s.
 data LWW a = LWW
     { value :: !a
-    , time  :: !HybridTime
+    , time  :: !LamportTime
     }
     deriving (Eq, Show)
 
