@@ -17,7 +17,7 @@ import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
 import           CRDT.HybridClock (HybridTime)
 
 import           Laws (cvrdtLaws)
-import           QCUtil (genUnique)
+import           LWW (genUniquelyTimedLWW)
 
 test_Cv =
     cvrdtLaws @(LwwElementSet Char) $ Just (genUniquelyTimedLES, Set.empty)
@@ -27,5 +27,5 @@ genUniquelyTimedLES
     :: (Arbitrary a, Ord a) => StateT (Set HybridTime) Gen (LwwElementSet a)
 genUniquelyTimedLES = do
     values <- lift arbitrary
-    tags <- replicateM (length values) $ (,) <$> genUnique <*> lift arbitrary
+    tags <- replicateM (length values) genUniquelyTimedLWW
     pure $ LES $ Map.fromList $ zip values tags

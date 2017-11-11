@@ -5,7 +5,8 @@
 {-# LANGUAGE TypeApplications #-}
 
 module LWW
-    ( prop_Cm
+    ( genUniquelyTimedLWW
+    , prop_Cm
     , prop_assign
     , prop_merge_with_former
     , test_Cv
