@@ -57,7 +57,7 @@ Idempotency doesn't need to hold.
 
 class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     type Intent op
-    type Intent op = op -- default case
+    type Intent op = op -- common case
 
     type Payload op
 

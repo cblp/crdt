@@ -15,9 +15,10 @@ import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Semigroup (Semigroup (..))
 
-import           CRDT.HybridClock (HybridTime)
+import           CRDT.HybridClock (HybridTime, Process, getTime)
 import           Data.Semilattice (Semilattice)
 
+-- TODO LES (Map a (LWW Bool))?
 newtype LwwElementSet a = LES (Map a (HybridTime, Bool))
     deriving (Eq, Show)
 
@@ -40,11 +41,15 @@ lastWriteWins e1@(t1, a1) e2@(t2, a2) =
 initial :: LwwElementSet a
 initial = LES Map.empty
 
-add :: Ord a => a -> HybridTime -> LwwElementSet a -> LwwElementSet a
-add e t (LES m) = LES (Map.insertWith lastWriteWins e (t, True) m)
+add :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
+add e (LES m) = do
+    t <- getTime
+    pure . LES $ Map.insertWith lastWriteWins e (t, True) m
 
-remove :: Ord a => a -> HybridTime -> LwwElementSet a -> LwwElementSet a
-remove e t (LES m) = LES (Map.insertWith lastWriteWins e (t, False) m)
+remove :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
+remove e (LES m) = do
+    t <- getTime
+    pure . LES $ Map.insertWith lastWriteWins e (t, False) m
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool
 lookup e (LES m) = Map.member e m
