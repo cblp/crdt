@@ -13,6 +13,10 @@ import           CRDT.Cv.TwoPSet (TwoPSet (..), add, isKnown, lookup, remove)
 
 import           Laws (cvrdtLaws)
 
+-- | Difference from LwwElementSet and ORSet
+prop_removal_bias (s :: TwoPSet Char) x =
+    not . lookup x . add x . remove x $ add x s
+
 -- TODO test addition after and not-after removal
 
 prop_add_first (s :: TwoPSet Char) x = not (isKnown x s) ==> lookup x (add x s)

@@ -29,3 +29,5 @@ genUniquelyTimedLES = do
     values <- lift arbitrary
     tags <- replicateM (length values) genUniquelyTimedLWW
     pure $ LES $ Map.fromList $ zip values tags
+
+-- TODO difference from TwoPSet and ORSet

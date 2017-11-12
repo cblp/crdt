@@ -32,7 +32,6 @@ newtype Pid = Pid Int
     deriving (Eq, Ord, Show)
 
 -- | Key is 'Pid'. Non-present value is equivalent to 0.
--- TODO(cblp, 2017-09-28) Use bounded-intmap
 newtype LamportClock a = LamportClock (State (IntMap LocalTime) a)
     deriving (Applicative, Functor, Monad)
 
