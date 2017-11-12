@@ -4,6 +4,7 @@ module CRDT.Cv.TwoPSet
     , initial
     , lookup
     , remove
+    , isKnown
     ) where
 
 import           Prelude hiding (lookup)
@@ -34,3 +35,7 @@ lookup e (TwoPSet m) = fromMaybe False $ Map.lookup e m
 
 remove :: Ord a => a -> TwoPSet a -> TwoPSet a
 remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m
+
+-- | XXX Internal
+isKnown :: Ord a => a -> TwoPSet a -> Bool
+isKnown e (TwoPSet m) = Map.member e m
