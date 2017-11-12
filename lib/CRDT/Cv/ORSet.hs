@@ -18,7 +18,7 @@ import qualified Data.Set as Set
 import           CRDT.LamportClock (Pid)
 
 newtype ORSet a = ORSet (Map Pid (Set a))
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Show)
 
 instance Ord a => Semigroup (ORSet a) where
     ORSet map1 <> ORSet map2 =
