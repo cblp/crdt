@@ -15,7 +15,7 @@ import           Data.Semilattice (Semilattice)
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-import           LamportClock (Pid)
+import           CRDT.LamportClock (Pid)
 
 newtype ORSet a = ORSet (Map Pid (Set a))
     deriving (Eq, Ord, Show)
