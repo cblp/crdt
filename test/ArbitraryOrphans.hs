@@ -12,6 +12,7 @@ import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
 import           CRDT.Cm.TwoPSet (TwoPSet (..))
 import qualified CRDT.Cm.TwoPSet as TwoPSet
+import           CRDT.Cv.ORSet (ORSet (..))
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
@@ -31,6 +32,8 @@ instance Arbitrary a => Arbitrary (TwoPSet a) where
     arbitrary = oneof [TwoPSet.Add <$> arbitrary, Remove <$> arbitrary]
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
+
+deriving instance (Arbitrary a, Ord a) => Arbitrary (ORSet a)
 
 deriving instance Arbitrary a => Arbitrary (Max a)
 
