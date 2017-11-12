@@ -8,36 +8,29 @@ module CRDT.Cv.TwoPSet
 
 import           Prelude hiding (lookup)
 
-import           CRDT.Cv.GSet (GSet)
-import qualified CRDT.Cv.GSet as GSet
+import           Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup ((<>)))
+
 import           Data.Semilattice (Semilattice)
 
-data TwoPSet a = TwoPSet
-    { additions :: GSet a
-    , removals :: GSet a
-    }
-    deriving (Eq, Ord, Show)
+newtype TwoPSet a = TwoPSet (Map a Bool)
+    deriving (Eq, Show)
 
 instance Ord a => Semigroup (TwoPSet a) where
-    TwoPSet{additions = a1, removals = r1} <> TwoPSet a2 r2 =
-        TwoPSet (a1 <> a2) (r1 <> r2)
+    TwoPSet m1 <> TwoPSet m2 = TwoPSet (Map.unionWith (&&) m1 m2)
 
 instance Ord a => Semilattice (TwoPSet a)
 
 add :: Ord a => a -> TwoPSet a -> TwoPSet a
-add e (TwoPSet a r) = TwoPSet (GSet.add e a) r
+add e (TwoPSet m) = TwoPSet (Map.insertWith (&&) e True m)
 
 initial :: TwoPSet a
-initial = TwoPSet GSet.initial GSet.initial
+initial = TwoPSet Map.empty
 
 lookup :: Ord a => a -> TwoPSet a -> Bool
-lookup e (TwoPSet a r) = GSet.lookup e a && not (GSet.lookup e r)
+lookup e (TwoPSet m) = fromMaybe False $ Map.lookup e m
 
 remove :: Ord a => a -> TwoPSet a -> TwoPSet a
-remove e tpset =
-    if GSet.lookup e a then
-        TwoPSet a (GSet.add e (removals tpset))
-    else
-        tpset
-  where a = additions tpset
+remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m

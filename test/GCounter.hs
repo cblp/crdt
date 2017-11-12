@@ -11,7 +11,7 @@ import           CRDT.Cv.GCounter (GCounter (..), increment, query)
 
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(GCounter Int)
+test_Cv = cvrdtLaws @(GCounter Int) Nothing
 
 prop_increment = property $ \(counter :: GCounter Int) i ->
     query (increment i counter) === succ (query counter)
