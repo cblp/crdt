@@ -7,6 +7,8 @@ module CRDT.LWW
     , initial
     , assign
     , query
+      -- * Implementation detail
+    , advanceFromLWW
     ) where
 
 import           Data.Semigroup (Semigroup, (<>))
@@ -45,14 +47,14 @@ instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
 initial :: a -> Process (LWW a)
-initial v = LWW v <$> getTime
+initial value = LWW value <$> getTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
 assign :: a -> LWW a -> Process (LWW a)
-assign v LWW{time} = do
-    advance time
-    LWW v <$> getTime
+assign value old = do
+    advanceFromLWW old
+    initial value
 
 -- | Query state
 query :: LWW a -> a
@@ -68,11 +70,9 @@ instance Eq a => CmRDT (LWW a) where
     type Intent  (LWW a) = a
     type Payload (LWW a) = LWW a
 
-    makeOp newValue this = Just $ do
-        advance thisTimestamp
-        newTime <- getTime
-        pure LWW{value = newValue, time = newTime}
-      where
-        LWW{time = thisTimestamp} = this
+    makeOp value = Just . assign value
 
     apply = (<>)
+
+advanceFromLWW :: LWW a -> Process ()
+advanceFromLWW LWW{time} = advance time

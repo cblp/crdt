@@ -11,12 +11,14 @@ module CRDT.Cv.LwwElementSet
 
 import           Prelude hiding (lookup)
 
+import           Data.Foldable (for_)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup (..))
 
 import           CRDT.LamportClock (Process)
-import           CRDT.LWW (LWW)
+import           CRDT.LWW (LWW, advanceFromLWW)
 import qualified CRDT.LWW as LWW
 import           Data.Semilattice (Semilattice)
 
@@ -32,14 +34,19 @@ initial :: LwwElementSet a
 initial = LES Map.empty
 
 add :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
-add value (LES m) = do
+add value old@(LES m) = do
+    advanceFromLES old
     tag <- LWW.initial True
     pure . LES $ Map.insertWith (<>) value tag m
 
 remove :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
-remove value (LES m) = do
+remove value old@(LES m) = do
+    advanceFromLES old
     tag <- LWW.initial False
     pure . LES $ Map.insertWith (<>) value tag m
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool
-lookup value (LES m) = Map.member value m
+lookup value (LES m) = fromMaybe False $ LWW.query <$> Map.lookup value m
+
+advanceFromLES :: LwwElementSet a -> Process ()
+advanceFromLES (LES m) = for_ m advanceFromLWW
