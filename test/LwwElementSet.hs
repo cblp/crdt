@@ -17,7 +17,7 @@ import           Control.Monad.State.Strict (StateT, lift)
 import qualified Data.Map.Strict as Map
 import           Data.Set (Set)
 import qualified Data.Set as Set
-import           Test.QuickCheck (Arbitrary, Gen, arbitrary, counterexample)
+import           Test.QuickCheck (Arbitrary, Gen, arbitrary)
 
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..), add, lookup, remove)
 import           CRDT.LamportClock (LamportTime, runLamportClock, runProcess)
@@ -36,24 +36,23 @@ genUniquelyTimedLES = do
     tags <- replicateM (length values) genUniquelyTimedLWW
     pure $ LES $ Map.fromList $ zip values tags
 
--- | TODO try different pids
-prop_add (s :: LwwElementSet Char) x pid =
-    runLamportClock $ runProcess pid $ lookup x <$> add x s
+prop_add (s :: LwwElementSet Char) x pid1 =
+    runLamportClock $ do
+        s1 <- runProcess pid1 $ add x s
+        pure $ lookup x s1
 
--- | TODO try different pids
 prop_remove (s :: LwwElementSet Char) x pid1 pid2 =
     runLamportClock $ do
         s1 <- runProcess pid1 $ add x s
         s2 <- runProcess pid2 $ remove x s1
-        pure $
-            counterexample ("add -> s1 = " ++ show s1) $
-            counterexample ("remove -> s2 = " ++ show s2) $
-            not $ lookup x s2
+        pure . not $ lookup x s2
 
 -- | Difference from TwoPSet -- no removal bias
--- | TODO try different pids
-prop_no_removal_bias (s :: LwwElementSet Char) x pid =
-    runLamportClock $
-    runProcess pid $ lookup x <$> (add x =<< remove x =<< add x s)
+prop_no_removal_bias (s :: LwwElementSet Char) x pid1 pid2 pid3 =
+    runLamportClock $ do
+        s1 <- runProcess pid1 $ add x s
+        s2 <- runProcess pid2 $ remove x s1
+        s3 <- runProcess pid3 $ add x s2
+        pure $ lookup x s3
 
 -- TODO difference from ORSet -- other replica can accidentally delete x
