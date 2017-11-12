@@ -7,6 +7,7 @@ module LwwElementSet
     ( prop_add
     , prop_no_removal_bias
     , prop_remove
+    , prop_they_accidentally_delete_our_value
     , test_Cv
     ) where
 
@@ -15,6 +16,7 @@ import           Prelude hiding (lookup)
 import           Control.Monad (replicateM)
 import           Control.Monad.State.Strict (StateT, lift)
 import qualified Data.Map.Strict as Map
+import           Data.Semigroup ((<>))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 import           Test.QuickCheck (Arbitrary, Gen, arbitrary)
@@ -55,4 +57,9 @@ prop_no_removal_bias (s :: LwwElementSet Char) x pid1 pid2 pid3 =
         s3 <- runProcess pid3 $ add x s2
         pure $ lookup x s3
 
--- TODO difference from ORSet -- other replica can accidentally delete x
+-- | Difference from ORSet -- other replica can accidentally delete x
+prop_they_accidentally_delete_our_value (s :: LwwElementSet Char) x pid1 pid2 =
+    runLamportClock $ do
+        s1 <- runProcess pid1 $ add x s
+        s2 <- runProcess pid2 $ remove x =<< add x s
+        pure . not . lookup x $ s1 <> s2

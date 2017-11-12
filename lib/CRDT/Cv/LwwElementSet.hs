@@ -14,7 +14,6 @@ import           Prelude hiding (lookup)
 import           Data.Foldable (for_)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup (..))
 
 import           CRDT.LamportClock (Process)
@@ -46,7 +45,7 @@ remove value old@(LES m) = do
     pure . LES $ Map.insertWith (<>) value tag m
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool
-lookup value (LES m) = fromMaybe False $ LWW.query <$> Map.lookup value m
+lookup value (LES m) = maybe False LWW.query $ Map.lookup value m
 
 advanceFromLES :: LwwElementSet a -> Process ()
 advanceFromLES (LES m) = for_ m advanceFromLWW
