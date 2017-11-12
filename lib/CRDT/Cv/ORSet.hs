@@ -62,4 +62,4 @@ remove pid e (ORSet storage) =
 
 lookup :: Ord a => a -> ORSet a -> Bool
 lookup e (ORSet storage) =
-    Map.foldr (\a b -> maybe False snd Map.lookup e a || b) False storage
+    Map.foldr (\a b -> b || maybe False snd (Map.lookup e a)) False storage
