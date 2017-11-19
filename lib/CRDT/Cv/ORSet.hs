@@ -23,6 +23,12 @@ type Tag = (Pid, Natural)
 newtype ORSet a = ORSet (Map a (Map Tag Bool))
     deriving (Eq, Show)
 
+overORSet :: (Map a (Map Tag Bool) -> Map b (Map Tag Bool)) -> ORSet a -> ORSet b
+overORSet f (ORSet s) = ORSet (f s)
+
+unpack :: ORSet a -> Map a (Map Tag Bool)
+unpack (ORSet s) = s
+
 instance Ord a => Semigroup (ORSet a) where
     ORSet s1 <> ORSet s2 = ORSet $ Map.unionWith (Map.unionWith (&&)) s1 s2
 
@@ -32,13 +38,13 @@ initial :: ORSet a
 initial = ORSet Map.empty
 
 add :: Ord a => Pid -> a -> ORSet a -> ORSet a
-add pid e (ORSet s) = ORSet (Map.alter add1 e s)
+add pid = overORSet . Map.alter add1
   where
     add1 = Just . add2 . fromMaybe Map.empty
     add2 tags = Map.insert (pid, fromIntegral $ length tags) True tags
 
 remove :: Ord a => a -> ORSet a -> ORSet a
-remove e (ORSet s) = ORSet $ Map.adjust ($> False) e s
+remove = overORSet . Map.adjust ($> False)
 
 lookup :: Ord a => a -> ORSet a -> Bool
-lookup e (ORSet s) = or . fromMaybe Map.empty $ Map.lookup e s
+lookup e = or . fromMaybe Map.empty . Map.lookup e . unpack
