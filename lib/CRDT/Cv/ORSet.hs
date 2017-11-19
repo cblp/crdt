@@ -8,30 +8,23 @@ module CRDT.Cv.ORSet
 
 import           Prelude hiding (lookup)
 
+import           Data.Functor (($>))
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Semigroup (Semigroup ((<>)))
-import           Data.Semilattice (Semilattice)
-import           Numeric.Natural(Natural)
+import           Data.Maybe (fromMaybe)
+import           Data.Semigroup (Semigroup, (<>))
+import           Numeric.Natural (Natural)
 
 import           CRDT.LamportClock (Pid)
+import           Data.Semilattice (Semilattice)
 
-type Tag = Natural
+type Tag = (Pid, Natural)
 
-newtype ORSet a = ORSet (Map Pid (Map a (Tag, Bool)))
+newtype ORSet a = ORSet (Map a (Map Tag Bool))
     deriving (Eq, Show)
 
 instance Ord a => Semigroup (ORSet a) where
-    ORSet map1 <> ORSet map2 =
-        ORSet (Map.unionWith (Map.unionWith lww) map1 map2)
-      where
-        lww a b =
-            let (f1, s1) = a
-                (f2, s2) = b in
-            case compare f1 f2 of
-                EQ -> (f1, s1 && s2)
-                LT -> a
-                GT -> b
+    ORSet s1 <> ORSet s2 = ORSet $ Map.unionWith (Map.unionWith (&&)) s1 s2
 
 instance Ord a => Semilattice (ORSet a)
 
@@ -39,27 +32,13 @@ initial :: ORSet a
 initial = ORSet Map.empty
 
 add :: Ord a => Pid -> a -> ORSet a -> ORSet a
-add pid e (ORSet storage) =
-    ORSet (Map.alter add1 pid storage)
+add pid e (ORSet s) = ORSet (Map.alter add1 e s)
   where
-    lww a =
-        if snd a then
-            a
-        else
-            (fst a + 1, True)
-    add1 x = Just (maybe (Map.singleton e (0, True)) (Map.alter add2 e) x)
-    add2 x = Just (maybe (0, True) lww x)
+    add1 = Just . add2 . fromMaybe Map.empty
+    add2 tags = Map.insert (pid, fromIntegral $ length tags) True tags
 
-remove :: Ord a => Pid -> a -> ORSet a -> ORSet a
-remove pid e (ORSet storage) =
-    ORSet (Map.adjust (Map.adjust lww e) pid storage)
-  where
-    lww a =
-        if snd a then
-            (fst a, False)
-        else
-            a
+remove :: Ord a => a -> ORSet a -> ORSet a
+remove e (ORSet s) = ORSet $ Map.adjust ($> False) e s
 
 lookup :: Ord a => a -> ORSet a -> Bool
-lookup e (ORSet storage) =
-    Map.foldr (\a b -> b || maybe False snd (Map.lookup e a)) False storage
+lookup e (ORSet s) = or . fromMaybe Map.empty $ Map.lookup e s

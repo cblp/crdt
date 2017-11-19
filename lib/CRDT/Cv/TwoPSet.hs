@@ -4,6 +4,7 @@ module CRDT.Cv.TwoPSet
     , initial
     , lookup
     , remove
+    , singleton
     , isKnown
     ) where
 
@@ -36,6 +37,9 @@ lookup e (TwoPSet m) = fromMaybe False $ Map.lookup e m
 remove :: Ord a => a -> TwoPSet a -> TwoPSet a
 remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m
 
--- | XXX Internal
+singleton :: Ord a => a -> TwoPSet a
+singleton a = add a initial
+
+-- | XXX Internal TODO remove
 isKnown :: Ord a => a -> TwoPSet a -> Bool
 isKnown e (TwoPSet m) = Map.member e m

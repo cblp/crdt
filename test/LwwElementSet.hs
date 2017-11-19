@@ -49,7 +49,7 @@ prop_remove (s :: LwwElementSet Char) x pid1 pid2 =
         s2 <- runProcess pid2 $ remove x s1
         pure . not $ lookup x s2
 
--- | Difference from TwoPSet -- no removal bias
+-- | Difference from 'TwoPSet' -- no removal bias
 prop_no_removal_bias (s :: LwwElementSet Char) x pid1 pid2 pid3 =
     runLamportClock $ do
         s1 <- runProcess pid1 $ add x s
@@ -57,7 +57,7 @@ prop_no_removal_bias (s :: LwwElementSet Char) x pid1 pid2 pid3 =
         s3 <- runProcess pid3 $ add x s2
         pure $ lookup x s3
 
--- | Difference from ORSet -- other replica can accidentally delete x
+-- | Difference from 'ORSet' -- other replica can accidentally delete x
 prop_they_accidentally_delete_our_value (s :: LwwElementSet Char) x pid1 pid2 =
     runLamportClock $ do
         s1 <- runProcess pid1 $ add x s

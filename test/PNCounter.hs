@@ -5,7 +5,7 @@
 
 module PNCounter where
 
-import           Test.Tasty.QuickCheck (property, (===))
+import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.PNCounter (PNCounter (..), decrement, increment, query)
 
@@ -14,8 +14,8 @@ import           Laws (cvrdtLaws)
 
 test_Cv = cvrdtLaws @(PNCounter Int) Nothing
 
-prop_increment = property $ \(counter :: PNCounter Int) i ->
-    query (increment i counter) === succ (query counter)
+prop_increment (counter :: PNCounter Int) pid =
+    query (increment pid counter) === succ (query counter)
 
-prop_decrement = property $ \(counter :: PNCounter Int) i ->
-    query (decrement i counter) === pred (query counter)
+prop_decrement (counter :: PNCounter Int) pid =
+    query (decrement pid counter) === pred (query counter)

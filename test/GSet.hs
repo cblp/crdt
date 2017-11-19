@@ -5,8 +5,6 @@
 
 module GSet where
 
-import           Test.Tasty.QuickCheck (property)
-
 import qualified CRDT.Cm.GSet as Cm
 import qualified CRDT.Cv.GSet as Cv
 
@@ -16,4 +14,4 @@ prop_Cm = cmrdtLaw @(Cm.GSet Char)
 
 test_Cv = cvrdtLaws @(Cv.GSet Char) Nothing
 
-prop_add = property $ \(set :: Cv.GSet Char) i -> Cv.lookup i (Cv.add i set)
+prop_add (x :: Char) = Cv.lookup x . Cv.add x

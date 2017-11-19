@@ -5,7 +5,7 @@
 
 module GCounter where
 
-import           Test.Tasty.QuickCheck (property, (===))
+import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.GCounter (GCounter (..), increment, query)
 
@@ -13,5 +13,5 @@ import           Laws (cvrdtLaws)
 
 test_Cv = cvrdtLaws @(GCounter Int) Nothing
 
-prop_increment = property $ \(counter :: GCounter Int) i ->
-    query (increment i counter) === succ (query counter)
+prop_increment (counter :: GCounter Int) pid =
+    query (increment pid counter) === succ (query counter)

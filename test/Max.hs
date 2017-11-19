@@ -5,14 +5,13 @@
 
 module Max where
 
-import           Test.Tasty.QuickCheck (property, (===))
+import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.Max (Max, initial, query)
 import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(Max Int) Nothing
+test_Cv = cvrdtLaws @(Max Char) Nothing
 
-prop_merge = property $ \(x :: Int) y ->
-    query (initial x `merge` initial y) === max x y
+prop_merge (x :: Char) y = query (initial x `merge` initial y) === max x y
