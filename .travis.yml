@@ -31,7 +31,7 @@ matrix:
         - $STACK build --test --only-dependencies
       script:
         # Build the package, its tests, and its docs and run the tests
-        - test/script --haddock --no-haddock-deps
+        - test/script
     - compiler: hlint
       install:
         - $STACK build hlint
