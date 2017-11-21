@@ -28,6 +28,13 @@ library:
   source-dirs: lib
 
 tests:
+  proof:
+    dependencies:
+      - singletons >= 2.3  # injective Demote
+      - text
+    main: DepHask.hs
+    source-dirs: proof
+
   test:
     dependencies:
       - QuickCheck
