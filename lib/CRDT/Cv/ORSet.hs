@@ -8,7 +8,6 @@ module CRDT.Cv.ORSet
 
 import           Prelude hiding (lookup)
 
-import           Data.Functor (($>))
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
@@ -43,7 +42,7 @@ add a (ORSet s) = do
     add2 pid tags = Map.insert (pid, fromIntegral $ length tags) True tags
 
 remove :: Ord a => a -> ORSet a -> ORSet a
-remove a (ORSet s) = ORSet $ Map.adjust ($> False) a s
+remove a (ORSet s) = ORSet $ Map.adjust (Map.map $ const False) a s
 
 lookup :: Ord a => a -> ORSet a -> Bool
 lookup e = or . fromMaybe Map.empty . Map.lookup e . unpack
