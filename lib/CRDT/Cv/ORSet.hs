@@ -15,16 +15,13 @@ import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup, (<>))
 import           Numeric.Natural (Natural)
 
-import           CRDT.LamportClock (Pid)
+import           CRDT.LamportClock (Pid, Process, getPid)
 import           Data.Semilattice (Semilattice)
 
 type Tag = (Pid, Natural)
 
 newtype ORSet a = ORSet (Map a (Map Tag Bool))
     deriving (Eq, Show)
-
-overORSet :: (Map a (Map Tag Bool) -> Map b (Map Tag Bool)) -> ORSet a -> ORSet b
-overORSet f (ORSet s) = ORSet (f s)
 
 unpack :: ORSet a -> Map a (Map Tag Bool)
 unpack (ORSet s) = s
@@ -37,14 +34,16 @@ instance Ord a => Semilattice (ORSet a)
 initial :: ORSet a
 initial = ORSet Map.empty
 
-add :: Ord a => Pid -> a -> ORSet a -> ORSet a
-add pid = overORSet . Map.alter add1
+add :: Ord a => a -> ORSet a -> Process (ORSet a)
+add a (ORSet s) = do
+    pid <- getPid
+    pure $ ORSet $ Map.alter (add1 pid) a s
   where
-    add1 = Just . add2 . fromMaybe Map.empty
-    add2 tags = Map.insert (pid, fromIntegral $ length tags) True tags
+    add1 pid = Just . add2 pid . fromMaybe Map.empty
+    add2 pid tags = Map.insert (pid, fromIntegral $ length tags) True tags
 
 remove :: Ord a => a -> ORSet a -> ORSet a
-remove = overORSet . Map.adjust ($> False)
+remove a (ORSet s) = ORSet $ Map.adjust ($> False) a s
 
 lookup :: Ord a => a -> ORSet a -> Bool
 lookup e = or . fromMaybe Map.empty . Map.lookup e . unpack

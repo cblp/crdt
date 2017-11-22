@@ -11,6 +11,7 @@ module CRDT.LamportClock
     , runLamportClock
     -- * Process
     , Process (..)
+    , getPid
     , runProcess
     ) where
 
@@ -37,6 +38,9 @@ newtype LamportClock a = LamportClock (State (IntMap LocalTime) a)
 
 newtype Process a = Process (ReaderT Pid LamportClock a)
     deriving (Applicative, Functor, Monad)
+
+getPid :: Process Pid
+getPid = Process ask
 
 getTime :: Process LamportTime
 getTime = Process $ do
