@@ -1,5 +1,5 @@
 name: crdt
-version: '2.1' # ComVer
+version: '3.0' # ComVer
 category: Distributed Systems
 copyright: 2017 Yuriy Syrovetskiy, Nikolay Loginov
 maintainer: Yuriy Syrovetskiy <cblp@cblp.su>
