@@ -27,5 +27,5 @@ instance Ord a => CmRDT (TwoPSet a) where
         Remove a  -> Set.delete a
 
 instance Eq a => CausalOrd (TwoPSet a) where
-    Remove a `affects` Add b = a == b -- `Remove e` can occur only after `Add e`
-    _        `affects` _     = False  -- Any other are not ordered
+    Add b `affects` Remove a = a == b -- `Remove e` can occur only after `Add e`
+    _     `affects` _        = False  -- Any other are not ordered
