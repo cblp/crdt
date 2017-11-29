@@ -64,7 +64,7 @@ query = value
 -- CmRDT -----------------------------------------------------------------------
 
 instance CausalOrd (LWW a) where
-    affects _ _ = False
+    precedes _ _ = False
 
 instance Eq a => CmRDT (LWW a) where
     type Intent  (LWW a) = a

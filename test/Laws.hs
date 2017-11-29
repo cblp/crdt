@@ -10,6 +10,7 @@ module Laws
     ) where
 
 import           Control.Monad.State.Strict (StateT, evalStateT)
+import           Data.Maybe (fromMaybe)
 import           Data.Semigroup (Semigroup, (<>))
 import           Test.QuickCheck (Arbitrary (..), Gen, Property, discard,
                                   forAll, property, (===), (==>))
@@ -72,17 +73,15 @@ cmrdtLaw
     )
     => Property
 cmrdtLaw = property $ \(s :: Payload op) in1 in2 pid1 pid2 ->
-    whenJust (makeOp @op in1 s) $ \getOp1 ->
-    whenJust (makeOp @op in2 s) $ \getOp2 -> let
-        (op1, op2) =
-            runLamportClock $
-            (,) <$> runProcess pid1 getOp1 <*> runProcess pid2 getOp2
-        in
-        concurrent op1 op2 ==>
+    fromMaybe discard $ do
+        getOp1 <- makeOp @op in1 s
+        getOp2 <- makeOp @op in2 s
+        let (op1, op2) =
+                runLamportClock $
+                (,) <$> runProcess pid1 getOp1 <*> runProcess pid2 getOp2
+        pure $
+            concurrent op1 op2 ==>
             (apply op1 . apply op2) s === (apply op2 . apply op1) s
-  where
-    whenJust Nothing  _ = discard
-    whenJust (Just a) f = f a
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a, b, c) = f a b c

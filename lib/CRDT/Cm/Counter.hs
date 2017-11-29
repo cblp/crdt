@@ -21,4 +21,4 @@ instance (Num a, Eq a) => CmRDT (Counter a) where
 
 -- | Empty order, allowing arbitrary reordering
 instance CausalOrd (Counter a) where
-    affects _ _ = False
+    precedes _ _ = False

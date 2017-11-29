@@ -13,12 +13,12 @@ import           CRDT.LamportClock (Process)
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
 class CausalOrd a where
-    -- | @x `affects` y@ means that
+    -- | @x `precedes` y@ means that
     -- @x@ must go before @y@ and @y@ can not go before @x@.
-    affects :: a -> a -> Bool
+    precedes :: a -> a -> Bool
 
 comparable :: CausalOrd a => a -> a -> Bool
-comparable a b = a `affects` b || b `affects` a
+comparable a b = a `precedes` b || b `precedes` a
 
 -- | Not comparable, i. e. ¬(a ≤ b) ∧ ¬(b ≤ a).
 concurrent :: CausalOrd a => a -> a -> Bool

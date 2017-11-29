@@ -18,4 +18,4 @@ instance Ord a => CmRDT (GSet a) where
     apply (Add a) = Set.insert a
 
 instance Eq a => CausalOrd (GSet a) where
-    affects _ _ = False
+    precedes _ _ = False
