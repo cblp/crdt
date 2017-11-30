@@ -24,4 +24,4 @@ prop_remove (s :: TwoPSet Char) x = not . lookup x $ remove x s
 prop_add_then_remove (s :: TwoPSet Char) x =
     not . lookup x . remove x $ add x s
 
-test_Cv = cvrdtLaws @(TwoPSet Char) Nothing
+test_Cv = cvrdtLaws @(TwoPSet Char)

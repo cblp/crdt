@@ -12,7 +12,7 @@ import           CRDT.Cv.PNCounter (PNCounter (..), decrement, increment, query)
 import           GCounter ()
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(PNCounter Int) Nothing
+test_Cv = cvrdtLaws @(PNCounter Int)
 
 prop_increment (counter :: PNCounter Int) pid =
     query (increment pid counter) === succ (query counter)

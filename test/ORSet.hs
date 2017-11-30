@@ -14,7 +14,7 @@ import           CRDT.LamportClock (runLamportClock, runProcess)
 
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(ORSet Int) Nothing
+test_Cv = cvrdtLaws @(ORSet Int)
 
 prop_add pid (x :: Char) s =
     runLamportClock $ runProcess pid $ not . lookup x . remove x <$> add x s

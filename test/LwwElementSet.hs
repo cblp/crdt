@@ -13,30 +13,14 @@ module LwwElementSet
 
 import           Prelude hiding (lookup)
 
-import           Control.Monad (replicateM)
-import           Control.Monad.State.Strict (StateT, lift)
-import qualified Data.Map.Strict as Map
 import           Data.Semigroup ((<>))
-import           Data.Set (Set)
-import qualified Data.Set as Set
-import           Test.QuickCheck (Arbitrary, Gen, arbitrary)
 
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..), add, lookup, remove)
-import           CRDT.LamportClock (LamportTime, runLamportClock, runProcess)
+import           CRDT.LamportClock (runLamportClock, runProcess)
 
 import           Laws (cvrdtLaws)
-import           LWW (genUniquelyTimedLWW)
 
-test_Cv =
-    cvrdtLaws @(LwwElementSet Char) $ Just (genUniquelyTimedLES, Set.empty)
-
--- | Generate specified number of 'LWW' with unique timestamps
-genUniquelyTimedLES
-    :: (Arbitrary a, Ord a) => StateT (Set LamportTime) Gen (LwwElementSet a)
-genUniquelyTimedLES = do
-    values <- lift arbitrary
-    tags <- replicateM (length values) genUniquelyTimedLWW
-    pure $ LES $ Map.fromList $ zip values tags
+test_Cv = cvrdtLaws @(LwwElementSet Char)
 
 prop_add (s :: LwwElementSet Char) x pid1 =
     runLamportClock $ do

@@ -12,6 +12,6 @@ import           Laws (cmrdtLaw, cvrdtLaws)
 
 prop_Cm = cmrdtLaw @(Cm.GSet Char)
 
-test_Cv = cvrdtLaws @(Cv.GSet Char) Nothing
+test_Cv = cvrdtLaws @(Cv.GSet Char)
 
 prop_add (x :: Char) = Cv.lookup x . Cv.add x

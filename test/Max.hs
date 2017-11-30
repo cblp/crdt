@@ -12,6 +12,6 @@ import           Data.Semilattice (merge)
 
 import           Laws (cvrdtLaws)
 
-test_Cv = cvrdtLaws @(Max Char) Nothing
+test_Cv = cvrdtLaws @(Max Char)
 
 prop_merge (x :: Char) y = query (initial x `merge` initial y) === max x y
