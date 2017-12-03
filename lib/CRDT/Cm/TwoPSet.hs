@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | TODO(cblp, 2017-09-29) USet?
@@ -22,9 +21,14 @@ instance Ord a => CmRDT (TwoPSet a) where
         Add _     -> Just (pure op)
         Remove a  -> guard (Set.member a s) *> Just (pure op)
 
-    apply = \case
-        Add a     -> Set.insert a
-        Remove a  -> Set.delete a
+    apply op s = case op of
+        Add a     -> Just $ Set.insert a s
+        Remove a  ->
+            -- Just . Set.delete a -- TODO check precondition?
+            if a `Set.member` s then
+                Just $ Set.delete a s
+            else
+                Nothing
 
 instance Eq a => CausalOrd (TwoPSet a) where
     Add b `precedes` Remove a = a == b -- `Remove e` can occur only after `Add e`

@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -15,7 +14,7 @@ data Counter a = Increment | Decrement
 instance (Num a, Eq a) => CmRDT (Counter a) where
     type Payload (Counter a) = a
 
-    apply = \case
+    apply op = Just . case op of
         Increment -> (+ 1)
         Decrement -> subtract 1
 

@@ -73,7 +73,7 @@ instance Eq a => CmRDT (LWW a) where
 
     makeOp value = Just . assign value
 
-    apply = (<>)
+    apply op s = Just $ op <> s
 
 advanceFromLWW :: Clock m => LWW a -> m ()
 advanceFromLWW LWW{time = LamportTime time _} = advance time

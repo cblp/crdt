@@ -11,6 +11,7 @@ module Laws
     , cvrdtLaws
     ) where
 
+import           Control.Monad ((<=<))
 import           Data.Maybe (fromMaybe, isJust)
 import           Data.Semigroup (Semigroup, (<>))
 import           Test.QuickCheck (Arbitrary (..), Property, counterexample,
@@ -95,9 +96,9 @@ cmrdtLaw = property concurrentOpsCommute
             counterexample
                 ( show in1 ++ " must be valid after " ++ show op2 ++
                   " applied to " ++ show state )
-                (isJust $ makeOp @op @ProcessSim in1 $ apply op2 state)
+                (isJust $ makeOp @op @ProcessSim in1 =<< apply op2 state)
             .&&.
-            (apply op1 . apply op2) state === (apply op2 . apply op1) state
+            (apply op1 <=< apply op2) state === (apply op2 <=< apply op1) state
 
 orElse :: Maybe a -> a -> a
 orElse = flip fromMaybe

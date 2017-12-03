@@ -9,5 +9,3 @@ import           CRDT.Cm.TwoPSet (TwoPSet)
 import           Laws (cmrdtLaw)
 
 prop_Cm = cmrdtLaw @(TwoPSet Char)
-
--- prop_add =
