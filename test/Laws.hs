@@ -81,24 +81,21 @@ cmrdtLaw
     => Property
 cmrdtLaw = property concurrentOpsCommute
   where
-    concurrentOpsCommute seed1 seed2 seed3 in1 in2 pid1 pid2 pid3 =
-        let genOp seed intent = do
-                state <- initialize @op seed
-                makeOp @op intent state `orElse` discard
-            (op1, op2, s) = runLamportClock $ (,,)
-                <$> runProcess pid1 (genOp seed1 in1)
-                <*> runProcess pid2 (genOp seed2 in2)
+    concurrentOpsCommute st1 st2 seed3 in1 in2 pid1 pid2 pid3 =
+        let (op1, op2, state) = runLamportClock $ (,,)
+                <$> runProcess pid1 (makeOp @op in1 st1 `orElse` discard)
+                <*> runProcess pid2 (makeOp @op in2 st2 `orElse` discard)
                 <*> runProcess pid3 (initialize @op seed3)
-        in  concurrent op1 op2 ==> opCommutativity (in1, op1) (in2, op2) s
-    opCommutativity (in1, op1) (in2, op2) s =
-        isJust (makeOp @op in1 s) ==>
-        isJust (makeOp @op in2 s) ==>
+        in  concurrent op1 op2 ==> opCommutativity (in1, op1) (in2, op2) state
+    opCommutativity (in1, op1) (in2, op2) state =
+        isJust (makeOp @op in1 state) ==>
+        isJust (makeOp @op in2 state) ==>
             counterexample
                 ( show in1 ++ " must be valid after " ++ show op2 ++
-                  " applied to " ++ show s )
-                (isJust $ makeOp @op in1 $ apply op2 s)
+                  " applied to " ++ show state )
+                (isJust $ makeOp @op in1 $ apply op2 state)
             .&&.
-            (apply op1 . apply op2) s === (apply op2 . apply op1) s
+            (apply op1 . apply op2) state === (apply op2 . apply op1) state
 
 orElse :: Maybe a -> a -> a
 orElse = flip fromMaybe
