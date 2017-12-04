@@ -11,10 +11,10 @@ module Laws
     , cvrdtLaws
     ) where
 
-import           Data.Maybe (fromMaybe)
+import           Data.Maybe (fromMaybe, isJust)
 import           Data.Semigroup (Semigroup, (<>))
-import           Test.QuickCheck (Arbitrary (..), Property, discard, property,
-                                  (===), (==>))
+import           Test.QuickCheck (Arbitrary (..), Property, counterexample,
+                                  discard, property, (.&&.), (===), (==>))
 import           Test.Tasty (TestTree)
 import           Test.Tasty.QuickCheck (testProperty)
 
@@ -85,13 +85,20 @@ cmrdtLaw = property concurrentOpsCommute
         let genOp seed intent = do
                 state <- initialize @op seed
                 makeOp @op intent state `orElse` discard
-            (op1, op2, st3) = runLamportClock $ (,,)
+            (op1, op2, s) = runLamportClock $ (,,)
                 <$> runProcess pid1 (genOp seed1 in1)
                 <*> runProcess pid2 (genOp seed2 in2)
                 <*> runProcess pid3 (initialize @op seed3)
-        in  concurrent op1 op2 ==>
-                (apply op1 . apply op2) st3 ===
-                (apply op2 . apply op1) st3
+        in  concurrent op1 op2 ==> opCommutativity (in1, op1) (in2, op2) s
+    opCommutativity (in1, op1) (in2, op2) s =
+        isJust (makeOp @op in1 s) ==>
+        isJust (makeOp @op in2 s) ==>
+            counterexample
+                ( show in1 ++ " must be valid after " ++ show op2 ++
+                  " applied to " ++ show s )
+                (isJust $ makeOp @op in1 $ apply op2 s)
+            .&&.
+            (apply op1 . apply op2) s === (apply op2 . apply op1) s
 
 orElse :: Maybe a -> a -> a
 orElse = flip fromMaybe
