@@ -42,6 +42,15 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 
 ## [0.2] - 2017-05-15
 
+### Added
+- Module `Data.Semilattice`:
+  - Class `Semilattice`, the same as `CvRDT` was earlier.
+
+### Changed
+- Renamed `CvRDT` class to `Semilattice`.
+  Re-added `CvRDT` as an alias to `Semilattice`.
+- Renamed tests to reflect that CvRDT = Semilattice.
+
 [0.2]: https://github.com/cblp/crdt/compare/0.1...0.2
 
 ## [0.1] - 2017-05-15
