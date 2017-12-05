@@ -70,6 +70,9 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
         :: Intent op ~ op => Intent op -> Payload op -> Maybe (Process op)
     makeOp i _ = Just $ pure i
 
-    -- | Apply an update to the payload.
+    -- | Apply an update to the payload (downstream).
     -- An invalid update must be ignored.
+    --
+    -- TODO(Syrovetsky, 2017-12-05) There is no downstream precondition yet.
+    -- We must make a test for it first.
     apply :: op -> Payload op -> Payload op
