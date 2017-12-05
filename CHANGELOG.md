@@ -29,6 +29,12 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 [1.0]: https://github.com/cblp/crdt/compare/0.5...1.0
 
 ## [0.5] - 2017-09-26
+### Added
+- Export `GSet` type.
+
+### Changed
+- Cabal-file:
+  - Shorten `copyright` section.
 
 [0.5]: https://github.com/cblp/crdt/compare/0.4...0.5
 
