@@ -25,12 +25,54 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 [2.0]: https://github.com/cblp/crdt/compare/1.0...2.0
 
 ## [1.0] - 2017-10-03
+### Added
+- CRDTs:
+  - `CRDT.Cm.Counter` for the op-based counter.
+    - Law test.
+  - `CRDT.Cm.GSet` for the op-based G-set.
+  - Op-based LWW with `Assign` op.
+  - `CRDT.Cm.TPSet` for the op-based 2P-set.
+    - Law test.
+  - `CRDT.Cv.Max`.
+    - Law test.
+- Class `Observe`.
+- Module `LamportClock` to work with Lamport clock simulation:
+  - Types `Time`, `Timestamp`, `Pid`, `LamportClock`, `Process`.
+  - Class `Clock`.
+  - Functions `barrier`, `runLamportClock`, `runProcess`.
+- Module `Lens.Micro.Extra` with lens helpers.
+
+### Changed
+- Reorganized modules:
+  - Grouped into two groups: `CRDT.Cm` for Cm types and `CRDT.Cv` for Cv ones.
+  - Removed `Internal` submodules;
+    all guts are exported until it will become an issue.
+- `CmRDT` class:
+  - Made it parameterized by 3 types: _payload_, _op_ and _update_.
+  - Used `PartialOrd` (from `lattices:Algebra.PartialOrd`) of ops
+    as a prerequisite.
+  - Used `Observe` to compare only user-visible parts of CmRDT payload.
+  - Renamed `update` to `updateDownstream` to be closer to the paper.
+  - Added `updateAtSource` as written in the paper.
+    - Added its precodition as the separate method `updateAtSourcePre`.
+  - Allowed updates to be run in a `Clock`-constrained monad to get timestamps.
+- LWW:
+  - Cv variant:
+    - Made `initial` and `assign` dependent on `Clock` monad
+      since they need timestamps and cannot rely on user-provided timestamps.
+- Module `Data.Semilattice`:
+  - Renamed Semilattice specialization of Semigroup's `(<>)` from `slappend`
+    to `merge` to show symmetry.
+- Moved `Arbitrary` orphan instances from `Instances` module into
+  `ArbitraryOrphans` module.
+- CmRDT law test:
+  - Used Lamport clock to check ops and update payloads at source.
 
 [1.0]: https://github.com/cblp/crdt/compare/0.5...1.0
 
 ## [0.5] - 2017-09-26
 ### Added
-- Export `GSet` type.
+- Exported `GSet` type.
 
 ### Changed
 - Cabal-file:
@@ -43,9 +85,9 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 - Travis config.
 - HLint config.
 - README.
-- Types:
+- CRDTs:
   - `GSet` for G-set.
-  - `Timestamp` for simple natural timestamps.
+- `Timestamp` type for simple natural timestamps.
 - In module `CRDT.LWW`:
   - Functions for LWW:
     - `point`.
@@ -83,8 +125,9 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
       - Decrement.
 
 ### Changed
-- Renamed Semilattice specialization of Semigroup's `(<>)` from `(<>)`
-  to `slappend`.
+- Module `Data.Semilattice`:
+  - Renamed Semilattice specialization of Semigroup's `(<>)` from `(<>)`
+    to `slappend`.
 - Moved law tests to the module `Test.Laws`.
 
 ### Removed
@@ -117,7 +160,7 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 - Classes:
   - `CmRDT`
   - `CvRDT`
-- Types:
+- CRDTs:
   - `GCounter` for G-counter:
     - Cm variant.
     - Cv variant.
