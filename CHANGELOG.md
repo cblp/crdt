@@ -33,11 +33,60 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 [0.5]: https://github.com/cblp/crdt/compare/0.4...0.5
 
 ## [0.4] - 2017-09-26
+### Added
+- Travis config.
+- HLint config.
+- README.
+- Types:
+  - `GSet` for G-set.
+  - `Timestamp` for simple natural timestamps.
+- In module `CRDT.LWW`:
+  - Functions for LWW:
+    - `point`.
+    - `write`.
+    - `query`.
+- Nikolay Loginov as an author.
+- Tests:
+  - `GCounter`:
+    - CmRDT variant:
+      - Law.
+      - Increment.
+    - CvRDT variant:
+      - Laws.
+      - Increment.
+  - `GSet`:
+    - CvRDT laws.
+    - Add.
+  - `LWW`:
+    - CmRDT instance:
+      - Law.
+      - Write latter.
+      - Write former.
+    - CvRDT instance:
+      - Laws.
+      - Write latter.
+      - Write former.
+  - `PNCounter`:
+    - CmRDT variant:
+      - Law.
+      - Increment.
+      - Decrement.
+    - CvRDT variant:
+      - Laws.
+      - Increment.
+      - Decrement.
+
+### Changed
+- Renamed Semilattice specialization of Semigroup's `(<>)` from `(<>)`
+  to `slappend`.
+- Moved law tests to the module `Test.Laws`.
+
+### Removed
+- Common CmRDT `query` function.
 
 [0.4]: https://github.com/cblp/crdt/compare/0.3...0.4
 
 ## [0.3] - 2017-09-24
-
 ### Changed
 - Changed implemetation of `GCounter` from `Vector` to `IntMap`.
 
@@ -79,5 +128,6 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
   - `PNCounter`:
     - Increment.
     - Decrement.
+- Stylish-haskell config.
 
 [0.1]: https://github.com/cblp/crdt/tree/0.1
