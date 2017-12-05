@@ -38,6 +38,9 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 
 ## [0.3] - 2017-09-24
 
+### Changed
+- Changed implemetation of `GCounter` from `Vector` to `IntMap`.
+
 [0.3]: https://github.com/cblp/crdt/compare/0.2...0.3
 
 ## [0.2] - 2017-05-15
@@ -55,26 +58,26 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 
 ## [0.1] - 2017-05-15
 ### Added
-- Hackage package `crdt`
+- Hackage package `crdt`.
 - Classes:
   - `CmRDT`
   - `CvRDT`
 - Types:
   - `GCounter` for G-counter:
-    - Cm variant
-    - Cv variant
-  - `LWW`
+    - Cm variant.
+    - Cv variant.
+  - `LWW`.
   - `PNCounter` for PN-counter:
-    - Cm variant
-    - Cv variant
+    - Cm variant.
+    - Cv variant.
 - Tests:
-  - CmRDT law
-  - CvRDT laws
+  - CmRDT law.
+  - CvRDT laws.
   - `GCounter`:
     - increment
-  - `LWW`
+  - `LWW`.
   - `PNCounter`:
-    - increment
-    - decrement
+    - Increment.
+    - Decrement.
 
 [0.1]: https://github.com/cblp/crdt/tree/0.1
