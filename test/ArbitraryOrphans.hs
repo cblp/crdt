@@ -9,6 +9,7 @@ module ArbitraryOrphans () where
 import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
                                   elements)
 import           Test.QuickCheck.Gen (Gen (MkGen))
+import           Test.QuickCheck.Instances ()
 import           Test.QuickCheck.Random (mkQCGen)
 
 import           CRDT.Cm.Counter (Counter (..))
@@ -16,7 +17,6 @@ import           CRDT.Cm.GSet (GSet (..))
 import qualified CRDT.Cm.TwoPSet as Cm
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
-import           CRDT.Cv.Max (Max (..))
 import           CRDT.Cv.ORSet (ORSet (..))
 import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as Cv
@@ -44,8 +44,6 @@ deriving instance Arbitrary a => Arbitrary (GCounter a)
 deriving instance (Arbitrary a, Ord a) => Arbitrary (ORSet a)
 
 deriving instance (Arbitrary a, Ord a) => Arbitrary (LwwElementSet a)
-
-deriving instance Arbitrary a => Arbitrary (Max a)
 
 instance Arbitrary a => Arbitrary (PNCounter a) where
     arbitrary = PNCounter <$> arbitrary <*> arbitrary
