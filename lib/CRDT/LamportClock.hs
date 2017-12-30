@@ -40,7 +40,10 @@ import           Safe (headDef)
 type LocalTime = Natural
 
 data LamportTime = LamportTime !LocalTime !Pid
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show LamportTime where
+    show (LamportTime time (Pid pid)) = show (time, pid)
 
 -- | Unique process identifier
 newtype Pid = Pid Word64

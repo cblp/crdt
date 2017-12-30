@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -15,6 +16,7 @@ import           Test.QuickCheck.Random (mkQCGen)
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
 import qualified CRDT.Cm.TwoPSet as Cm
+-- import           CRDT.Cv.CausalTree (CausalTree (..))
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
 import           CRDT.Cv.ORSet (ORSet (..))
@@ -38,6 +40,15 @@ deriving instance Arbitrary a => Arbitrary (GSet a)
 
 instance Arbitrary a => Arbitrary (Cm.TwoPSet a) where
     arbitrary = elements [Cm.Add, Cm.Remove] <*> arbitrary
+
+-- instance (Arbitrary c, Ord c) => Arbitrary (CausalTree c) where
+--     arbitrary =
+--         CausalTree
+--         <$> frequency
+--             [ (50, pure Map.empty)
+--             , (50, Map.singleton <$> arbitrary <*> arbitrary)
+--             , (1, arbitrary)
+--             ]
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
 
