@@ -16,7 +16,8 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
-import           CRDT.LamportClock (LamportTime, Process, advance, getTime)
+import           CRDT.LamportClock (Clock, LamportTime (LamportTime), advance,
+                                    getTime)
 
 -- | Last write wins. Assuming timestamp is unique.
 -- This type is both 'CmRDT' and 'CvRDT'.
@@ -46,12 +47,12 @@ instance Eq a => Semigroup (LWW a) where
 instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
-initial :: a -> Process (LWW a)
+initial :: Clock m => a -> m (LWW a)
 initial value = LWW value <$> getTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
-assign :: a -> LWW a -> Process (LWW a)
+assign :: Clock m => a -> LWW a -> m (LWW a)
 assign value old = do
     advanceFromLWW old
     initial value
@@ -74,5 +75,5 @@ instance Eq a => CmRDT (LWW a) where
 
     apply = (<>)
 
-advanceFromLWW :: LWW a -> Process ()
-advanceFromLWW LWW{time} = advance time
+advanceFromLWW :: Clock m => LWW a -> m ()
+advanceFromLWW LWW{time = LamportTime time _} = advance time

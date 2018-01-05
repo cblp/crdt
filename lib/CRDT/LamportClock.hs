@@ -3,10 +3,9 @@
 module CRDT.LamportClock
     ( Pid (..)
     -- * Lamport timestamp (for a single process)
+    , Clock (..)
     , LamportTime (..)
     , getRealLamportTime
-    , getTime
-    , advance
     -- * Lamport clock (for a whole multi-process system)
     , LamportClock (..)
     , runLamportClock
@@ -54,12 +53,6 @@ newtype Process a = Process (ReaderT Pid LamportClock a)
 getPid :: Process Pid
 getPid = Process ask
 
-getTime :: Process LamportTime
-getTime = Process $ do
-    pid <- ask
-    time <- lift $ preIncrementAt pid
-    pure $ LamportTime time pid
-
 runLamportClock :: LamportClock a -> a
 runLamportClock (LamportClock action) = evalState action mempty
 
@@ -71,11 +64,6 @@ preIncrementAt pid =
     LamportClock . state $ \m -> let
         lt' = succ . fromMaybe 0 $ Map.lookup pid m
         in (lt', Map.insert pid lt' m)
-
-advance :: LamportTime -> Process ()
-advance (LamportTime time _) = Process $ do
-    pid <- ask
-    lift . LamportClock . modify $ Map.insertWith max pid time
 
 getRealLocalTime :: IO LocalTime
 getRealLocalTime = round . utcTimeToPOSIXSeconds <$> getCurrentTime
@@ -96,3 +84,16 @@ getRealLamportTime =
     decodeMac :: MAC -> Word64
     decodeMac (MAC b5 b4 b3 b2 b1 b0) =
         decode $ BSL.pack [0, 0, b5, b4, b3, b2, b1, b0]
+
+class Monad m => Clock m where
+    getTime :: m LamportTime
+    advance :: LocalTime -> m ()
+
+instance Clock Process where
+    getTime = Process $ do
+        pid <- ask
+        time <- lift $ preIncrementAt pid
+        pure $ LamportTime time pid
+    advance time = Process $ do
+        pid <- ask
+        lift . LamportClock . modify $ Map.insertWith max pid time
