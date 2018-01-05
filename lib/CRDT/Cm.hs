@@ -8,7 +8,7 @@ module CRDT.Cm
     , concurrent
     ) where
 
-import           CRDT.LamportClock (Process)
+import           CRDT.LamportClock (Clock)
 
 -- | Partial order for causal semantics.
 -- Values of some type may be ordered and causally-ordered different ways.
@@ -64,10 +64,11 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     -- | Generate an update to the local and remote replicas.
     --
     -- Returns 'Nothing' if the intended operation is not applicable.
-    makeOp :: Intent op -> Payload op -> Maybe (Process op)
+    makeOp :: Clock m => Intent op -> Payload op -> Maybe (m op)
 
     default makeOp
-        :: Intent op ~ op => Intent op -> Payload op -> Maybe (Process op)
+        :: (Intent op ~ op, Applicative m)
+        => Intent op -> Payload op -> Maybe (m op)
     makeOp i _ = Just $ pure i
 
     -- | Apply an update to the payload (downstream).

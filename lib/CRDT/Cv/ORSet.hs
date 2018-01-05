@@ -33,7 +33,7 @@ instance Ord a => Semilattice (ORSet a)
 initial :: ORSet a
 initial = ORSet Map.empty
 
-add :: Ord a => a -> ORSet a -> Process (ORSet a)
+add :: (Ord a, Process m) => a -> ORSet a -> m (ORSet a)
 add a (ORSet s) = do
     pid <- getPid
     pure $ ORSet $ Map.alter (add1 pid) a s

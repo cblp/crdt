@@ -16,7 +16,7 @@ import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Semigroup (Semigroup (..))
 
-import           CRDT.LamportClock (Process)
+import           CRDT.LamportClock (Clock)
 import           CRDT.LWW (LWW, advanceFromLWW)
 import qualified CRDT.LWW as LWW
 import           Data.Semilattice (Semilattice)
@@ -32,13 +32,13 @@ instance Ord a => Semilattice (LwwElementSet a)
 initial :: LwwElementSet a
 initial = LES Map.empty
 
-add :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
+add :: (Ord a, Clock m) => a -> LwwElementSet a -> m (LwwElementSet a)
 add value old@(LES m) = do
     advanceFromLES old
     tag <- LWW.initial True
     pure . LES $ Map.insertWith (<>) value tag m
 
-remove :: Ord a => a -> LwwElementSet a -> Process (LwwElementSet a)
+remove :: (Ord a, Clock m) => a -> LwwElementSet a -> m (LwwElementSet a)
 remove value old@(LES m) = do
     advanceFromLES old
     tag <- LWW.initial False
@@ -47,5 +47,5 @@ remove value old@(LES m) = do
 lookup :: Ord a => a -> LwwElementSet a -> Bool
 lookup value (LES m) = maybe False LWW.query $ Map.lookup value m
 
-advanceFromLES :: LwwElementSet a -> Process ()
+advanceFromLES :: Clock m => LwwElementSet a -> m ()
 advanceFromLES (LES m) = for_ m advanceFromLWW

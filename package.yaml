@@ -23,6 +23,7 @@ library:
     - mtl
     - network-info
     - safe
+    - stm
     - time
   source-dirs: lib
 

@@ -7,5 +7,6 @@ steps:
   - trailing_whitespace: {}
 language_extensions:
   - DataKinds
+  - ExplicitForAll
   - ExplicitNamespaces
   - MultiParamTypeClasses
