@@ -13,9 +13,15 @@ github: cblp/crdt
 dependencies:
   - base >= 4.9 && < 4.11
   - containers
-  - mtl
 
 library:
+  dependencies:
+    - binary
+    - bytestring
+    - mtl
+    - network-info
+    - safe
+    - time
   source-dirs: lib
 
 tests:

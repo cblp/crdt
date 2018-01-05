@@ -32,7 +32,7 @@ instance Arbitrary a => Arbitrary (LWW a) where
         value <- seeded (hash time) arbitrary
         pure LWW{value, time}
       where
-        hash (LamportTime t (Pid p)) = fromIntegral t * 997 + p
+        hash (LamportTime t (Pid p)) = fromIntegral t * 997 + fromIntegral p
 
 deriving instance Arbitrary a => Arbitrary (GSet a)
 
