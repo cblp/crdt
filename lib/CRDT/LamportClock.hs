@@ -80,6 +80,7 @@ advance (LamportTime time _) = Process $ do
 getRealLocalTime :: IO LocalTime
 getRealLocalTime = round . utcTimeToPOSIXSeconds <$> getCurrentTime
 
+-- TODO(cblp, 2018-01-05) monotonic
 getRealLamportTime :: IO LamportTime
 getRealLamportTime =
     LamportTime <$> getRealLocalTime <*> (Pid . decodeMac <$> getMac)
