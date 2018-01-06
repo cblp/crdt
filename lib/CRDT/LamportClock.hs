@@ -5,14 +5,16 @@ module CRDT.LamportClock
     -- * Lamport timestamp (for a single process)
     , Clock (..)
     , LamportTime (..)
-    -- * Lamport clock (for a whole multi-process system)
-    , LamportClockSim (..)
-    , runLamportClockSim
-    -- * Process
+    , LocalTime
     , Process (..)
-    -- * ProcessSim
+    -- * Lamport clock simulation
+    , LamportClockSim (..)
     , ProcessSim (..)
+    , runLamportClockSim
     , runProcessSim
+    -- * Real Lamport clock
+    , LamportClock
+    , runLamportClock
     ) where
 
 import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
@@ -107,6 +109,9 @@ instance Clock ProcessSim where
 -- TODO(cblp, 2018-01-06) benchmark and compare with 'atomicModifyIORef'
 newtype LamportClock a = LamportClock (ReaderT (TVar LocalTime) IO a)
     deriving (Applicative, Functor, Monad, MonadIO)
+
+runLamportClock :: TVar LocalTime -> LamportClock a -> IO a
+runLamportClock var (LamportClock action) = runReaderT action var
 
 instance Process LamportClock where
     getPid = liftIO getPidByMac
