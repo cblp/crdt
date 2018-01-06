@@ -38,6 +38,7 @@ import           Numeric (showHex)
 import           Numeric.Natural (Natural)
 import           Safe (headDef)
 
+-- | Unix time in 10^{-7} seconds (100 ns), as in RFC 4122 and Swarm RON.
 type LocalTime = Natural
 
 data LamportTime = LamportTime !LocalTime !Pid
@@ -75,7 +76,7 @@ preIncrementAt pid =
         in (lt', Map.insert pid lt' m)
 
 getRealLocalTime :: IO LocalTime
-getRealLocalTime = round . utcTimeToPOSIXSeconds <$> getCurrentTime
+getRealLocalTime = round . (* 10 ^ 7) . utcTimeToPOSIXSeconds <$> getCurrentTime
 
 getPidByMac :: IO Pid
 getPidByMac = Pid . decodeMac <$> getMac
