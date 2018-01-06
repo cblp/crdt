@@ -30,8 +30,7 @@ import qualified Data.ByteString.Lazy as BSL
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
-import           Data.Time (getCurrentTime)
-import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
+import           Data.Time.Clock.POSIX (getPOSIXTime)
 import           Data.Word (Word64)
 import           Network.Info (MAC (MAC), getNetworkInterfaces, mac)
 import           Numeric (showHex)
@@ -76,7 +75,7 @@ preIncrementAt pid =
         in (lt', Map.insert pid lt' m)
 
 getRealLocalTime :: IO LocalTime
-getRealLocalTime = round . (* 10 ^ 7) . utcTimeToPOSIXSeconds <$> getCurrentTime
+getRealLocalTime = round . (* 10000000) <$> getPOSIXTime
 
 getPidByMac :: IO Pid
 getPidByMac = Pid . decodeMac <$> getMac
