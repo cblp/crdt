@@ -15,6 +15,8 @@ module CRDT.LamportClock
     -- * Real Lamport clock
     , LamportClock
     , runLamportClock
+    -- * Helpers
+    , getRealLocalTime
     ) where
 
 import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
