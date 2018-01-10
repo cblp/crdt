@@ -33,7 +33,6 @@ import           Data.Maybe (fromMaybe)
 import           Data.Time.Clock.POSIX (getPOSIXTime)
 import           Data.Word (Word64)
 import           Network.Info (MAC (MAC), getNetworkInterfaces, mac)
-import           Numeric (showHex)
 import           Numeric.Natural (Natural)
 import           Safe (headDef)
 
