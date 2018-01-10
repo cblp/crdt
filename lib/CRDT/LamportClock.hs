@@ -41,10 +41,7 @@ import           Safe (headDef)
 type LocalTime = Natural
 
 data LamportTime = LamportTime !LocalTime !Pid
-    deriving (Eq, Ord)
-
-instance Show LamportTime where
-    show (LamportTime time (Pid pid)) = showHex time "" ++ '-' : showHex pid ""
+    deriving (Eq, Ord, Show)
 
 -- | Unique process identifier
 newtype Pid = Pid Word64
