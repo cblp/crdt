@@ -130,3 +130,10 @@ instance Clock LamportClock where
                 pure time1
             pid <- getPidByMac
             pure $ LamportTime time1 pid
+
+instance Process m => Process (ReaderT r m) where
+    getPid = lift getPid
+
+instance Clock m => Clock (ReaderT r m) where
+    advance = lift . advance
+    getTime = lift getTime
