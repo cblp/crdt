@@ -30,6 +30,7 @@ library:
 tests:
   test:
     dependencies:
+      - mtl
       - QuickCheck
       - quickcheck-instances
       - tasty

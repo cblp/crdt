@@ -21,6 +21,7 @@ import           Test.Tasty.QuickCheck (testProperty)
 import           CRDT.Cm (CmRDT (..), concurrent)
 import           CRDT.Cm.Counter (Counter)
 import           CRDT.Cm.GSet (GSet)
+import           CRDT.Cm.ORSet (ORSet)
 import           CRDT.Cm.TwoPSet (TwoPSet)
 import           CRDT.Cv (CvRDT)
 import           CRDT.LamportClock (Clock)
@@ -70,6 +71,8 @@ instance Initialize (LWW a) where
     initialize = LWW.initial
 
 instance Initialize (TwoPSet a)
+
+instance Initialize (ORSet a)
 
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw

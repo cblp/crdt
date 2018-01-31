@@ -7,19 +7,21 @@
 module ArbitraryOrphans () where
 
 import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
-                                  elements)
+                                  elements, oneof)
 import           Test.QuickCheck.Gen (Gen (MkGen))
 import           Test.QuickCheck.Instances ()
 import           Test.QuickCheck.Random (mkQCGen)
 
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
-import qualified CRDT.Cm.TwoPSet as Cm
+import           CRDT.Cm.ORSet (MultiMap (..))
+import qualified CRDT.Cm.ORSet as CmORSet
+import qualified CRDT.Cm.TwoPSet as CmTwoPSet
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
-import           CRDT.Cv.ORSet (ORSet (..))
+import qualified CRDT.Cv.ORSet as CvORSet
 import           CRDT.Cv.PNCounter (PNCounter (..))
-import qualified CRDT.Cv.TwoPSet as Cv
+import qualified CRDT.Cv.TwoPSet as CvTwoPSet
 import           CRDT.LamportClock (LamportTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
 
@@ -36,19 +38,37 @@ instance Arbitrary a => Arbitrary (LWW a) where
 
 deriving instance Arbitrary a => Arbitrary (GSet a)
 
-instance Arbitrary a => Arbitrary (Cm.TwoPSet a) where
-    arbitrary = elements [Cm.Add, Cm.Remove] <*> arbitrary
+deriving instance
+        (Arbitrary k, Ord k, Arbitrary v, Ord v) => Arbitrary (MultiMap k v)
+
+instance Arbitrary a => Arbitrary (CmORSet.Intent a) where
+    arbitrary = elements [CmORSet.Add, CmORSet.Remove] <*> arbitrary
+
+instance Arbitrary a => Arbitrary (CmORSet.ORSet a) where
+    arbitrary = oneof
+        [ CmORSet.OpAdd    <$> arbitrary <*> arbitrary
+        , CmORSet.OpRemove <$> arbitrary <*> arbitrary
+        ]
+
+instance (Arbitrary a, Ord a) => Arbitrary (CmORSet.Payload a) where
+    arbitrary = CmORSet.Payload <$> arbitrary <*> arbitrary
+
+instance Arbitrary CmORSet.Tag where
+    arbitrary = CmORSet.Tag <$> arbitrary <*> arbitrary
+
+instance Arbitrary a => Arbitrary (CmTwoPSet.TwoPSet a) where
+    arbitrary = elements [CmTwoPSet.Add, CmTwoPSet.Remove] <*> arbitrary
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
 
-deriving instance (Arbitrary a, Ord a) => Arbitrary (ORSet a)
+deriving instance (Arbitrary a, Ord a) => Arbitrary (CvORSet.ORSet a)
 
 deriving instance (Arbitrary a, Ord a) => Arbitrary (LwwElementSet a)
 
 instance Arbitrary a => Arbitrary (PNCounter a) where
     arbitrary = PNCounter <$> arbitrary <*> arbitrary
 
-deriving instance (Ord a, Arbitrary a) => Arbitrary (Cv.TwoPSet a)
+deriving instance (Ord a, Arbitrary a) => Arbitrary (CvTwoPSet.TwoPSet a)
 
 instance Arbitrary LamportTime where
     arbitrary = LamportTime <$> arbitrary <*> arbitrary
