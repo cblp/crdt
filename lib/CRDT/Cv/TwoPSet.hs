@@ -40,6 +40,6 @@ remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m
 singleton :: Ord a => a -> TwoPSet a
 singleton a = add a initial
 
--- | XXX Internal TODO remove
+-- | XXX Internal
 isKnown :: Ord a => a -> TwoPSet a -> Bool
 isKnown e (TwoPSet m) = Map.member e m
