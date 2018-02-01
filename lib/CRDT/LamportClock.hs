@@ -1,4 +1,6 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module CRDT.LamportClock
     ( Pid (..)
@@ -7,11 +9,6 @@ module CRDT.LamportClock
     , LamportTime (..)
     , LocalTime
     , Process (..)
-    -- * Lamport clock simulation
-    , LamportClockSim (..)
-    , ProcessSim (..)
-    , runLamportClockSim
-    , runProcessSim
     -- * Real Lamport clock
     , LamportClock
     , runLamportClock
@@ -23,13 +20,9 @@ import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
                                          readTVar, writeTVar)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
-import           Control.Monad.State.Strict (State, evalState, modify, state)
 import           Control.Monad.Trans (lift)
 import           Data.Binary (decode)
 import qualified Data.ByteString.Lazy as BSL
-import           Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe)
 import           Data.Time.Clock.POSIX (getPOSIXTime)
 import           Data.Word (Word64)
 import           Network.Info (MAC (MAC), getNetworkInterfaces, mac)
@@ -46,29 +39,8 @@ data LamportTime = LamportTime !LocalTime !Pid
 newtype Pid = Pid Word64
     deriving (Eq, Ord, Show)
 
--- | Lamport clock simpulation. Key is 'Pid'.
--- Non-present value is equivalent to 0.
-newtype LamportClockSim a = LamportClockSim (State (Map Pid LocalTime) a)
-    deriving (Applicative, Functor, Monad)
-
--- | ProcessSim inside Lamport clock simpulation.
-newtype ProcessSim a = ProcessSim (ReaderT Pid LamportClockSim a)
-    deriving (Applicative, Functor, Monad)
-
 class Monad m => Process m where
     getPid :: m Pid
-
-runLamportClockSim :: LamportClockSim a -> a
-runLamportClockSim (LamportClockSim action) = evalState action mempty
-
-runProcessSim :: Pid -> ProcessSim a -> LamportClockSim a
-runProcessSim pid (ProcessSim action) = runReaderT action pid
-
-preIncrementAt :: Pid -> LamportClockSim LocalTime
-preIncrementAt pid =
-    LamportClockSim . state $ \m -> let
-        lt' = succ . fromMaybe 0 $ Map.lookup pid m
-        in (lt', Map.insert pid lt' m)
 
 getRealLocalTime :: IO LocalTime
 getRealLocalTime = round . (* 10000000) <$> getPOSIXTime
@@ -90,19 +62,6 @@ getPidByMac = Pid . decodeMac <$> getMac
 class Process m => Clock m where
     getTime :: m LamportTime
     advance :: LocalTime -> m ()
-
-instance Process ProcessSim where
-    getPid = ProcessSim ask
-
-instance Clock ProcessSim where
-    getTime = ProcessSim $ do
-        pid <- ask
-        time <- lift $ preIncrementAt pid
-        pure $ LamportTime time pid
-
-    advance time = ProcessSim $ do
-        pid <- ask
-        lift . LamportClockSim . modify $ Map.insertWith max pid time
 
 -- TODO(cblp, 2018-01-06) benchmark and compare with 'atomicModifyIORef'
 newtype LamportClock a = LamportClock (ReaderT (TVar LocalTime) IO a)

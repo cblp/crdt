@@ -23,8 +23,9 @@ import           CRDT.Cm.Counter (Counter)
 import           CRDT.Cm.GSet (GSet)
 import           CRDT.Cm.TwoPSet (TwoPSet)
 import           CRDT.Cv (CvRDT)
-import           CRDT.LamportClock (Clock, ProcessSim, runLamportClockSim,
-                                    runProcessSim)
+import           CRDT.LamportClock (Clock)
+import           CRDT.LamportClock.Simulation (ProcessSim, runLamportClockSim,
+                                               runProcessSim)
 import           CRDT.LWW (LWW)
 import qualified CRDT.LWW as LWW
 import           Data.Semilattice (Semilattice, merge)
@@ -84,20 +85,21 @@ cmrdtLaw
 cmrdtLaw = property concurrentOpsCommute
   where
     concurrentOpsCommute st1 st2 seed3 in1 in2 pid1 pid2 pid3 =
-        let (op1, op2, state) = runLamportClockSim $ (,,)
-                <$> runProcessSim pid1 (makeOp @op in1 st1 `orElse` discard)
-                <*> runProcessSim pid2 (makeOp @op in2 st2 `orElse` discard)
+        let (op1, op2, state) = runLamportClockSim undefined $ (,,)
+                <$> runProcessSim pid1 (makeOp' in1 st1 `orElse` discard)
+                <*> runProcessSim pid2 (makeOp' in2 st2 `orElse` discard)
                 <*> runProcessSim pid3 (initialize @op seed3)
         in  concurrent op1 op2 ==> opCommutativity (in1, op1) (in2, op2) state
     opCommutativity (in1, op1) (in2, op2) state =
-        isJust (makeOp @op @ProcessSim in1 state) ==>
-        isJust (makeOp @op @ProcessSim in2 state) ==>
+        isJust (makeOp' in1 state) ==>
+        isJust (makeOp' in2 state) ==>
             counterexample
                 ( show in1 ++ " must be valid after " ++ show op2 ++
                   " applied to " ++ show state )
-                (isJust $ makeOp @op @ProcessSim in1 $ apply op2 state)
+                (isJust $ makeOp' in1 $ apply op2 state)
             .&&.
             (apply op1 . apply op2) state === (apply op2 . apply op1) state
+    makeOp' = makeOp @op @(ProcessSim (Payload op))
 
 orElse :: Maybe a -> a -> a
 orElse = flip fromMaybe
