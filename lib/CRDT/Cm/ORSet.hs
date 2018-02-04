@@ -57,11 +57,8 @@ instance Ord a => CmRDT (ORSet a) where
     makeOp (Add a) Payload{version} = Just $ do
         pid <- getPid
         pure $ OpAdd a $ Tag pid version
-    makeOp (Remove a) Payload{elements}
-        | null tags = Nothing
-        | otherwise = Just . pure $ OpRemove a tags
-      where
-        tags = multiMapLookup a elements
+    makeOp (Remove a) Payload{elements} =
+        Just . pure . OpRemove a $ multiMapLookup a elements
 
     apply op Payload{elements, version} = Payload
         { version  = version + 1
