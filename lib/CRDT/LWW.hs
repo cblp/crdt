@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -69,11 +70,17 @@ instance CausalOrd (LWW a) where
 
 instance Eq a => CmRDT (LWW a) where
     type Intent  (LWW a) = a
-    type Payload (LWW a) = LWW a
+    type Payload (LWW a) = Maybe (LWW a)
 
-    makeOp value = Just . assign value
+    initial = Nothing
 
-    apply = (<>)
+    makeOp value = Just . \case
+        Just payload -> assign value payload
+        Nothing      -> initialize value
+
+    apply op = Just . \case
+        Just payload -> op <> payload
+        Nothing      -> op
 
 advanceFromLWW :: Clock m => LWW a -> m ()
 advanceFromLWW LWW{time = LamportTime time _} = advance time

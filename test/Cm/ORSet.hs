@@ -10,9 +10,9 @@ module Cm.ORSet where
 import qualified Data.MultiMap as MultiMap
 import           Test.QuickCheck (counterexample, (.&&.), (===), (==>))
 
-import           CRDT.Cm (makeAndApplyOp, query)
+import           CRDT.Cm (initial, makeAndApplyOp, query)
 import           CRDT.Cm.ORSet (Intent (Add, Remove), ORSet, Tag (Tag),
-                                elements, initial)
+                                elements)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
@@ -22,10 +22,10 @@ import           Util (pattern (:-), expectRight)
 prop_Cm = cmrdtLaw @(ORSet Char)
 
 -- | Example from fig. 14 from "A comprehensive study of CRDTs"
-prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
-    op1 <- runProcessSim β $ makeAndApplyOp $ Add (a :: Char)
-    op2 <- runProcessSim α $ makeAndApplyOp $ Add a
-    op3 <- runProcessSim α $ makeAndApplyOp $ Remove a
+prop_fig14 α β a = expectRight . runLamportClockSim (initial @(ORSet Char)) $ do
+    op1 <- runProcessSim β $ makeAndApplyOp (Add (a :: Char))
+    op2 <- runProcessSim α $ makeAndApplyOp (Add a)
+    op3 <- runProcessSim α $ makeAndApplyOp (Remove a)
     pure $
         α < β ==>
         check "2"   [op2]           [a :- [Tag α 0]]          .&&.
@@ -41,4 +41,4 @@ prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
         query' ops === result
 
 query' :: (Ord a, Foldable f) => f (ORSet a) -> [(a, [Tag])]
-query' = MultiMap.assocs . elements . query initial
+query' = MultiMap.assocs . elements . query

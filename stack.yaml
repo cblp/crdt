@@ -1,1 +1,4 @@
 resolver: lts-10.4
+
+extra-deps:
+  - QuickCheck-GenT-0.2.0

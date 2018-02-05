@@ -15,6 +15,8 @@ newtype GSet a = Add a
 instance Ord a => CmRDT (GSet a) where
     type Payload (GSet a) = Set a
 
+    initial = Set.empty
+
     apply (Add a) = Set.insert a
 
 instance CausalOrd (GSet a) where

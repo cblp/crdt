@@ -6,7 +6,6 @@ module CRDT.Cm.ORSet
     , Intent (..)
     , Payload (..)
     , Tag (..)
-    , initial
     , query
     ) where
 
@@ -46,6 +45,8 @@ instance Ord a => CmRDT (ORSet a) where
     type Intent  (ORSet a) = Intent  a
     type Payload (ORSet a) = Payload a
 
+    initial = Payload{elements = MultiMap.empty, version = 0}
+
     makeOp (Add a) Payload{version} = Just $ do
         pid <- getPid
         pure $ OpAdd a $ Tag pid version
@@ -60,7 +61,4 @@ instance Ord a => CmRDT (ORSet a) where
         }
 
 query :: (Ord a, Foldable f) => f (ORSet a) -> Set a
-query = MultiMap.keysSet . elements . Cm.query initial
-
-initial :: Payload a
-initial = Payload{elements = MultiMap.empty, version = 0}
+query = MultiMap.keysSet . elements . Cm.query

@@ -1,5 +1,8 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module CRDT.Cm
@@ -69,6 +72,8 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
 
     type Payload op
 
+    initial :: Payload op
+
     -- | Generate an update to the local and remote replicas.
     --
     -- Returns 'Nothing' if the intended operation is not applicable.
@@ -86,8 +91,8 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     -- We must make a test for it first.
     apply :: op -> Payload op -> Payload op
 
-query :: (CmRDT op, Foldable f) => Payload op -> f op -> Payload op
-query = foldl (flip apply)
+query :: forall op f. (CmRDT op, Foldable f) => f op -> Payload op
+query = foldl (flip apply) (initial @op)
 
 -- | Make op and apply it to the payload -- a common routine at the source node.
 makeAndApplyOp

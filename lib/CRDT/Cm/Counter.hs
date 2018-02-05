@@ -15,6 +15,8 @@ data Counter a = Increment | Decrement
 instance (Num a, Eq a) => CmRDT (Counter a) where
     type Payload (Counter a) = a
 
+    initial = 0
+
     apply = \case
         Increment -> (+ 1)
         Decrement -> subtract 1
