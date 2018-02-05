@@ -32,8 +32,11 @@ import           Safe (headDef)
 -- | Unix time in 10^{-7} seconds (100 ns), as in RFC 4122 and Swarm RON.
 type LocalTime = Natural
 
-data LamportTime = LamportTime !LocalTime !Pid
-    deriving (Eq, Ord, Show)
+data LamportTime = LamportTime LocalTime Pid
+    deriving (Eq, Ord)
+
+instance Show LamportTime where
+    show (LamportTime time (Pid pid)) = show time ++ '.' : show pid
 
 -- | Unique process identifier
 newtype Pid = Pid Word64
