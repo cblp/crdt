@@ -77,8 +77,7 @@ instance Initialize (ORSet a)
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw
     :: forall op.
-    ( CmRDT op
-    , Arbitrary op, Show op
+    ( CmRDT op, Show op
     , Arbitrary (Intent  op), Show (Intent  op)
     , Arbitrary (Payload op), Show (Payload op)
     , Initialize op
