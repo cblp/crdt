@@ -7,29 +7,25 @@
 
 module Cm.ORSet where
 
-import           Control.Monad.State.Strict (MonadState, get, modify)
-import           Data.Maybe (fromJust)
 import qualified Data.MultiMap as MultiMap
 import           Test.QuickCheck (counterexample, (.&&.), (===), (==>))
 
-import           CRDT.Cm (apply, makeOp)
-import qualified CRDT.Cm as Cm
-import           CRDT.Cm.ORSet (Intent (Add, Remove), ORSet, Payload, Tag (Tag),
+import           CRDT.Cm (makeAndApplyOp, query)
+import           CRDT.Cm.ORSet (Intent (Add, Remove), ORSet, Tag (Tag),
                                 elements, initial)
-import           CRDT.LamportClock (Clock)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
 import           Laws (cmrdtLaw)
-import           Util (expectRight)
+import           Util (pattern (:-), expectRight)
 
 prop_Cm = cmrdtLaw @(ORSet Char)
 
 -- | Example from fig. 14 from "A comprehensive study of CRDTs"
 prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
-    op1 <- runProcessSim β $ atSource' $ Add (a :: Char)
-    op2 <- runProcessSim α $ atSource' $ Add a
-    op3 <- runProcessSim α $ atSource' $ Remove a
+    op1 <- runProcessSim β $ makeAndApplyOp $ Add (a :: Char)
+    op2 <- runProcessSim α $ makeAndApplyOp $ Add a
+    op3 <- runProcessSim α $ makeAndApplyOp $ Remove a
     pure $
         α < β ==>
         check "2"   [op2]           [a :- [Tag α 0]]          .&&.
@@ -45,15 +41,4 @@ prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
         query' ops === result
 
 query' :: (Ord a, Foldable f) => f (ORSet a) -> [(a, [Tag])]
-query' = MultiMap.assocs . elements . Cm.query initial
-
-atSource'
-    :: (Clock m, MonadState (Payload a) m, Ord a) => Intent a -> m (ORSet a)
-atSource' intent = do
-    payload <- get
-    op <- fromJust $ makeOp intent payload
-    modify $ apply op
-    pure op
-
-pattern (:-) :: a -> b -> (a, b)
-pattern a :- b = (a, b)
+query' = MultiMap.assocs . elements . query initial
