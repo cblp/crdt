@@ -9,12 +9,13 @@ module Cm.ORSet where
 
 import           Control.Monad.State.Strict (MonadState, get, modify)
 import           Data.Maybe (fromJust)
+import qualified Data.MultiMap as MultiMap
 import           Test.QuickCheck (counterexample, (.&&.), (===), (==>))
 
 import           CRDT.Cm (apply, makeOp)
 import qualified CRDT.Cm as Cm
 import           CRDT.Cm.ORSet (Intent (Add, Remove), ORSet, Payload, Tag (Tag),
-                                elements, initial, multiMapAssocs)
+                                elements, initial)
 import           CRDT.LamportClock (Clock)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
@@ -44,7 +45,7 @@ prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
         query' ops === result
 
 query' :: (Ord a, Foldable f) => f (ORSet a) -> [(a, [Tag])]
-query' = multiMapAssocs . elements . Cm.query initial
+query' = MultiMap.assocs . elements . Cm.query initial
 
 atSource'
     :: (Clock m, MonadState (Payload a) m, Ord a) => Intent a -> m (ORSet a)

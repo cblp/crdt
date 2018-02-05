@@ -14,7 +14,6 @@ import           Test.QuickCheck.Random (mkQCGen)
 
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
-import           CRDT.Cm.ORSet (MultiMap (..))
 import qualified CRDT.Cm.ORSet as CmORSet
 import qualified CRDT.Cm.TwoPSet as CmTwoPSet
 import           CRDT.Cv.GCounter (GCounter (..))
@@ -24,6 +23,7 @@ import           CRDT.Cv.PNCounter (PNCounter (..))
 import qualified CRDT.Cv.TwoPSet as CvTwoPSet
 import           CRDT.LamportClock (LamportTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
+import           Data.MultiMap (MultiMap (..))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
