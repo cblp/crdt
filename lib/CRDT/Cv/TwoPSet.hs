@@ -2,13 +2,11 @@ module CRDT.Cv.TwoPSet
     ( TwoPSet (..)
     , add
     , initial
-    , lookup
+    , member
     , remove
     , singleton
     , isKnown
     ) where
-
-import           Prelude hiding (lookup)
 
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
@@ -31,8 +29,8 @@ add e (TwoPSet m) = TwoPSet (Map.insertWith (&&) e True m)
 initial :: TwoPSet a
 initial = TwoPSet Map.empty
 
-lookup :: Ord a => a -> TwoPSet a -> Bool
-lookup e (TwoPSet m) = fromMaybe False $ Map.lookup e m
+member :: Ord a => a -> TwoPSet a -> Bool
+member e (TwoPSet m) = fromMaybe False $ Map.lookup e m
 
 remove :: Ord a => a -> TwoPSet a -> TwoPSet a
 remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m
