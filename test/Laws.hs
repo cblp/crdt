@@ -68,7 +68,7 @@ instance Initialize (GSet a)
 
 instance Initialize (LWW a) where
     type Initial (LWW a) = a
-    initialize = LWW.initial
+    initialize = LWW.initialize
 
 instance Initialize (TwoPSet a)
 

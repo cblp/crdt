@@ -4,7 +4,7 @@
 module CRDT.LWW
     ( LWW (..)
       -- * CvRDT
-    , initial
+    , initialize
     , assign
     , query
       -- * Implementation detail
@@ -47,15 +47,15 @@ instance Eq a => Semigroup (LWW a) where
 instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
-initial :: Clock m => a -> m (LWW a)
-initial value = LWW value <$> getTime
+initialize :: Clock m => a -> m (LWW a)
+initialize value = LWW value <$> getTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
 assign :: Clock m => a -> LWW a -> m (LWW a)
 assign value old = do
     advanceFromLWW old
-    initial value
+    initialize value
 
 -- | Query state
 query :: LWW a -> a
