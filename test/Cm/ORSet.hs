@@ -20,11 +20,12 @@ import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
 import           Laws (cmrdtLaw)
+import           Util (expectRight)
 
 prop_Cm = cmrdtLaw @(ORSet Char)
 
 -- | Example from fig. 14 from "A comprehensive study of CRDTs"
-prop_fig14 α β a = runLamportClockSim initial $ do
+prop_fig14 α β a = expectRight . runLamportClockSim initial $ do
     op1 <- runProcessSim β $ atSource' $ Add (a :: Char)
     op2 <- runProcessSim α $ atSource' $ Add a
     op3 <- runProcessSim α $ atSource' $ Remove a

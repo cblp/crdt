@@ -87,12 +87,17 @@ cmrdtLaw
     => Property
 cmrdtLaw = property concurrentOpsCommute
   where
-    concurrentOpsCommute st1 st2 seed3 in1 in2 pid1 pid2 pid3 =
-        let (op1, op2, state) = runLamportClockSim undefined $ (,,)
-                <$> runProcessSim pid1 (makeOp' in1 st1 `orElse` discard)
-                <*> runProcessSim pid2 (makeOp' in2 st2 `orElse` discard)
-                <*> runProcessSim pid3 (initialize @op seed3)
-        in  concurrent op1 op2 ==> opCommutativity (in1, op1) (in2, op2) state
+    concurrentOpsCommute st1 st2 seed3 in1 in2 pid1 pid2 pid3 = let
+        ops = runLamportClockSim undefined $ (,,)
+            <$> runProcessSim pid1 (makeOp' in1 st1 `orElse` discard)
+            <*> runProcessSim pid2 (makeOp' in2 st2 `orElse` discard)
+            <*> runProcessSim pid3 (initialize @op seed3)
+        in
+        case ops of
+            Right (op1, op2, state) ->
+                concurrent op1 op2 ==>
+                opCommutativity (in1, op1) (in2, op2) state
+            Left _ -> discard
     opCommutativity (in1, op1) (in2, op2) state =
         isJust (makeOp' in1 state) ==>
         isJust (makeOp' in2 state) ==>

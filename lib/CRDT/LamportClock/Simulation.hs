@@ -16,6 +16,9 @@ module CRDT.LamportClock.Simulation
     , runProcessSimT
     ) where
 
+import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
+                                       throwError)
+import           Control.Monad.Fail (MonadFail, fail)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.RWS.Strict (RWST, evalRWS, evalRWST)
 import           Control.Monad.State.Strict (MonadState, get, gets, modify, put,
@@ -31,13 +34,16 @@ import           CRDT.LamportClock (Clock, LamportTime (LamportTime), LocalTime,
 -- | Lamport clock simulation. Key is 'Pid'.
 -- Non-present value is equivalent to (0, initial).
 newtype LamportClockSimT s m a =
-    LamportClockSim ((RWST s () (Map Pid (ProcessState s)) m) a)
-    deriving (Applicative, Functor, Monad)
-
-type LamportClockSim s = LamportClockSimT s Identity
+    LamportClockSim (ExceptT String (RWST s () (Map Pid (ProcessState s)) m) a)
+    deriving (Applicative, Functor, Monad, MonadError String)
 
 instance MonadTrans (LamportClockSimT s) where
-    lift = LamportClockSim . lift
+    lift = LamportClockSim . lift . lift
+
+instance Monad m => MonadFail (LamportClockSimT s m) where
+    fail = throwError
+
+type LamportClockSim s = LamportClockSimT s Identity
 
 data ProcessState s = ProcessState
     { time :: LocalTime
@@ -46,7 +52,7 @@ data ProcessState s = ProcessState
 
 -- | ProcessSim inside Lamport clock simulation.
 newtype ProcessSimT s m a = ProcessSim (ReaderT Pid (LamportClockSimT s m) a)
-    deriving (Applicative, Functor, Monad)
+    deriving (Applicative, Functor, Monad, MonadFail)
 
 type ProcessSim s = ProcessSimT s Identity
 
@@ -85,13 +91,14 @@ instance Monad m => MonadState s (ProcessSimT s m) where
         putPS Nothing                   = ProcessState{time = 0, var}
         putPS (Just ProcessState{time}) = ProcessState{time,     var}
 
-runLamportClockSim :: s -> LamportClockSim s a -> a
+runLamportClockSim :: s -> LamportClockSim s a -> Either String a
 runLamportClockSim initial (LamportClockSim action) =
-    fst $ evalRWS action initial mempty
+    fst $ evalRWS (runExceptT action) initial mempty
 
-runLamportClockSimT :: Monad m => s -> LamportClockSimT s m a -> m a
+runLamportClockSimT
+    :: Monad m => s -> LamportClockSimT s m a -> m (Either String a)
 runLamportClockSimT initial (LamportClockSim action) =
-    fst <$> evalRWST action initial mempty
+    fst <$> evalRWST (runExceptT action) initial mempty
 
 runProcessSim :: Pid -> ProcessSim s a -> LamportClockSim s a
 runProcessSim pid (ProcessSim action) = runReaderT action pid
