@@ -16,12 +16,13 @@ import           Test.QuickCheck.Random (mkQCGen)
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
 import qualified CRDT.Cm.ORSet as CmORSet
-import           CRDT.Cm.RGA (RGA (..), RgaIntent (..), RgaPayload (..), load)
+import qualified CRDT.Cm.RGA as CmRGA
 import qualified CRDT.Cm.TwoPSet as CmTwoPSet
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
 import qualified CRDT.Cv.ORSet as CvORSet
 import           CRDT.Cv.PNCounter (PNCounter (..))
+import qualified CRDT.Cv.RGA as CvRGA
 import qualified CRDT.Cv.TwoPSet as CvTwoPSet
 import           CRDT.LamportClock (LamportTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
@@ -60,18 +61,20 @@ instance (Arbitrary a, Ord a) => Arbitrary (CmORSet.Payload a) where
 instance Arbitrary CmORSet.Tag where
     arbitrary = CmORSet.Tag <$> arbitrary <*> arbitrary
 
-instance Arbitrary a => Arbitrary (RGA a) where
+instance Arbitrary a => Arbitrary (CmRGA.RGA a) where
     arbitrary = oneof
-        [ OpAddAfter <$> arbitrary <*> arbitrary <*> arbitrary
-        , OpRemove   <$> arbitrary
+        [ CmRGA.OpAddAfter <$> arbitrary <*> arbitrary <*> arbitrary
+        , CmRGA.OpRemove   <$> arbitrary
         ]
 
-instance Arbitrary a => Arbitrary (RgaIntent a) where
+instance Arbitrary a => Arbitrary (CmRGA.RgaIntent a) where
     arbitrary = frequency
-        [10 :- AddAfter <$> arbitrary <*> arbitrary, 1 :- Remove <$> arbitrary]
+        [ 10 :- CmRGA.AddAfter <$> arbitrary <*> arbitrary
+        ,  1 :- CmRGA.Remove   <$> arbitrary
+        ]
 
-instance (Arbitrary a, Ord a) => Arbitrary (RgaPayload a) where
-    arbitrary = load <$> arbitrary
+instance (Arbitrary a, Ord a) => Arbitrary (CmRGA.RgaPayload a) where
+    arbitrary = CmRGA.load <$> arbitrary
 
 instance Arbitrary a => Arbitrary (CmTwoPSet.TwoPSet a) where
     arbitrary = elements [CmTwoPSet.Add, CmTwoPSet.Remove] <*> arbitrary
@@ -84,6 +87,8 @@ deriving instance (Arbitrary a, Ord a) => Arbitrary (LwwElementSet a)
 
 instance Arbitrary a => Arbitrary (PNCounter a) where
     arbitrary = PNCounter <$> arbitrary <*> arbitrary
+
+deriving instance Arbitrary a => Arbitrary (CvRGA.RGA a)
 
 deriving instance (Ord a, Arbitrary a) => Arbitrary (CvTwoPSet.TwoPSet a)
 

@@ -21,6 +21,7 @@ library:
   dependencies:
     - binary
     - bytestring
+    - Diff
     - mtl
     - network-info
     - safe
