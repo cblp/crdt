@@ -11,7 +11,7 @@ module CRDT.Cv.RGA
     , fromString
     , toString
     -- * Packed representation
-    , RgaPacked (..)
+    , RgaPacked
     , pack
     , unpack
     ) where
@@ -89,11 +89,11 @@ edit newList (RGA oldRga) =
 -- | Compact version of 'RGA'.
 -- For each 'VertexId', the corresponding sequence of vetices has the same 'Pid'
 -- and sequentially growing 'LocalTime', starting with the specified one.
-newtype RgaPacked a = RgaPacked [(VertexId, [Maybe a])]
+type RgaPacked a = [(VertexId, [Maybe a])]
 
 pack :: RGA a -> RgaPacked a
-pack (RGA []) = RgaPacked []
-pack (RGA ((first, atom):vs)) = RgaPacked $ go first [atom] 1 vs
+pack (RGA []) = []
+pack (RGA ((first, atom):vs)) = go first [atom] 1 vs
   where
     -- TODO(cblp, 2018-02-08) buf :: DList
     go vid buf _ [] = [(vid, buf)]
@@ -103,6 +103,6 @@ pack (RGA ((first, atom):vs)) = RgaPacked $ go first [atom] 1 vs
     next dt (LamportTime t p) = LamportTime (t + dt) p
 
 unpack :: RgaPacked a -> RGA a
-unpack (RgaPacked packed) = RGA $ do
+unpack packed = RGA $ do
     (LamportTime time pid, atoms) <- packed
     [(LamportTime (time + i) pid, atom) | i <- [0..] | atom <- atoms]
