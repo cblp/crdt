@@ -4,8 +4,16 @@
 
 module Cm.TwoPSet where
 
-import           CRDT.Cm.TwoPSet (TwoPSet)
+import           Test.QuickCheck (Small)
 
-import           Laws (cmrdtLaw)
+import           CRDT.Cm.TwoPSet (TwoPSet (Remove))
+
+import           Laws (cmrdtLaw, opCommutativity)
 
 prop_Cm = cmrdtLaw @(TwoPSet Char)
+
+prop_remove_commutes_with_itself e = opCommutativity intentOp intentOp
+  where
+    intent = Remove (e :: Small Int)
+    op = intent
+    intentOp = (intent, op)

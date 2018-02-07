@@ -11,6 +11,7 @@
 module Laws
     ( cmrdtLaw
     , cvrdtLaws
+    , opCommutativity
     ) where
 
 import           Control.Monad.State.Strict (MonadState, get, modify)
@@ -66,7 +67,13 @@ cmrdtLaw
 cmrdtLaw = property concurrentOpsCommute
   where
     concurrentOpsCommute payload pid1 pid2 pid3 =
-        pid1 < pid2 && pid2 < pid3 ==> let
+        pid1 < pid2 && pid2 < pid3 ==>
+        forAll genOps $ \case
+            Right ((in1, op1), (in2, op2), state3) ->
+                concurrent op1 op2 ==>
+                opCommutativity (in1, op1) (in2, op2) state3
+            Left _ -> discard
+      where
         genOps = fmap runIdentity $ runGenT $ runLamportClockSimT payload $ (,,)
             <$> runProcessSimT pid1 (do
                     _ <- genAndApplyOps @op
@@ -77,21 +84,24 @@ cmrdtLaw = property concurrentOpsCommute
             <*> runProcessSimT pid3 (do
                     _ <- genAndApplyOps @op
                     get)
-        in
-        forAll genOps $ \case
-            Right ((in1, op1), (in2, op2), state3) ->
-                concurrent op1 op2 ==>
-                opCommutativity (in1, op1) (in2, op2) state3
-            Left _ -> discard
-    opCommutativity (in1, op1) (in2, op2) state =
-        isJust (makeOp' in1 state) ==>
-        isJust (makeOp' in2 state) ==>
-            counterexample
-                ( show in1 ++ " must be valid after " ++ show op2 ++
-                  " applied to " ++ show state )
-                (isJust $ makeOp' in1 $ apply op2 state)
-            .&&.
-            (apply op1 . apply op2) state === (apply op2 . apply op1) state
+
+opCommutativity
+    :: forall op.
+    (CmRDT op, Show op, Show (Intent  op), Show (Payload op))
+    => (Intent op, op) -- ^ the op must be made from the intent
+    -> (Intent op, op) -- ^ the op must be made from the intent
+    -> Payload op -- ^ any reachable state
+    -> Property
+opCommutativity (in1, op1) (in2, op2) state =
+    isJust (makeOp' in1 state) ==>
+    isJust (makeOp' in2 state) ==>
+        counterexample
+            ( show in2 ++ " must be valid after " ++ show op1 ++
+              " applied to " ++ show state )
+            (isJust $ makeOp' in2 $ apply op1 state)
+        .&&.
+        (apply op1 . apply op2) state === (apply op2 . apply op1) state
+  where
     makeOp' = makeOp @op @(ProcessSim (Payload op))
 
 genAndApplyOp
