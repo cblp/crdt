@@ -6,7 +6,8 @@ module Cv.RGA where
 
 import           Test.QuickCheck ((===))
 
-import           CRDT.Cv.RGA (RgaString, edit, fromString, toString)
+import           CRDT.Cv.RGA (RgaString, edit, fromString, pack, toString,
+                              unpack)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
@@ -22,3 +23,5 @@ test_Cv = cvrdtLaws @RgaString
 prop_edit v1 s2 pid = expectRight . runLamportClockSim undefined $ do
     v2 <- runProcessSim pid $ edit s2 v1
     pure $ toString v2 === s2
+
+prop_pack_unpack rga = unpack (pack rga) == (rga :: RgaString)

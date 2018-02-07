@@ -1,14 +1,19 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE TupleSections #-}
 
 module CRDT.Cv.RGA
     ( RGA (..)
-    , RgaString
-    , edit
     , fromList
-    , fromString
     , toList
+    , edit
+    , RgaString
+    , fromString
     , toString
+    -- * Packed representation
+    , RgaPacked (..)
+    , pack
+    , unpack
     ) where
 
 import           Data.Algorithm.Diff (Diff (Both, First, Second), getDiffBy)
@@ -17,7 +22,7 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
 
-import           CRDT.LamportClock (Clock, LamportTime, getTime)
+import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTime)
 
 type VertexId = LamportTime
 
@@ -80,3 +85,24 @@ edit newList (RGA oldRga) =
   where
     newList' = [(undefined, Just a) | a <- newList]
     diff = getDiffBy ((==) `on` snd) oldRga newList' -- TODO(cblp, 2018-02-07) getGroupedDiffBy
+
+-- | Compact version of 'RGA'.
+-- For each 'VertexId', the corresponding sequence of vetices has the same 'Pid'
+-- and sequentially growing 'LocalTime', starting with the specified one.
+newtype RgaPacked a = RgaPacked [(VertexId, [Maybe a])]
+
+pack :: RGA a -> RgaPacked a
+pack (RGA []) = RgaPacked []
+pack (RGA ((first, atom):vs)) = RgaPacked $ go first [atom] 1 vs
+  where
+    -- TODO(cblp, 2018-02-08) buf :: DList
+    go vid buf _ [] = [(vid, buf)]
+    go vid buf dt ((wid, a):ws)
+        | wid == next dt vid = go vid (buf ++ [a]) (succ dt) ws
+        | otherwise = (vid, buf) : go wid [a] 1 ws
+    next dt (LamportTime t p) = LamportTime (t + dt) p
+
+unpack :: RgaPacked a -> RGA a
+unpack (RgaPacked packed) = RGA $ do
+    (LamportTime time pid, atoms) <- packed
+    [(LamportTime (time + i) pid, atom) | i <- [0..] | atom <- atoms]
