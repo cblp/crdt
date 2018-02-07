@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE StrictData #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -10,7 +10,9 @@ module CRDT.Cm.RGA
     , RgaIntent (..)
     , RgaPayload (..)
     , fromString
+    , load
     , toString
+    , toVector
     ) where
 
 import           Prelude hiding (lookup)
@@ -19,7 +21,9 @@ import           Control.Monad.Fail (MonadFail)
 import           Control.Monad.State.Strict (MonadState)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (catMaybes)
+import           Data.Semigroup ((<>))
+import           Data.Vector (Vector, (//))
+import qualified Data.Vector as Vector
 
 import           CRDT.Cm (CausalOrd, CmRDT, Intent, Payload, apply, initial,
                           makeAndApplyOp, makeOp, precedes)
@@ -30,20 +34,20 @@ import           CRDT.LamportClock (Clock, LamportTime (LamportTime), advance,
 type VertexId = LamportTime
 
 data RgaPayload a = RgaPayload
-    { vertices :: Map VertexId (Maybe a)
-    , first    :: Maybe VertexId
-      -- ^ the Vertex just after the beginning
-    , edges    :: Map VertexId VertexId
-      -- ^ the link to the next vertex
+    { vertices  :: Vector (VertexId, Maybe a) -- TODO(cblp, 2018-02-06) Unbox
+    , vertexIxs :: Map VertexId Int
+      -- ^ indices in `vertices` vector
     }
     deriving (Eq, Show)
 
 -- | Is added and is not removed.
 lookup :: VertexId -> RgaPayload a -> Bool
-lookup v RgaPayload{vertices} =
-    case Map.lookup v vertices of
-        Just Just{} -> True
-        _ -> False
+lookup v RgaPayload{vertices, vertexIxs} =
+    case Map.lookup v vertexIxs of
+        Just ix -> case vertices Vector.! ix of
+            (_, Just _) -> True
+            _           -> False
+        Nothing -> False
 
 -- before :: Vertex -> Vertex -> Bool
 -- before u v = b
@@ -70,15 +74,17 @@ data RGA a
 instance CausalOrd (RGA a) where
     precedes _ _ = False
 
+emptyPayload :: RgaPayload a
+emptyPayload = RgaPayload
+    { vertices = Vector.empty
+    , vertexIxs = Map.empty
+    }
+
 instance Ord a => CmRDT (RGA a) where
     type Intent  (RGA a) = RgaIntent  a
     type Payload (RGA a) = RgaPayload a
 
-    initial = RgaPayload
-        { vertices = Map.empty
-        , first    = Nothing
-        , edges    = Map.empty
-        }
+    initial = emptyPayload
 
     makeOp (AddAfter mOldId atom) payload = case mOldId of
         Nothing -> ok
@@ -86,9 +92,9 @@ instance Ord a => CmRDT (RGA a) where
             | lookup oldId payload -> ok
             | otherwise            -> Nothing
       where
-        RgaPayload{vertices} = payload
+        RgaPayload{vertexIxs} = payload
         ok = Just $ do
-            case Map.lookupMax vertices of
+            case Map.lookupMax vertexIxs of
                 Just (LamportTime maxKnownTime _, _) ->
                     advance maxKnownTime
                 Nothing -> pure ()
@@ -99,43 +105,49 @@ instance Ord a => CmRDT (RGA a) where
         | lookup w payload = Just . pure $ OpRemove w
         | otherwise        = Nothing
 
-    apply (OpAddAfter oldId newAtom newId) payload = RgaPayload
-        { vertices = Map.insert newId (Just newAtom) vertices
-        , first    = first'
-        , edges    = edges'
-        }
+    apply (OpAddAfter mOldId newAtom newId) payload =
+        RgaPayload
+            { vertices  = vertices'
+            , vertexIxs = vertexIxs'
+            }
       where
-        (first', edges') = insert oldId (successor oldId)
-        RgaPayload{vertices, first, edges} = payload
+        RgaPayload{vertices, vertexIxs} = payload
+        n = length vertices
 
-        insert
-            :: Maybe VertexId
-            -> Maybe VertexId
-            -> (Maybe VertexId, Map VertexId VertexId) -- (first, edges)
-        insert l r = case r of -- Find an edge (l, r) within which to splice new
-            Just t' | newId < t' -> -- Right position, wrong order
-                insert r (successor r)
-            _ -> insertBetween l r
+        (vertices', newIx)
+            | null vertices = case mOldId of
+                Nothing    -> (Vector.singleton (newId, Just newAtom), 0)
+                Just oldId -> error $ show oldId <> " not delivered"
+            | otherwise = (insert ix, ix)
+              where
+                ix = findWhereToInsert $ case mOldId of
+                    Nothing    -> 0
+                    Just oldId -> vertexIxs Map.! oldId + 1
 
-        insertBetween
-            :: Maybe VertexId
-            -> Maybe VertexId
-            -> (Maybe VertexId, Map VertexId VertexId) -- (first, edges)
-        insertBetween (Just l) (Just r) =
-            (first, Map.insert l newId . Map.insert newId r $ edges)
-        insertBetween (Just l) Nothing = (first, Map.insert l newId edges)
-        insertBetween Nothing (Just r) = (Just newId, Map.insert newId r edges)
-        insertBetween Nothing Nothing = (Just newId, edges)
+        vertexIxs' = Map.insert newId newIx $ Map.map shift vertexIxs
 
-        successor = \case
-            Nothing -> first
-            Just vid
-                | lookup vid payload -> Map.lookup vid edges
-                | otherwise          -> Nothing
+        shift ix
+            | ix >= newIx = ix + 1
+            | otherwise   = ix
 
-    apply (OpRemove vid) payload@RgaPayload{vertices} =
+        -- Find an edge (l, r) within which to splice new
+        findWhereToInsert ix =
+            case vertices Vector.!? ix of
+                Just (t', _) | newId < t' -> -- Right position, wrong order
+                    findWhereToInsert $ succ ix
+                _ -> ix
+
+        insert ix
+            | ix < n = left <> Vector.singleton (newId, Just newAtom) <> right
+            | otherwise = Vector.snoc vertices (newId, Just newAtom)
+          where
+            (left, right) = Vector.splitAt ix vertices
+
+    apply (OpRemove vid) payload@RgaPayload{vertices, vertexIxs} =
         -- pre addAfter(_, w) delivered  -- 2P-Set precondition
-        payload{vertices = Map.insert vid Nothing vertices}
+        payload{vertices = vertices // [(ix, (vid, Nothing))]}
+      where
+        ix = vertexIxs Map.! vid
 
 fromList
     :: (Ord a, Clock m, MonadFail m, MonadState (RgaPayload a) m)
@@ -148,14 +160,10 @@ fromList = go Nothing
         (op :) <$> go (Just newId) xs
 
 toList :: RgaPayload a -> [a]
-toList RgaPayload{first, vertices, edges} = case first of
-    Nothing -> []
-    Just firstId -> catMaybes $ catMaybes
-        [Map.lookup vid vertices | vid <- firstId : go firstId]
-  where
-    go vid = case Map.lookup vid edges of
-        Nothing   -> []
-        Just next -> next : go next
+toList RgaPayload{vertices} = [a | (_, Just a) <- Vector.toList vertices]
+
+toVector :: RgaPayload a -> Vector a
+toVector RgaPayload{vertices} = Vector.mapMaybe snd vertices
 
 fromString
     :: (Clock m, MonadFail m, MonadState (RgaPayload Char) m)
@@ -164,3 +172,10 @@ fromString = fromList
 
 toString :: RgaPayload Char -> String
 toString = toList
+
+load :: Vector (VertexId, Maybe a) -> RgaPayload a
+load vertices = RgaPayload
+    { vertices
+    , vertexIxs = Map.fromList
+        [(vid, ix) | ix <- [0..] | (vid, _) <- Vector.toList vertices]
+    }

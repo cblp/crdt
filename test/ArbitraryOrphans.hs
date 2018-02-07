@@ -7,7 +7,6 @@
 
 module ArbitraryOrphans () where
 
-import qualified Data.Map.Strict as Map
 import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
                                   elements, frequency, oneof)
 import           Test.QuickCheck.Gen (Gen (MkGen))
@@ -17,7 +16,7 @@ import           Test.QuickCheck.Random (mkQCGen)
 import           CRDT.Cm.Counter (Counter (..))
 import           CRDT.Cm.GSet (GSet (..))
 import qualified CRDT.Cm.ORSet as CmORSet
-import           CRDT.Cm.RGA (RGA (..), RgaIntent (..), RgaPayload (..))
+import           CRDT.Cm.RGA (RGA (..), RgaIntent (..), RgaPayload (..), load)
 import qualified CRDT.Cm.TwoPSet as CmTwoPSet
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
@@ -72,17 +71,7 @@ instance Arbitrary a => Arbitrary (RgaIntent a) where
         [10 :- AddAfter <$> arbitrary <*> arbitrary, 1 :- Remove <$> arbitrary]
 
 instance (Arbitrary a, Ord a) => Arbitrary (RgaPayload a) where
-    arbitrary = do
-        vs <- arbitrary
-        let vids = map fst vs
-        let (first, edges) = case vids of
-                []   -> (Nothing, [])
-                x:xs -> (Just x, zip vids xs)
-        pure RgaPayload
-            { vertices = Map.fromList vs
-            , first
-            , edges = Map.fromList edges
-            }
+    arbitrary = load <$> arbitrary
 
 instance Arbitrary a => Arbitrary (CmTwoPSet.TwoPSet a) where
     arbitrary = elements [CmTwoPSet.Add, CmTwoPSet.Remove] <*> arbitrary
