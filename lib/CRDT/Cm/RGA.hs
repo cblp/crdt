@@ -49,14 +49,6 @@ lookup v RgaPayload{vertices, vertexIxs} =
             _           -> False
         Nothing -> False
 
--- before :: Vertex -> Vertex -> Bool
--- before u v = b
---     pre lookup(u) ∧ lookup(v)
---     ∃w_1, ..., w_m ∈ verticesAdded:
---         w_1 = u
---         ∧ w_m = v
---         ∧ ∀j: (w_j, w_{j+1}) ∈ edges
-
 data RgaIntent a
     = AddAfter (Maybe VertexId) a
       -- ^ 'Nothing' means the beginning
@@ -75,10 +67,7 @@ instance CausalOrd (RGA a) where
     precedes _ _ = False
 
 emptyPayload :: RgaPayload a
-emptyPayload = RgaPayload
-    { vertices = Vector.empty
-    , vertexIxs = Map.empty
-    }
+emptyPayload = RgaPayload{vertices = Vector.empty, vertexIxs = Map.empty}
 
 instance Ord a => CmRDT (RGA a) where
     type Intent  (RGA a) = RgaIntent  a
@@ -95,9 +84,8 @@ instance Ord a => CmRDT (RGA a) where
         RgaPayload{vertexIxs} = payload
         ok = Just $ do
             case Map.lookupMax vertexIxs of
-                Just (LamportTime maxKnownTime _, _) ->
-                    advance maxKnownTime
-                Nothing -> pure ()
+                Just (LamportTime maxKnownTime _, _) -> advance maxKnownTime
+                Nothing                              -> pure ()
             newId <- getTime
             pure $ OpAddAfter mOldId atom newId
 
@@ -106,10 +94,7 @@ instance Ord a => CmRDT (RGA a) where
         | otherwise        = Nothing
 
     apply (OpAddAfter mOldId newAtom newId) payload =
-        RgaPayload
-            { vertices  = vertices'
-            , vertexIxs = vertexIxs'
-            }
+        RgaPayload{vertices = vertices', vertexIxs = vertexIxs'}
       where
         RgaPayload{vertices, vertexIxs} = payload
         n = length vertices
