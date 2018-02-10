@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
@@ -20,9 +21,8 @@ import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
                                        throwError)
 import           Control.Monad.Fail (MonadFail, fail)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
-import           Control.Monad.RWS.Strict (RWST, evalRWS, evalRWST)
-import           Control.Monad.State.Strict (MonadState, get, gets, modify, put,
-                                             state)
+import           Control.Monad.State.Strict (StateT, evalState, evalStateT,
+                                             modify, state)
 import           Control.Monad.Trans (MonadTrans, lift)
 import           Data.Functor.Identity (Identity)
 import           Data.Map.Strict (Map)
@@ -33,36 +33,31 @@ import           CRDT.LamportClock (Clock, LamportTime (LamportTime), LocalTime,
 
 -- | Lamport clock simulation. Key is 'Pid'.
 -- Non-present value is equivalent to (0, initial).
-newtype LamportClockSimT s m a =
-    LamportClockSim (ExceptT String (RWST s () (Map Pid (ProcessState s)) m) a)
+newtype LamportClockSimT m a =
+    LamportClockSim (ExceptT String (StateT (Map Pid LocalTime) m) a)
     deriving (Applicative, Functor, Monad, MonadError String)
 
-instance MonadTrans (LamportClockSimT s) where
+instance MonadTrans LamportClockSimT where
     lift = LamportClockSim . lift . lift
 
-instance Monad m => MonadFail (LamportClockSimT s m) where
+instance Monad m => MonadFail (LamportClockSimT m) where
     fail = throwError
 
-type LamportClockSim s = LamportClockSimT s Identity
-
-data ProcessState s = ProcessState
-    { time :: LocalTime
-    , var  :: s
-    }
+type LamportClockSim = LamportClockSimT Identity
 
 -- | ProcessSim inside Lamport clock simulation.
-newtype ProcessSimT s m a = ProcessSim (ReaderT Pid (LamportClockSimT s m) a)
+newtype ProcessSimT m a = ProcessSim (ReaderT Pid (LamportClockSimT m) a)
     deriving (Applicative, Functor, Monad, MonadFail)
 
-type ProcessSim s = ProcessSimT s Identity
+type ProcessSim = ProcessSimT Identity
 
-instance MonadTrans (ProcessSimT s) where
+instance MonadTrans ProcessSimT where
     lift = ProcessSim . lift . lift
 
-instance Monad m => Process (ProcessSimT s m) where
+instance Monad m => Process (ProcessSimT m) where
     getPid = ProcessSim ask
 
-instance Monad m => Clock (ProcessSimT s m) where
+instance Monad m => Clock (ProcessSimT m) where
     getTime = ProcessSim $ do
         pid <- ask
         time <- lift $ preIncrementTime pid
@@ -70,50 +65,30 @@ instance Monad m => Clock (ProcessSimT s m) where
 
     advance time = ProcessSim $ do
         pid <- ask
-        lift . LamportClockSim $ do
-            initial <- ask
-            modify $ Map.alter (Just . advancePS initial) pid
+        lift . LamportClockSim . modify $ Map.alter (Just . advancePS) pid
       where
-        advancePS initial Nothing = ProcessState{time, var = initial}
-        advancePS _       (Just ProcessState{time = current, var}) =
-            ProcessState{time = max time current, var}
+        advancePS = \case
+            Nothing      -> time
+            Just current -> max time current
 
-instance Monad m => MonadState s (ProcessSimT s m) where
-    get = ProcessSim $ do
-        pid <- ask
-        lift . LamportClockSim $ do
-            initial <- ask
-            gets $ maybe initial var . Map.lookup pid
-    put var = ProcessSim $ do
-        pid <- ask
-        lift . LamportClockSim . modify $ Map.alter (Just . putPS) pid
-      where
-        putPS Nothing                   = ProcessState{time = 0, var}
-        putPS (Just ProcessState{time}) = ProcessState{time,     var}
+runLamportClockSim :: LamportClockSim a -> Either String a
+runLamportClockSim (LamportClockSim action) =
+    evalState (runExceptT action) mempty
 
-runLamportClockSim :: s -> LamportClockSim s a -> Either String a
-runLamportClockSim initial (LamportClockSim action) =
-    fst $ evalRWS (runExceptT action) initial mempty
+runLamportClockSimT :: Monad m => LamportClockSimT m a -> m (Either String a)
+runLamportClockSimT (LamportClockSim action) =
+    evalStateT (runExceptT action) mempty
 
-runLamportClockSimT
-    :: Monad m => s -> LamportClockSimT s m a -> m (Either String a)
-runLamportClockSimT initial (LamportClockSim action) =
-    fst <$> evalRWST (runExceptT action) initial mempty
-
-runProcessSim :: Pid -> ProcessSim s a -> LamportClockSim s a
+runProcessSim :: Pid -> ProcessSim a -> LamportClockSim a
 runProcessSim pid (ProcessSim action) = runReaderT action pid
 
-runProcessSimT :: Pid -> ProcessSimT s m a -> LamportClockSimT s m a
+runProcessSimT :: Pid -> ProcessSimT m a -> LamportClockSimT m a
 runProcessSimT pid (ProcessSim action) = runReaderT action pid
 
-preIncrementTime :: Monad m => Pid -> LamportClockSimT s m LocalTime
-preIncrementTime pid = LamportClockSim $ do
-    initial <- ask
-    state $ \pss -> let
-        ps@ProcessState{time} =
-            case Map.lookup pid pss of
-                Nothing -> ProcessState{time = 1, var = initial}
-                Just ProcessState{time = current, var} ->
-                    ProcessState{time = succ current, var}
-        in
-        (time, Map.insert pid ps pss)
+preIncrementTime :: Monad m => Pid -> LamportClockSimT m LocalTime
+preIncrementTime pid = LamportClockSim $ state $ \pss -> let
+    time = case Map.lookup pid pss of
+        Nothing      -> 1
+        Just current -> succ current
+    in
+    (time, Map.insert pid time pss)

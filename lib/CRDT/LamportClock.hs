@@ -21,6 +21,7 @@ import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
                                          readTVar, writeTVar)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
+import           Control.Monad.State.Strict (StateT)
 import           Control.Monad.Trans (lift)
 import           Data.Binary (decode)
 import qualified Data.ByteString.Lazy as BSL
@@ -97,6 +98,13 @@ instance Clock LamportClock where
 instance Process m => Process (ReaderT r m) where
     getPid = lift getPid
 
+instance Process m => Process (StateT s m) where
+    getPid = lift getPid
+
 instance Clock m => Clock (ReaderT r m) where
+    advance = lift . advance
+    getTime = lift getTime
+
+instance Clock m => Clock (StateT s m) where
     advance = lift . advance
     getTime = lift getTime

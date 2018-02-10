@@ -7,6 +7,7 @@
 
 module Cm.ORSet where
 
+import           Control.Monad.State.Strict (evalStateT)
 import qualified Data.MultiMap as MultiMap
 import           Test.QuickCheck (counterexample, (.&&.), (===), (==>))
 
@@ -22,10 +23,11 @@ import           Util (pattern (:-), expectRight)
 prop_Cm = cmrdtLaw @(ORSet Char)
 
 -- | Example from fig. 14 from "A comprehensive study of CRDTs"
-prop_fig14 α β a = expectRight . runLamportClockSim (initial @(ORSet Char)) $ do
-    op1 <- runProcessSim β $ makeAndApplyOp (Add (a :: Char))
-    op2 <- runProcessSim α $ makeAndApplyOp (Add a)
-    op3 <- runProcessSim α $ makeAndApplyOp (Remove a)
+prop_fig14 α β a = expectRight . runLamportClockSim $ do
+    op1 <- runProcessSim β . eval . makeAndApplyOp $ Add (a :: Char)
+    (op2, op3) <- runProcessSim α . eval $
+        (,) <$> makeAndApplyOp (Add a)
+            <*> makeAndApplyOp (Remove a)
     pure $
         α < β ==>
         check "2"   [op2]           [a :- [Tag α 0]]          .&&.
@@ -39,6 +41,7 @@ prop_fig14 α β a = expectRight . runLamportClockSim (initial @(ORSet Char)) $ 
         counterexample ("ops = " ++ opsLabel) $
         counterexample ("ops = " ++ show ops) $
         query' ops === result
+    eval = (`evalStateT` initial @(ORSet Char))
 
 query' :: (Ord a, Foldable f) => f (ORSet a) -> [(a, [Tag])]
 query' = MultiMap.assocs . elements . query

@@ -26,13 +26,13 @@ prop_Cm = cmrdtLaw @(LWW Char)
 test_Cv = cvrdtLaws @(LWW Char)
 
 prop_assign pid1 pid2 (formerValue :: Char) latterValue =
-    expectRight . runLamportClockSim undefined $ do
+    expectRight . runLamportClockSim $ do
         state1 <- runProcessSim pid1 $ initialize formerValue
         state2 <- runProcessSim pid2 $ assign latterValue state1
         pure $ query state2 === latterValue
 
 prop_merge_with_former pid1 pid2 (formerValue :: Char) latterValue =
-    expectRight . runLamportClockSim undefined $ do
+    expectRight . runLamportClockSim $ do
         state1 <- runProcessSim pid1 $ initialize formerValue
         state2 <- runProcessSim pid2 $ assign latterValue state1
         pure $ query (state1 <> state2) === latterValue

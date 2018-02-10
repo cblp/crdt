@@ -6,7 +6,7 @@
 
 module RGA where
 
-import           Control.Monad.State.Strict (get)
+import           Control.Monad.State.Strict (execStateT, runStateT)
 import           Data.Maybe (isJust)
 import qualified Data.Vector as Vector
 import           Test.QuickCheck (conjoin, counterexample, (===))
@@ -25,7 +25,7 @@ import           Util (pattern (:-), expectRightK)
 prop_makeOp =
     isJust
         (makeOp @(RGA Char) (AddAfter Nothing 'a') (initial @(RGA Char))
-        :: Maybe (ProcessSim () (RGA Char)))
+        :: Maybe (ProcessSim (RGA Char)))
 
 prop_makeAndApplyOp = conjoin
     [ counterexample "result3"  $ result3  === Right (op3, payload3)
@@ -46,18 +46,19 @@ prop_makeAndApplyOp = conjoin
     payload2 = load $ Vector.fromList [time2 :- Just '2', time3 :- Just '3']
     payload12 = load $ Vector.fromList
         [time2 :- Just '2', time1 :- Just '1', time3 :- Just '3']
-    result3 = runLamportClockSim (initial @(RGA Char)) $
-        runProcessSim (Pid 3) $ do
+    result3 =
+        runLamportClockSim .
+        runProcessSim (Pid 3) .
+        (`runStateT` initial @(RGA Char)) $ do
             advance 2
-            (,) <$> makeAndApplyOp @(RGA Char) (AddAfter Nothing '3')
-                <*> get
-    result2 = runLamportClockSim payload3 $ runProcessSim (Pid 2) $ do
-        advance 1
-        (,) <$> makeAndApplyOp @(RGA Char) (AddAfter Nothing '2')
-            <*> get
-    result1 = runLamportClockSim payload3 $ runProcessSim (Pid 1) $
-        (,) <$> makeAndApplyOp @(RGA Char) (AddAfter Nothing '1')
-            <*> get
+            makeAndApplyOp @(RGA Char) (AddAfter Nothing '3')
+    result2 =
+        runLamportClockSim . runProcessSim (Pid 2) . (`runStateT` payload3) $ do
+            advance 1
+            makeAndApplyOp @(RGA Char) (AddAfter Nothing '2')
+    result1 =
+        runLamportClockSim . runProcessSim (Pid 1) . (`runStateT` payload3) $
+            makeAndApplyOp @(RGA Char) (AddAfter Nothing '1')
     result12 = apply op2 payload1
     result21 = apply op1 payload2
 
@@ -66,16 +67,19 @@ prop_fromString s pid =
     Right (load $ Vector.fromList
         [LamportTime t pid :- Just c | t <- [1..] | c <- s])
   where
-    result = runLamportClockSim (initial @(RGA Char)) $
-        runProcessSim pid $ do
-            _ <- fromString s
-            get
+    result =
+        runLamportClockSim .
+        runProcessSim pid .
+        (`execStateT` initial @(RGA Char)) $
+        fromString s
 
 prop_fromString_toString s pid =
     expectRightK result $ \s' -> toString s' === s
   where
-    result = runLamportClockSim (initial @(RGA Char)) $ runProcessSim pid $ do
-        _ <- fromString s
-        get
+    result =
+        runLamportClockSim .
+        runProcessSim pid .
+        (`execStateT` initial @(RGA Char)) $
+        fromString s
 
 prop_Cm = cmrdtLaw @(RGA Char)

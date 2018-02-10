@@ -15,12 +15,12 @@ import           Laws (cvrdtLaws)
 import           Util (expectRight)
 
 prop_fromString_toString s pid = expectRight $ do
-    s' <- runLamportClockSim undefined $ runProcessSim pid $ fromString s
+    s' <- runLamportClockSim . runProcessSim pid $ fromString s
     pure $ toString s' === s
 
 test_Cv = cvrdtLaws @RgaString
 
-prop_edit v1 s2 pid = expectRight . runLamportClockSim undefined $ do
+prop_edit v1 s2 pid = expectRight . runLamportClockSim $ do
     v2 <- runProcessSim pid $ edit s2 v1
     pure $ toString v2 === s2
 

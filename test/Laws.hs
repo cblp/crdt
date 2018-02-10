@@ -14,7 +14,8 @@ module Laws
     , opCommutativity
     ) where
 
-import           Control.Monad.State.Strict (MonadState, get, modify)
+import           Control.Monad.State.Strict (MonadState, StateT, evalStateT,
+                                             execStateT, get, modify)
 import           Control.Monad.Trans (lift)
 import           Data.Functor.Identity (runIdentity)
 import           Data.Maybe (isJust)
@@ -59,31 +60,31 @@ cvrdtLaws = semilatticeLaws @a
 -- | CmRDT law: concurrent ops commute
 cmrdtLaw
     :: forall op.
-    ( CmRDT op, Show op
-    , Arbitrary (Intent  op), Show (Intent  op)
-    , Arbitrary (Payload op), Show (Payload op)
+    ( CmRDT op
+    , Show op
+    , Arbitrary (Intent  op)
+    , Show (Intent  op)
+    , Show (Payload op)
     )
     => Property
 cmrdtLaw = property concurrentOpsCommute
   where
-    concurrentOpsCommute payload pid1 pid2 pid3 =
+    concurrentOpsCommute pid1 pid2 pid3 =
         pid1 < pid2 && pid2 < pid3 ==>
-        forAll genOps $ \case
+        forAll genFixture $ \case
             Right ((in1, op1), (in2, op2), state3) ->
                 concurrent op1 op2 ==>
                 opCommutativity (in1, op1) (in2, op2) state3
             Left _ -> discard
       where
-        genOps = fmap runIdentity $ runGenT $ runLamportClockSimT payload $ (,,)
-            <$> runProcessSimT pid1 (do
-                    _ <- genAndApplyOps @op
-                    genAndApplyOp @op)
-            <*> runProcessSimT pid2 (do
-                    _ <- genAndApplyOps @op
-                    genAndApplyOp @op)
-            <*> runProcessSimT pid3 (do
-                    _ <- genAndApplyOps @op
-                    get)
+        genFixture = fmap runIdentity . runGenT . runLamportClockSimT $ (,,)
+            <$> runProcessSimT pid1 genStateAndTakeLastOp
+            <*> runProcessSimT pid2 genStateAndTakeLastOp
+            <*> runProcessSimT pid3 genState
+        genState = (`execStateT` initial @op) $ genAndApplyOps @op
+        genStateAndTakeLastOp = (`evalStateT` initial @op) $ do
+            _ <- genAndApplyOps @op
+            genAndApplyOp @op
 
 opCommutativity
     :: forall op.
@@ -102,7 +103,7 @@ opCommutativity (in1, op1) (in2, op2) state =
         .&&.
         (apply op1 . apply op2) state === (apply op2 . apply op1) state
   where
-    makeOp' = makeOp @op @(ProcessSim (Payload op))
+    makeOp' = makeOp @op @ProcessSim
 
 genAndApplyOp
     :: ( CmRDT op, Arbitrary (Intent op)
@@ -128,7 +129,16 @@ genAndApplyOps
     => m [(Intent op, op)]
 genAndApplyOps = GenT.listOf genAndApplyOp
 
-instance MonadGen m => MonadGen (ProcessSimT s m) where
+instance MonadGen m => MonadGen (ProcessSimT m) where
+    liftGen = lift . liftGen
+    variant = undefined
+    sized f = do
+        size <- liftGen getSize
+        f size
+    resize = undefined
+    choose = liftGen . choose
+
+instance MonadGen m => MonadGen (StateT s m) where
     liftGen = lift . liftGen
     variant = undefined
     sized f = do
