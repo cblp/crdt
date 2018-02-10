@@ -1,5 +1,5 @@
 name: crdt
-version: '7.0' # ComVer
+version: '8.0' # ComVer
 category: Distributed Systems
 copyright:
   2017 Yuriy Syrovetskiy, Nikolay Loginov;
