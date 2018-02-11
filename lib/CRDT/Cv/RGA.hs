@@ -1,6 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ParallelListComp #-}
-{-# LANGUAGE TupleSections #-}
 
 module CRDT.Cv.RGA
     ( RGA (..)
@@ -22,7 +21,8 @@ import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
 
-import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTime)
+import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTime,
+                                    getTimes)
 
 type VertexId = LamportTime
 
@@ -33,20 +33,19 @@ newtype RGA a = RGA [(VertexId, Maybe a)]
 type RgaString = RGA Char
 
 merge :: Eq a => RGA a -> RGA a -> RGA a
-merge (RGA vertices1) (RGA vertices2) =
-    RGA $ mergeVertexLists vertices1 vertices2
+merge (RGA vertices1) (RGA vertices2) = RGA
+    $ mergeVertexLists vertices1 vertices2
   where
-    mergeVertexLists []                   vs2                  = vs2
-    mergeVertexLists vs1                  []                   = vs1
-    mergeVertexLists (v1@(id1, a1) : vs1) (v2@(id2, a2) : vs2) =
+    mergeVertexLists []  vs2 = vs2
+    mergeVertexLists vs1 []  = vs1
+    mergeVertexLists (v1@(id1, a1):vs1) (v2@(id2, a2):vs2) =
         case compare id1 id2 of
-            LT -> v2                      : mergeVertexLists (v1:vs1) vs2
-            GT -> v1                      : mergeVertexLists vs1      (v2:vs2)
-            EQ -> (id1, mergeAtoms a1 a2) : mergeVertexLists vs1      vs2
+            LT -> v2 : mergeVertexLists (v1 : vs1) vs2
+            GT -> v1 : mergeVertexLists vs1 (v2 : vs2)
+            EQ -> (id1, mergeAtoms a1 a2) : mergeVertexLists vs1 vs2
 
-    mergeAtoms (Just a1) (Just a2)
-        | a1 == a2 = Just a1
-    mergeAtoms _ _ = Nothing
+    mergeAtoms (Just a1) (Just a2) | a1 == a2 = Just a1
+    mergeAtoms _         _                    = Nothing
 
 instance Eq a => Semigroup (RGA a) where
     (<>) = merge
@@ -59,17 +58,15 @@ instance Eq a => Monoid (RGA a) where
     mappend = (<>)
 
 toList :: RGA a -> [a]
-toList (RGA rga) = [a | (_, Just a) <- rga]
+toList (RGA rga) = [ a | (_, Just a) <- rga ]
 
 toString :: RgaString -> String
 toString = toList
 
 fromList :: Clock m => [a] -> m (RGA a)
-fromList = fmap RGA . traverse makeVertex
-  where
-    makeVertex a = do
-        t <- getTime
-        pure (t, Just a)
+fromList xs = do
+    LamportTime time0 pid <- getTimes . fromIntegral $ length xs
+    pure $ RGA [ (LamportTime time pid, Just x) | time <- [time0..] | x <- xs ]
 
 fromString :: Clock m => String -> m RgaString
 fromString = fromList
@@ -77,14 +74,15 @@ fromString = fromList
 -- | Replace content with specified,
 -- applying changed found by the diff algorithm
 edit :: (Eq a, Clock m) => [a] -> RGA a -> m (RGA a)
-edit newList (RGA oldRga) =
-    fmap RGA $ for diff $ \case
-        First  (vid, _)        -> pure (vid, Nothing)
-        Both   v        _      -> pure v
-        Second          (_, a) -> (, a) <$> getTime
+edit newList (RGA oldRga) = fmap RGA . for diff $ \case
+    First (vid, _) -> pure (vid, Nothing)
+    Both v _       -> pure v
+    Second (_, a)  -> do
+        t <- getTime
+        pure (t, a)
   where
-    newList' = [(undefined, Just a) | a <- newList]
-    diff = getDiffBy ((==) `on` snd) oldRga newList' -- TODO(cblp, 2018-02-07) getGroupedDiffBy
+    newList' = [ (undefined, Just a) | a <- newList ]
+    diff     = getDiffBy ((==) `on` snd) oldRga newList' -- TODO(cblp, 2018-02-07) getGroupedDiffBy
 
 -- | Compact version of 'RGA'.
 -- For each 'VertexId', the corresponding sequence of vetices has the same 'Pid'
@@ -92,17 +90,17 @@ edit newList (RGA oldRga) =
 type RgaPacked a = [(VertexId, [Maybe a])]
 
 pack :: RGA a -> RgaPacked a
-pack (RGA []) = []
+pack (RGA []                ) = []
 pack (RGA ((first, atom):vs)) = go first [atom] 1 vs
   where
     -- TODO(cblp, 2018-02-08) buf :: DList
     go vid buf _ [] = [(vid, buf)]
     go vid buf dt ((wid, a):ws)
         | wid == next dt vid = go vid (buf ++ [a]) (succ dt) ws
-        | otherwise = (vid, buf) : go wid [a] 1 ws
+        | otherwise          = (vid, buf) : go wid [a] 1 ws
     next dt (LamportTime t p) = LamportTime (t + dt) p
 
 unpack :: RgaPacked a -> RGA a
 unpack packed = RGA $ do
     (LamportTime time pid, atoms) <- packed
-    [(LamportTime (time + i) pid, atom) | i <- [0..] | atom <- atoms]
+    [ (LamportTime (time + i) pid, atom) | i <- [0..] | atom <- atoms ]

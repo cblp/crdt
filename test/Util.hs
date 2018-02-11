@@ -15,3 +15,9 @@ expectRightK e f = case e of
 pattern (:-) :: a -> b -> (a, b)
 pattern a :- b = (a, b)
 infix 0 :-
+
+ok :: Property
+ok = property ()
+
+fail :: String -> Property
+fail s = counterexample s $ property False

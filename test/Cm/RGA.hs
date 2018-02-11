@@ -4,7 +4,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeApplications #-}
 
-module RGA where
+module Cm.RGA where
 
 import           Prelude hiding (fail)
 
@@ -13,8 +13,8 @@ import           Data.Foldable (toList)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (isJust)
 import qualified Data.Vector as Vector
-import           Test.QuickCheck (Property, conjoin, counterexample, property,
-                                  (.&&.), (===))
+import           Test.QuickCheck (Property, conjoin, counterexample, (.&&.),
+                                  (===))
 
 import           CRDT.Cm (apply, initial, makeAndApplyOp, makeOp)
 import           CRDT.Cm.RGA (RGA (OpAddAfter, OpRemove), RgaIntent (AddAfter),
@@ -26,7 +26,7 @@ import           CRDT.LamportClock.Simulation (ProcessSim, runLamportClockSim,
                                                runProcessSim)
 
 import           Laws (cmrdtLaw)
-import           Util (pattern (:-), expectRightK)
+import           Util (pattern (:-), expectRightK, fail, ok)
 
 prop_makeOp = isJust $ makeOp @(RGA Char) @ProcessSim
     (AddAfter Nothing 'a')
@@ -95,10 +95,6 @@ prop_fromString_toString s pid = expectRightK result $ \s' -> toString s' === s
             $ fromString s
 
 prop_Cm = cmrdtLaw @(RGA Char)
-
-ok = property ()
-
-fail s = counterexample s $ property False
 
 -- | Ops equal without local times
 opsEqWoTime (OpAddAfter parent1 atom1 id1) (OpAddAfter parent2 atom2 id2) =
