@@ -15,14 +15,14 @@ module CRDT.Cv.RGA
     , unpack
     ) where
 
-import           Data.Algorithm.Diff (Diff (Both, First, Second), getDiffBy)
+import           Data.Algorithm.Diff (Diff (Both, First, Second),
+                                      getGroupedDiffBy)
 import           Data.Function (on)
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
 
-import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTime,
-                                    getTimes)
+import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTimes)
 
 type VertexId = LamportTime
 
@@ -64,9 +64,12 @@ toString :: RgaString -> String
 toString = toList
 
 fromList :: Clock m => [a] -> m (RGA a)
-fromList xs = do
+fromList = fmap RGA . fromList' . map Just
+
+fromList' :: Clock m => [Maybe a] -> m [(VertexId, Maybe a)]
+fromList' xs = do
     LamportTime time0 pid <- getTimes . fromIntegral $ length xs
-    pure $ RGA [ (LamportTime time pid, Just x) | time <- [time0..] | x <- xs ]
+    pure [ (LamportTime time pid, x) | time <- [time0..] | x <- xs ]
 
 fromString :: Clock m => String -> m RgaString
 fromString = fromList
@@ -74,15 +77,13 @@ fromString = fromList
 -- | Replace content with specified,
 -- applying changed found by the diff algorithm
 edit :: (Eq a, Clock m) => [a] -> RGA a -> m (RGA a)
-edit newList (RGA oldRga) = fmap RGA . for diff $ \case
-    First (vid, _) -> pure (vid, Nothing)
-    Both v _       -> pure v
-    Second (_, a)  -> do
-        t <- getTime
-        pure (t, a)
+edit newList (RGA oldRga) = fmap (RGA . concat) . for diff $ \case
+    First removed -> pure [ (vid, Nothing) | (vid, _) <- removed ] -- :: m [(VertexId, Maybe a)]
+    Both v _      -> pure v -- :: m [(VertexId, Maybe a)]
+    Second added  -> fromList' $ map snd added -- :: m [(VertexId, Maybe a)]
   where
     newList' = [ (undefined, Just a) | a <- newList ]
-    diff     = getDiffBy ((==) `on` snd) oldRga newList' -- TODO(cblp, 2018-02-07) getGroupedDiffBy
+    diff     = getGroupedDiffBy ((==) `on` snd) oldRga newList'
 
 -- | Compact version of 'RGA'.
 -- For each 'VertexId', the corresponding sequence of vetices has the same 'Pid'
