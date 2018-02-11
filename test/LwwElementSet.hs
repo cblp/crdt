@@ -16,6 +16,7 @@ import           Prelude hiding (lookup)
 import           Data.Semigroup ((<>))
 
 import           CRDT.Cv.LwwElementSet (LwwElementSet, add, lookup, remove)
+import           CRDT.LamportClock (LamportTime (LamportTime), advance, getTime)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
@@ -46,6 +47,10 @@ prop_no_removal_bias (s :: LwwElementSet Char) x pid1 pid2 pid3 =
 -- | Difference from 'ORSet' -- other replica can accidentally delete x
 prop_they_accidentally_delete_our_value (s :: LwwElementSet Char) x pid1 pid2 =
     expectRight . runLamportClockSim $ do
-        s1 <- runProcessSim pid1 $ add x s
-        s2 <- runProcessSim pid2 $ remove x =<< add x s
+        (s1, LamportTime t0 _) <-
+            runProcessSim pid1 $ (,) <$> add x s <*> getTime
+        s2 <- runProcessSim pid2 $ do
+            advance t0
+            s' <- add x s
+            remove x s'
         pure . not . lookup x $ s1 <> s2

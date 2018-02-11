@@ -25,11 +25,15 @@ import           Control.Monad.State.Strict (StateT, evalState, evalStateT,
                                              modify, state)
 import           Control.Monad.Trans (MonadTrans, lift)
 import           Data.Functor.Identity (Identity)
+import           Data.Hashable (hash)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+import           Data.Maybe (fromMaybe)
+import           Numeric.Natural (Natural)
 
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), LocalTime,
-                                    Pid, Process, advance, getPid, getTime)
+                                    Pid (Pid), Process, advance, getPid,
+                                    getTimes)
 
 -- | Lamport clock simulation. Key is 'Pid'.
 -- Non-present value is equivalent to (0, initial).
@@ -58,10 +62,12 @@ instance Monad m => Process (ProcessSimT m) where
     getPid = ProcessSim ask
 
 instance Monad m => Clock (ProcessSimT m) where
-    getTime = ProcessSim $ do
+    getTimes n' = ProcessSim $ do
         pid <- ask
-        time <- lift $ preIncrementTime pid
+        time <- lift $ preIncreaseTime n pid
         pure $ LamportTime time pid
+      where
+        n = max n' 1
 
     advance time = ProcessSim $ do
         pid <- ask
@@ -85,10 +91,11 @@ runProcessSim pid (ProcessSim action) = runReaderT action pid
 runProcessSimT :: Pid -> ProcessSimT m a -> LamportClockSimT m a
 runProcessSimT pid (ProcessSim action) = runReaderT action pid
 
-preIncrementTime :: Monad m => Pid -> LamportClockSimT m LocalTime
-preIncrementTime pid = LamportClockSim $ state $ \pss -> let
-    time = case Map.lookup pid pss of
-        Nothing      -> 1
-        Just current -> succ current
-    in
-    (time, Map.insert pid time pss)
+-- | Increase time by pid and return new value
+preIncreaseTime :: Monad m => Natural -> Pid -> LamportClockSimT m LocalTime
+preIncreaseTime n pid = LamportClockSim $ state $ \pss ->
+    let time0 = fromMaybe 0 $ Map.lookup pid pss
+        Pid p = pid
+        d     = fromIntegral . abs $ hash (time0, n, p)
+        time  = time0 + max 1 d
+    in  (time, Map.insert pid time pss)

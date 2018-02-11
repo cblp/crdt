@@ -8,6 +8,7 @@ module CRDT.LamportClock
     -- * Lamport timestamp (for a single process)
     , Clock (..)
     , LamportTime (..)
+    , getTime
     , LocalTime
     , Process (..)
     -- * Real Lamport clock
@@ -56,17 +57,32 @@ getPidByMac = Pid . decodeMac <$> getMac
     getMac :: IO MAC
     getMac =
         headDef (error "Can't get any non-zero MAC address of this machine")
-        . filter (/= minBound)
-        . map mac
-        <$> getNetworkInterfaces
+            .   filter (/= minBound)
+            .   map mac
+            <$> getNetworkInterfaces
 
     decodeMac :: MAC -> Word64
     decodeMac (MAC b5 b4 b3 b2 b1 b0) =
         decode $ BSL.pack [0, 0, b5, b4, b3, b2, b1, b0]
 
 class Process m => Clock m where
-    getTime :: m LamportTime
+    -- | Get sequential timestamps.
+    --
+    -- Laws:
+    --    1.  t1 <- getTimes n
+    --        t2 <- getTime
+    --        t2 >= t1 + n
+    --
+    --    2. getTimes 0 == getTimes 1
+    getTimes
+        :: Natural -- ^ number of needed timestamps
+        -> m LamportTime
+        -- ^ Starting value of the range.
+        -- So return value @t@ means range @[t .. t + n - 1]@.
     advance :: LocalTime -> m ()
+
+getTime :: Clock m => m LamportTime
+getTime = getTimes 1
 
 -- TODO(cblp, 2018-01-06) benchmark and compare with 'atomicModifyIORef'
 newtype LamportClock a = LamportClock (ReaderT (TVar LocalTime) IO a)
@@ -83,17 +99,20 @@ instance Clock LamportClock where
         timeVar <- ask
         lift $ atomically $ modifyTVar' timeVar $ max time
 
-    getTime = LamportClock $ do
-        timeVar <- ask
-        lift $ do
-            realTime <- getRealLocalTime
-            time1 <- atomically $ do
-                time0 <- readTVar timeVar
-                let time1 = max realTime (time0 + 1)
-                writeTVar timeVar time1
-                pure time1
-            pid <- getPidByMac
-            pure $ LamportTime time1 pid
+    getTimes n' = do
+        timeRangeStart <- LamportClock $ do
+            timeVar <- ask
+            lift $ do
+                realTime <- getRealLocalTime
+                atomically $ do
+                    timeCur <- readTVar timeVar
+                    let timeRangeStart = max realTime (timeCur + 1)
+                    writeTVar timeVar $ timeRangeStart + n - 1
+                    pure timeRangeStart
+        pid <- getPid
+        pure $ LamportTime timeRangeStart pid
+      where
+        n = max n' 1
 
 instance Process m => Process (ReaderT r m) where
     getPid = lift getPid
@@ -103,8 +122,8 @@ instance Process m => Process (StateT s m) where
 
 instance Clock m => Clock (ReaderT r m) where
     advance = lift . advance
-    getTime = lift getTime
+    getTimes = lift . getTimes
 
 instance Clock m => Clock (StateT s m) where
     advance = lift . advance
-    getTime = lift getTime
+    getTimes = lift . getTimes
