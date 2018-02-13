@@ -2,10 +2,9 @@
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module ArbitraryOrphans () where
+module CRDT.Arbitrary () where
 
 import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
                                   elements, frequency, oneof)
@@ -27,8 +26,6 @@ import qualified CRDT.Cv.TwoPSet as CvTwoPSet
 import           CRDT.LamportClock (LamportTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
 import           Data.MultiMap (MultiMap (..))
-
-import           Util (pattern (:-))
 
 instance Arbitrary (Counter a) where
     arbitrary = arbitraryBoundedEnum
@@ -69,8 +66,8 @@ instance Arbitrary a => Arbitrary (CmRGA.RGA a) where
 
 instance Arbitrary a => Arbitrary (CmRGA.RgaIntent a) where
     arbitrary = frequency
-        [ 10 :- CmRGA.AddAfter <$> arbitrary <*> arbitrary
-        ,  1 :- CmRGA.Remove   <$> arbitrary
+        [ (10, CmRGA.AddAfter <$> arbitrary <*> arbitrary)
+        , ( 1, CmRGA.Remove   <$> arbitrary)
         ]
 
 instance (Arbitrary a, Ord a) => Arbitrary (CmRGA.RgaPayload a) where

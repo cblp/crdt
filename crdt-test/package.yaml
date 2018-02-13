@@ -1,0 +1,30 @@
+name: crdt-test
+
+dependencies:
+  - base
+  - crdt
+
+library:
+  dependencies:
+    - QuickCheck
+    - quickcheck-instances
+  other-modules: []
+  source-dirs: lib
+
+tests:
+  test:
+    dependencies:
+      - containers
+      - mtl
+      - QuickCheck
+      - QuickCheck-GenT
+      - quickcheck-instances
+      - tasty
+      - tasty-discover >= 4.1  # fixed discovery bug
+      - tasty-quickcheck
+
+      - crdt
+      - crdt-test
+
+    main: Main.hs
+    source-dirs: test

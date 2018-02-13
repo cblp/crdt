@@ -12,7 +12,6 @@ import           Control.Monad.State.Strict (execStateT, runStateT)
 import           Data.Foldable (toList)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (isJust)
-import qualified Data.Vector as Vector
 import           Test.QuickCheck (Property, conjoin, counterexample, (.&&.),
                                   (===))
 
@@ -24,6 +23,7 @@ import           CRDT.LamportClock (LamportTime (LamportTime), Pid (Pid),
                                     advance)
 import           CRDT.LamportClock.Simulation (ProcessSim, runLamportClockSim,
                                                runProcessSim)
+import           GHC.Exts (fromList)
 
 import           Laws (cmrdtLaw)
 import           Util (pattern (:-), expectRightK, fail, ok)
@@ -52,11 +52,11 @@ prop_makeAndApplyOp = conjoin
     op1       = OpAddAfter Nothing '1' time1
     op2       = OpAddAfter Nothing '2' time2
     op3       = OpAddAfter Nothing '3' time3
-    payload3  = load $ Vector.singleton (time3 :- Just '3')
-    payload1  = load $ Vector.fromList [time1 :- Just '1', time3 :- Just '3']
-    payload2  = load $ Vector.fromList [time2 :- Just '2', time3 :- Just '3']
-    payload12 = load $ Vector.fromList
-        [time2 :- Just '2', time1 :- Just '1', time3 :- Just '3']
+    payload3  = load $ fromList [time3 :- Just '3']
+    payload1  = load $ fromList [time1 :- Just '1', time3 :- Just '3']
+    payload2  = load $ fromList [time2 :- Just '2', time3 :- Just '3']
+    payload12 = load
+        $ fromList [time2 :- Just '2', time1 :- Just '1', time3 :- Just '3']
     result3 =
         runLamportClockSim
             . runProcessSim (Pid 3)
@@ -77,7 +77,7 @@ prop_makeAndApplyOp = conjoin
     result21 = apply op1 payload2
 
 prop_fromString s pid =
-    expectRightK result $ payloadsEqWoTime $ load $ Vector.fromList
+    expectRightK result $ payloadsEqWoTime $ load $ fromList
         [ LamportTime t pid :- Just c | t <- [1..] | c <- s ]
   where
     result =
