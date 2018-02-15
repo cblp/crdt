@@ -23,15 +23,20 @@ before_install:
     | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   - export STACK="stack --no-terminal --install-ghc"
 
+install:
+  # Build dependencies
+  - $STACK build --test --only-dependencies
+script:
+  # Build the package, its tests, and its docs and run the tests
+  - test/script
+
 matrix:
   include:
-    - compiler: build and test
-      install:
-        # Build dependencies
-        - $STACK build --test --only-dependencies
-      script:
-        # Build the package, its tests, and its docs and run the tests
-        - test/script
+    - compiler: GHC 8.2
+    - compiler: GHC 8.0
+      env: STACK_YAML="ghc-8.0.yaml"
+    - compiler: GHC 7.10
+      env: STACK_YAML="ghc-7.10.yaml"
     - compiler: hlint
       install:
         - $STACK build hlint

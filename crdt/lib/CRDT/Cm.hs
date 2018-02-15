@@ -91,17 +91,18 @@ class (CausalOrd op, Eq (Payload op)) => CmRDT op where
     -- We must make a test for it first.
     apply :: op -> Payload op -> Payload op
 
-query :: forall op f. (CmRDT op, Foldable f) => f op -> Payload op
+query :: forall op f . (CmRDT op, Foldable f) => f op -> Payload op
 query = foldl (flip apply) (initial @op)
 
 -- | Make op and apply it to the payload -- a common routine at the source node.
 makeAndApplyOp
     :: (CmRDT op, Clock m, MonadFail m, MonadState (Payload op) m)
-    => Intent op -> m op
+    => Intent op
+    -> m op
 makeAndApplyOp intent = do
     payload <- get
     case makeOp intent payload of
-        Nothing -> fail "precodition failed"
+        Nothing       -> fail "precodition failed"
         Just opAction -> do
             op <- opAction
             modify $ apply op
@@ -109,8 +110,11 @@ makeAndApplyOp intent = do
 
 makeAndApplyOps
     :: ( CmRDT op
-       , Clock m, MonadFail m, MonadState (Payload op) m
+       , Clock m
+       , MonadFail m
+       , MonadState (Payload op) m
        , Traversable f
        )
-    => f (Intent op) -> m (f op)
+    => f (Intent op)
+    -> m (f op)
 makeAndApplyOps = traverse makeAndApplyOp

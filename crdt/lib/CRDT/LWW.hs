@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -16,7 +17,10 @@ import           Data.Semigroup (Semigroup, (<>))
 
 import           Data.Semilattice (Semilattice)
 
+#if ENABLE_CM
 import           CRDT.Cm (CausalOrd (..), CmRDT (..))
+#endif /* ENABLE_CM */
+
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), advance,
                                     getTime)
 
@@ -65,6 +69,8 @@ query = value
 --------------------------------------------------------------------------------
 -- CmRDT -----------------------------------------------------------------------
 
+#if ENABLE_CM
+
 instance CausalOrd (LWW a) where
     precedes _ _ = False
 
@@ -81,6 +87,8 @@ instance Eq a => CmRDT (LWW a) where
     apply op = Just . \case
         Just payload -> op <> payload
         Nothing      -> op
+
+#endif /* ENABLE_CM */
 
 advanceFromLWW :: Clock m => LWW a -> m ()
 advanceFromLWW LWW{time = LamportTime time _} = advance time
