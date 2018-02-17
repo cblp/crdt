@@ -1,22 +1,17 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
 module CRDT.Arbitrary () where
 
-import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum,
-                                  elements, frequency, oneof)
+import           Test.QuickCheck (Arbitrary (arbitrary))
 import           Test.QuickCheck.Gen (Gen (MkGen))
 import           Test.QuickCheck.Instances ()
 import           Test.QuickCheck.Random (mkQCGen)
 
-import           CRDT.Cm.Counter (Counter (..))
-import           CRDT.Cm.GSet (GSet (..))
-import qualified CRDT.Cm.ORSet as CmORSet
-import qualified CRDT.Cm.RGA as CmRGA
-import qualified CRDT.Cm.TwoPSet as CmTwoPSet
 import           CRDT.Cv.GCounter (GCounter (..))
 import           CRDT.Cv.LwwElementSet (LwwElementSet (..))
 import qualified CRDT.Cv.ORSet as CvORSet
@@ -25,10 +20,10 @@ import qualified CRDT.Cv.RGA as CvRGA
 import qualified CRDT.Cv.TwoPSet as CvTwoPSet
 import           CRDT.LamportClock (LamportTime (..), Pid (..))
 import           CRDT.LWW (LWW (..))
-import           Data.MultiMap (MultiMap (..))
 
-instance Arbitrary (Counter a) where
-    arbitrary = arbitraryBoundedEnum
+#if ENABLE_CM
+import           CRDT.Arbitrary.Cm ()
+#endif /* ENABLE_CM */
 
 instance Arbitrary a => Arbitrary (LWW a) where
     arbitrary = do
@@ -37,44 +32,6 @@ instance Arbitrary a => Arbitrary (LWW a) where
         pure LWW{value, time}
       where
         hash (LamportTime t (Pid p)) = fromIntegral t * 997 + fromIntegral p
-
-deriving instance Arbitrary a => Arbitrary (GSet a)
-
-deriving instance
-        (Arbitrary k, Ord k, Arbitrary v, Ord v) => Arbitrary (MultiMap k v)
-
-instance Arbitrary a => Arbitrary (CmORSet.Intent a) where
-    arbitrary = elements [CmORSet.Add, CmORSet.Remove] <*> arbitrary
-
-instance Arbitrary a => Arbitrary (CmORSet.ORSet a) where
-    arbitrary = oneof
-        [ CmORSet.OpAdd    <$> arbitrary <*> arbitrary
-        , CmORSet.OpRemove <$> arbitrary <*> arbitrary
-        ]
-
-instance (Arbitrary a, Ord a) => Arbitrary (CmORSet.Payload a) where
-    arbitrary = CmORSet.Payload <$> arbitrary <*> arbitrary
-
-instance Arbitrary CmORSet.Tag where
-    arbitrary = CmORSet.Tag <$> arbitrary <*> arbitrary
-
-instance Arbitrary a => Arbitrary (CmRGA.RGA a) where
-    arbitrary = oneof
-        [ CmRGA.OpAddAfter <$> arbitrary <*> arbitrary <*> arbitrary
-        , CmRGA.OpRemove   <$> arbitrary
-        ]
-
-instance Arbitrary a => Arbitrary (CmRGA.RgaIntent a) where
-    arbitrary = frequency
-        [ (10, CmRGA.AddAfter <$> arbitrary <*> arbitrary)
-        , ( 1, CmRGA.Remove   <$> arbitrary)
-        ]
-
-instance (Arbitrary a, Ord a) => Arbitrary (CmRGA.RgaPayload a) where
-    arbitrary = CmRGA.load <$> arbitrary
-
-instance Arbitrary a => Arbitrary (CmTwoPSet.TwoPSet a) where
-    arbitrary = elements [CmTwoPSet.Add, CmTwoPSet.Remove] <*> arbitrary
 
 deriving instance Arbitrary a => Arbitrary (GCounter a)
 
@@ -88,11 +45,6 @@ instance Arbitrary a => Arbitrary (PNCounter a) where
 deriving instance Arbitrary a => Arbitrary (CvRGA.RGA a)
 
 deriving instance (Ord a, Arbitrary a) => Arbitrary (CvTwoPSet.TwoPSet a)
-
-instance Arbitrary LamportTime where
-    arbitrary = LamportTime <$> arbitrary <*> arbitrary
-
-deriving instance Arbitrary Pid
 
 -- | Generate deterministically
 seeded :: Int -> Gen a -> Gen a

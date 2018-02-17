@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -19,7 +20,8 @@ module CRDT.LamportClock.Simulation
 
 import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
                                        throwError)
-import           Control.Monad.Fail (MonadFail, fail)
+import           Control.Monad.Fail (MonadFail)
+import qualified Control.Monad.Fail as Fail
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (StateT, evalState, evalStateT,
                                              modify, state)
@@ -34,6 +36,10 @@ import           Numeric.Natural (Natural)
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), LocalTime,
                                     Pid (Pid), Process, advance, getPid,
                                     getTimes)
+
+#if __GLASGOW_HASKELL__ < 800
+import           Compat ()
+#endif /* __GLASGOW_HASKELL__ < 800 */
 
 -- | Lamport clock simulation. Key is 'Pid'.
 -- Non-present value is equivalent to (0, initial).

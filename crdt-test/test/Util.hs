@@ -17,7 +17,7 @@ pattern a :- b = (a, b)
 infix 0 :-
 
 ok :: Property
-ok = property ()
+ok = property True
 
 fail :: String -> Property
 fail s = counterexample s $ property False
