@@ -1,7 +1,10 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
+
+#if ENABLE_CM
+{-# LANGUAGE LambdaCase #-}
+#endif /* ENABLE_CM */
 
 module CRDT.LWW
     ( LWW (..)
