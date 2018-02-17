@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -15,6 +16,7 @@ module CRDT.LamportClock
     , runLamportClock
     -- * Helpers
     , getRealLocalTime
+    , getMacAddress
     ) where
 
 import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
@@ -23,13 +25,11 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (StateT)
 import           Control.Monad.Trans (lift)
-import           Data.Binary (decode)
-import qualified Data.ByteString.Lazy as BSL
 import           Data.Time.Clock.POSIX (getPOSIXTime)
 import           Data.Word (Word64)
-import           Network.Info (MAC (MAC), getNetworkInterfaces, mac)
 import           Numeric.Natural (Natural)
-import           Safe (headDef)
+
+import           MacAddress (getMacAddress)
 
 -- | Unix time in 10^{-7} seconds (100 ns), as in RFC 4122 and Swarm RON.
 type LocalTime = Natural
@@ -49,20 +49,6 @@ class Monad m => Process m where
 
 getRealLocalTime :: IO LocalTime
 getRealLocalTime = round . (* 10000000) <$> getPOSIXTime
-
-getPidByMac :: IO Pid
-getPidByMac = Pid . decodeMac <$> getMac
-  where
-    getMac :: IO MAC
-    getMac =
-        headDef (error "Can't get any non-zero MAC address of this machine")
-            .   filter (/= minBound)
-            .   map mac
-            <$> getNetworkInterfaces
-
-    decodeMac :: MAC -> Word64
-    decodeMac (MAC b5 b4 b3 b2 b1 b0) =
-        decode $ BSL.pack [0, 0, b5, b4, b3, b2, b1, b0]
 
 class Process m => Clock m where
     -- | Get sequential timestamps.
@@ -91,7 +77,7 @@ runLamportClock :: TVar LocalTime -> LamportClock a -> IO a
 runLamportClock var (LamportClock action) = runReaderT action var
 
 instance Process LamportClock where
-    getPid = liftIO getPidByMac
+    getPid = Pid <$> liftIO getMacAddress
 
 instance Clock LamportClock where
     advance time = LamportClock $ do
