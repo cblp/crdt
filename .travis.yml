@@ -45,4 +45,4 @@ matrix:
           -O ~/.local/bin/etlas
         - chmod +x ~/.local/bin/etlas
     - compiler: hlint
-      script: $STACK build hlint --exec 'hlint .'
+      script: $STACK build hlint --exec 'hlint crdt/lib crdt/lib-ghc crdt-test'
