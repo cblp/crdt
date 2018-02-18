@@ -18,6 +18,8 @@ if os.environ.get('ETA', ''):
             + ['--ghc-options=' + option for option in GHC_OPTIONS]
             + list(args)
         )
+    etlas('update')
+    etlas('select', 'latest')
     etlas('install', '--dependencies-only')
     etlas('build')
 else:
