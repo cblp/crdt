@@ -16,7 +16,7 @@ if os.environ.get('ETA', ''):
         subprocess.check_call(
             ['etlas']
             + ['--ghc-options=' + option for option in GHC_OPTIONS]
-            + args
+            + list(args)
         )
     etlas('install', '--dependencies-only')
     etlas('build')
