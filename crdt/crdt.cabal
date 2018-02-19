@@ -22,10 +22,6 @@ source-repository head
 
 library
     hs-source-dirs: lib
-    if impl(eta)
-        hs-source-dirs: lib-eta
-    else
-        hs-source-dirs: lib-ghc
     build-depends:  base >= 4.8 && < 4.11
                   , binary
                   , bytestring
@@ -37,8 +33,8 @@ library
                   , stm
                   , time
                   , vector
-    if !impl(eta)
-        build-depends:  network-info
+    -- if !impl(eta)
+    --     build-depends:  network-info
     exposed-modules:  CRDT.Cv
                       CRDT.Cv.GCounter
                       CRDT.Cv.GSet
