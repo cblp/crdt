@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import sys
 
 GHC_WARNINGS = [
     '-Wall',
@@ -10,18 +9,24 @@ GHC_WARNINGS = [
     '-fwarn-incomplete-uni-patterns',
 ]
 
-GHC = os.environ.get('STACK_YAML', 'ghc-8.2')
+def etlas(*args):
+    subprocess.check_call(['etlas'] + list(args))
 
-if GHC >= 'ghc-8':
-    GHC_WARNINGS += ['-Wcompat', '-Wredundant-constraints']
-
-GHC_OPTIONS = GHC_WARNINGS + ['-Werror']
-
-stack = os.environ.get('STACK', 'stack')
-
-subprocess.check_call(
-    stack.split()
-    + ['test', '--haddock', '--no-haddock-deps']
-    + ['--ghc-options=' + option for option in GHC_OPTIONS]
-    + sys.argv[1:]
-)
+if os.environ.get('ETA', ''):
+    os.chdir('crdt/')
+    GHC_OPTIONS = GHC_WARNINGS + ['-Werror']
+    subprocess.check_call('yes | etlas update', shell=True)
+    etlas('select', 'latest')
+    etlas('install', '--dependencies-only')
+    etlas('build', *['--ghc-options=' + option for option in GHC_OPTIONS])
+else:
+    GHC = os.environ.get('STACK_YAML', 'ghc-8.2')
+    if GHC >= 'ghc-8':
+        GHC_WARNINGS += ['-Wcompat', '-Wredundant-constraints']
+    GHC_OPTIONS = GHC_WARNINGS + ['-Werror']
+    stack = os.environ.get('STACK', 'stack')
+    subprocess.check_call(
+        stack.split()
+        + ['test', '--haddock', '--no-haddock-deps']
+        + ['--ghc-options=' + option for option in GHC_OPTIONS]
+    )

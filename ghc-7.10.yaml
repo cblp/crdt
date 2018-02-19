@@ -14,9 +14,3 @@ extra-deps:
   - tagged-0.8.5
   - tasty-discover-4.1.3
   - transformers-compat-0.5.1.4
-
-flags:
-  crdt:
-    Cm: false
-  # crdt-test:
-  #   Cm: false

@@ -16,16 +16,15 @@ addons:
       - libgmp-dev
 
 before_install:
-  # Download and unpack the stack executable
   - mkdir -p ~/.local/bin
   - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64
-    | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   - export STACK="stack --no-terminal --install-ghc"
 
 install:
-  # Build dependencies
-  - $STACK build --test --only-dependencies
+  # Download and unpack the stack executable
+  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64
+    | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
 script:
   # Build the package, its tests, and its docs and run the tests
   - test/script
@@ -37,8 +36,13 @@ matrix:
       env: STACK_YAML="ghc-8.0.yaml"
     - compiler: GHC 7.10
       env: STACK_YAML="ghc-7.10.yaml"
-    - compiler: hlint
+    - compiler: Eta/GHC 7.10
+      env: ETA="TRUE"
       install:
-        - $STACK build hlint
-      script:
-        - $STACK exec -- hlint .
+        - travis_retry
+          wget
+          https://cdnverify.eta-lang.org/eta-binaries/etlas-1.2.0.0/binaries/x86_64-linux/etlas
+          -O ~/.local/bin/etlas
+        - chmod +x ~/.local/bin/etlas
+    - compiler: hlint
+      script: $STACK build hlint --exec 'hlint crdt/lib crdt/lib-ghc crdt-test'
