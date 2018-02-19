@@ -9,16 +9,13 @@ GHC_WARNINGS = [
     '-fwarn-incomplete-uni-patterns',
 ]
 
+def etlas(*args):
+    subprocess.check_call(['etlas'] + list(args))
+
 if os.environ.get('ETA', ''):
     os.chdir('crdt/')
     GHC_OPTIONS = GHC_WARNINGS + ['-Werror']
-    def etlas(*args, input=None):
-        subprocess.run(
-            ['etlas', '--enable-send-metrics'] + list(args),
-            check=True,
-            input=input,
-        )
-    etlas('update', input=b'y\n')
+    subprocess.check_call('yes | etlas update', shell=True)
     etlas('select', 'latest')
     etlas('install', '--dependencies-only')
     etlas('build', *['--ghc-options=' + option for option in GHC_OPTIONS])
