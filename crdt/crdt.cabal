@@ -33,10 +33,8 @@ library
                   , stm
                   , time
                   , vector
-                  -- 
-                  , network-info
-    -- if !impl(eta)
-    --     build-depends:  network-info
+    if !impl(eta)
+        build-depends:  network-info
     exposed-modules:  CRDT.Cv
                       CRDT.Cv.GCounter
                       CRDT.Cv.GSet
