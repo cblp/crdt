@@ -14,7 +14,7 @@ import           Data.Maybe (catMaybes)
 import           Data.Traversable (for)
 import           Data.Word (Word64, Word8)
 
-#else /* ETA_VERSION */
+#else /* !defined ETA_VERSION */
 
 import           Data.Word (Word64)
 import           Network.Info (MAC (MAC), getNetworkInterfaces, mac)
@@ -47,7 +47,7 @@ foreign import java unsafe
 foldBytes :: [Word8] -> Word64
 foldBytes bytes = decode . BSL.pack $ replicate (8 - length bytes) 0 ++ bytes
 
-#else /* ETA_VERSION */
+#else /* !defined ETA_VERSION */
 
 getMacAddress = decodeMac <$> getMac
 
