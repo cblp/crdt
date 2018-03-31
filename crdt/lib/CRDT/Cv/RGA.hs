@@ -78,9 +78,9 @@ fromString = fromList
 -- applying changed found by the diff algorithm
 edit :: (Eq a, Clock m) => [a] -> RGA a -> m (RGA a)
 edit newList (RGA oldRga) = fmap (RGA . concat) . for diff $ \case
-    First removed -> pure [ (vid, Nothing) | (vid, _) <- removed ] -- :: m [(VertexId, Maybe a)]
-    Both v _      -> pure v -- :: m [(VertexId, Maybe a)]
-    Second added  -> fromList' $ map snd added -- :: m [(VertexId, Maybe a)]
+    First removed -> pure [ (vid, Nothing) | (vid, _) <- removed ]
+    Both v _      -> pure v
+    Second added  -> fromList' $ map snd added
   where
     newList' = [ (undefined, Just a) | a <- newList ]
     diff     = getGroupedDiffBy ((==) `on` snd) oldRga newList'
