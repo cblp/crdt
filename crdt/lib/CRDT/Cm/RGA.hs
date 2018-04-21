@@ -19,9 +19,9 @@ import           Prelude hiding (lookup)
 
 import           Control.Monad.Fail (MonadFail)
 import           Control.Monad.State.Strict (MonadState)
+import           Data.Empty (AsEmpty (..))
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.MaybeLike (MaybeLike (..))
 import           Data.Semigroup ((<>))
 import           Data.Vector (Vector, (//))
 import qualified Data.Vector as Vector
@@ -42,9 +42,9 @@ data RgaPayload a = RgaPayload
     deriving (Eq, Show)
 
 -- | Is added and is not removed.
-lookup :: MaybeLike a => VertexId -> RgaPayload a -> Bool
+lookup :: AsEmpty a => VertexId -> RgaPayload a -> Bool
 lookup v RgaPayload { vertices, vertexIxs } = case Map.lookup v vertexIxs of
-    Just ix -> let (_, a) = vertices Vector.! ix in isJust a
+    Just ix -> let (_, a) = vertices Vector.! ix in isNotEmpty a
     Nothing -> False
 
 data RgaIntent a
@@ -67,7 +67,7 @@ instance CausalOrd (RGA a) where
 emptyPayload :: RgaPayload a
 emptyPayload = RgaPayload {vertices = Vector.empty, vertexIxs = Map.empty}
 
-instance (MaybeLike a, Ord a) => CmRDT (RGA a) where
+instance (AsEmpty a, Ord a) => CmRDT (RGA a) where
     type Intent  (RGA a) = RgaIntent  a
     type Payload (RGA a) = RgaPayload a
 
@@ -128,12 +128,12 @@ instance (MaybeLike a, Ord a) => CmRDT (RGA a) where
 
     apply (OpRemove vid) payload@RgaPayload{vertices, vertexIxs} =
         -- pre addAfter(_, w) delivered  -- 2P-Set precondition
-        payload{vertices = vertices // [(ix, (vid, nothing))]}
+        payload{vertices = vertices // [(ix, (vid, empty))]}
       where
         ix = vertexIxs Map.! vid
 
 fromList
-    :: (MaybeLike a, Ord a, Clock m, MonadFail m, MonadState (RgaPayload a) m)
+    :: (AsEmpty a, Ord a, Clock m, MonadFail m, MonadState (RgaPayload a) m)
     => [a]
     -> m [RGA a]
 fromList = go Nothing

@@ -17,8 +17,8 @@ module CRDT.Cv.RGA
 
 import           Data.Algorithm.Diff (Diff (Both, First, Second),
                                       getGroupedDiffBy)
+import           Data.Empty (AsEmpty (..))
 import           Data.Function (on)
-import           Data.MaybeLike (MaybeLike (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
@@ -33,7 +33,7 @@ newtype RGA a = RGA [(VertexId, a)]
 
 type RgaString = RGA Char
 
-merge :: (Eq a, MaybeLike a) => RGA a -> RGA a -> RGA a
+merge :: (Eq a, AsEmpty a) => RGA a -> RGA a -> RGA a
 merge (RGA vertices1) (RGA vertices2) = RGA
     $ mergeVertexLists vertices1 vertices2
   where
@@ -46,22 +46,22 @@ merge (RGA vertices1) (RGA vertices2) = RGA
             EQ -> (id1, mergeAtoms a1 a2) : mergeVertexLists vs1 vs2
 
     -- priority of deletion
-    mergeAtoms a1 a2 | a1 == nothing || a2 == nothing = nothing
-                     | a1 == a2                       = a1
-                     | otherwise                      = nothing -- error: contradiction
+    mergeAtoms a1 a2 | isEmpty a1 || isEmpty a2 = empty
+                     | a1 == a2                 = a1
+                     | otherwise                = empty -- error: contradiction
 
-instance (Eq a, MaybeLike a) => Semigroup (RGA a) where
+instance (Eq a, AsEmpty a) => Semigroup (RGA a) where
     (<>) = merge
 
-instance (Eq a, MaybeLike a) => Semilattice (RGA a)
+instance (Eq a, AsEmpty a) => Semilattice (RGA a)
 
 -- Why not?
-instance (Eq a, MaybeLike a) => Monoid (RGA a) where
+instance (Eq a, AsEmpty a) => Monoid (RGA a) where
     mempty = RGA []
     mappend = (<>)
 
-toList :: MaybeLike a => RGA a -> [a]
-toList (RGA rga) = [ a | (_, a) <- rga, isJust a ]
+toList :: AsEmpty a => RGA a -> [a]
+toList (RGA rga) = [ a | (_, a) <- rga, isNotEmpty a ]
 
 toString :: RgaString -> String
 toString = toList
@@ -79,9 +79,9 @@ fromString = fromList
 
 -- | Replace content with specified,
 -- applying changed found by the diff algorithm
-edit :: (Eq a, MaybeLike a, Clock m) => [a] -> RGA a -> m (RGA a)
+edit :: (Eq a, AsEmpty a, Clock m) => [a] -> RGA a -> m (RGA a)
 edit newList (RGA oldRga) = fmap (RGA . concat) . for diff $ \case
-    First removed -> pure [ (vid, nothing) | (vid, _) <- removed ]
+    First removed -> pure [ (vid, empty) | (vid, _) <- removed ]
     Both v _      -> pure v
     Second added  -> fromList' $ map snd added
   where
