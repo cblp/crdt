@@ -36,13 +36,13 @@ matrix:
       env: STACK_YAML="ghc-8.0.yaml"
     - compiler: GHC 7.10
       env: STACK_YAML="ghc-7.10.yaml"
-    - compiler: Eta/GHC 7.10
-      env: ETA="TRUE"
-      install:
-        - travis_retry
-          wget
-          https://cdnverify.eta-lang.org/eta-binaries/etlas-1.2.0.0/binaries/x86_64-linux/etlas
-          -O ~/.local/bin/etlas
-        - chmod +x ~/.local/bin/etlas
+    # - compiler: Eta/GHC 7.10
+    #   env: ETA="TRUE"
+    #   install:
+    #     - travis_retry
+    #       wget
+    #       https://cdnverify.eta-lang.org/eta-binaries/etlas-1.2.0.0/binaries/x86_64-linux/etlas
+    #       -O ~/.local/bin/etlas
+    #     - chmod +x ~/.local/bin/etlas
     - compiler: hlint
       script: $STACK build hlint --exec 'hlint .'
