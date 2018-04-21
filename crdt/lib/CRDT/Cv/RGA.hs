@@ -1,3 +1,4 @@
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ParallelListComp #-}
 
@@ -24,15 +25,32 @@ import           Data.Traversable (for)
 
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTimes)
 
+class MaybeLike a where
+    nothing :: a
+
+    isJust :: a -> Bool
+    default isJust :: Eq a => a -> Bool
+    isJust a = nothing /= a
+
+instance MaybeLike (Maybe a) where
+    nothing = Nothing
+
+    isJust = \case
+        Nothing -> False
+        _       -> True
+
+instance MaybeLike Char where
+    nothing = '\NUL'
+
 type VertexId = LamportTime
 
 -- | TODO(cblp, 2018-02-06) Vector.Unboxed
-newtype RGA a = RGA [(VertexId, Maybe a)]
+newtype RGA a = RGA [(VertexId, a)]
     deriving (Eq, Show)
 
 type RgaString = RGA Char
 
-merge :: Eq a => RGA a -> RGA a -> RGA a
+merge :: (Eq a, MaybeLike a) => RGA a -> RGA a -> RGA a
 merge (RGA vertices1) (RGA vertices2) = RGA
     $ mergeVertexLists vertices1 vertices2
   where
@@ -44,29 +62,31 @@ merge (RGA vertices1) (RGA vertices2) = RGA
             GT -> v1 : mergeVertexLists vs1 (v2 : vs2)
             EQ -> (id1, mergeAtoms a1 a2) : mergeVertexLists vs1 vs2
 
-    mergeAtoms (Just a1) (Just a2) | a1 == a2 = Just a1
-    mergeAtoms _         _                    = Nothing
+    -- priority of deletion
+    mergeAtoms a1 a2 | a1 == nothing || a2 == nothing = nothing
+                     | a1 == a2                       = a1
+                     | otherwise                      = nothing -- error: contradiction
 
-instance Eq a => Semigroup (RGA a) where
+instance (Eq a, MaybeLike a) => Semigroup (RGA a) where
     (<>) = merge
 
-instance Eq a => Semilattice (RGA a)
+instance (Eq a, MaybeLike a) => Semilattice (RGA a)
 
 -- Why not?
-instance Eq a => Monoid (RGA a) where
+instance (Eq a, MaybeLike a) => Monoid (RGA a) where
     mempty = RGA []
     mappend = (<>)
 
-toList :: RGA a -> [a]
-toList (RGA rga) = [ a | (_, Just a) <- rga ]
+toList :: MaybeLike a => RGA a -> [a]
+toList (RGA rga) = [ a | (_, a) <- rga, isJust a ]
 
 toString :: RgaString -> String
 toString = toList
 
 fromList :: Clock m => [a] -> m (RGA a)
-fromList = fmap RGA . fromList' . map Just
+fromList = fmap RGA . fromList'
 
-fromList' :: Clock m => [Maybe a] -> m [(VertexId, Maybe a)]
+fromList' :: Clock m => [a] -> m [(VertexId, a)]
 fromList' xs = do
     LamportTime time0 pid <- getTimes . fromIntegral $ length xs
     pure [ (LamportTime time pid, x) | time <- [time0..] | x <- xs ]
@@ -76,19 +96,19 @@ fromString = fromList
 
 -- | Replace content with specified,
 -- applying changed found by the diff algorithm
-edit :: (Eq a, Clock m) => [a] -> RGA a -> m (RGA a)
+edit :: (Eq a, MaybeLike a, Clock m) => [a] -> RGA a -> m (RGA a)
 edit newList (RGA oldRga) = fmap (RGA . concat) . for diff $ \case
-    First removed -> pure [ (vid, Nothing) | (vid, _) <- removed ]
+    First removed -> pure [ (vid, nothing) | (vid, _) <- removed ]
     Both v _      -> pure v
     Second added  -> fromList' $ map snd added
   where
-    newList' = [ (undefined, Just a) | a <- newList ]
+    newList' = [ (undefined, a) | a <- newList ]
     diff     = getGroupedDiffBy ((==) `on` snd) oldRga newList'
 
 -- | Compact version of 'RGA'.
 -- For each 'VertexId', the corresponding sequence of vetices has the same 'Pid'
 -- and sequentially growing 'LocalTime', starting with the specified one.
-type RgaPacked a = [(VertexId, [Maybe a])]
+type RgaPacked a = [(VertexId, [a])]
 
 pack :: RGA a -> RgaPacked a
 pack (RGA []                ) = []
