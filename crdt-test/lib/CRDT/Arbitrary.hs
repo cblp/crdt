@@ -5,7 +5,9 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module CRDT.Arbitrary () where
+module CRDT.Arbitrary
+    ( NoNul (..)
+    ) where
 
 import           Test.QuickCheck (Arbitrary (arbitrary))
 import           Test.QuickCheck.Gen (Gen (MkGen))
@@ -49,3 +51,9 @@ deriving instance (Ord a, Arbitrary a) => Arbitrary (CvTwoPSet.TwoPSet a)
 -- | Generate deterministically
 seeded :: Int -> Gen a -> Gen a
 seeded s (MkGen g) = MkGen $ \_ n -> g (mkQCGen s) n
+
+newtype NoNul = NoNul String
+    deriving Show
+
+instance Arbitrary NoNul where
+    arbitrary = NoNul . filter ('\NUL' /=) <$> arbitrary

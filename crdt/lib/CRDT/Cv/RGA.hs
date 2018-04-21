@@ -1,4 +1,3 @@
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ParallelListComp #-}
 
@@ -19,28 +18,12 @@ module CRDT.Cv.RGA
 import           Data.Algorithm.Diff (Diff (Both, First, Second),
                                       getGroupedDiffBy)
 import           Data.Function (on)
+import           Data.MaybeLike (MaybeLike (..))
 import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
 
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), getTimes)
-
-class MaybeLike a where
-    nothing :: a
-
-    isJust :: a -> Bool
-    default isJust :: Eq a => a -> Bool
-    isJust a = nothing /= a
-
-instance MaybeLike (Maybe a) where
-    nothing = Nothing
-
-    isJust = \case
-        Nothing -> False
-        _       -> True
-
-instance MaybeLike Char where
-    nothing = '\NUL'
 
 type VertexId = LamportTime
 

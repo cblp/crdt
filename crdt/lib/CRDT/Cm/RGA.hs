@@ -21,6 +21,7 @@ import           Control.Monad.Fail (MonadFail)
 import           Control.Monad.State.Strict (MonadState)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
+import           Data.MaybeLike (MaybeLike (..))
 import           Data.Semigroup ((<>))
 import           Data.Vector (Vector, (//))
 import qualified Data.Vector as Vector
@@ -34,20 +35,17 @@ import           CRDT.LamportClock (Clock, LamportTime (LamportTime), advance,
 type VertexId = LamportTime
 
 data RgaPayload a = RgaPayload
-    { vertices  :: Vector (VertexId, Maybe a) -- TODO(cblp, 2018-02-06) Unbox
+    { vertices  :: Vector (VertexId, a) -- TODO(cblp, 2018-02-06) Unbox
     , vertexIxs :: Map VertexId Int
       -- ^ indices in `vertices` vector
     }
     deriving (Eq, Show)
 
 -- | Is added and is not removed.
-lookup :: VertexId -> RgaPayload a -> Bool
-lookup v RgaPayload{vertices, vertexIxs} =
-    case Map.lookup v vertexIxs of
-        Just ix -> case vertices Vector.! ix of
-            (_, Just _) -> True
-            _           -> False
-        Nothing -> False
+lookup :: MaybeLike a => VertexId -> RgaPayload a -> Bool
+lookup v RgaPayload { vertices, vertexIxs } = case Map.lookup v vertexIxs of
+    Just ix -> let (_, a) = vertices Vector.! ix in isJust a
+    Nothing -> False
 
 data RgaIntent a
     = AddAfter (Maybe VertexId) a
@@ -67,9 +65,9 @@ instance CausalOrd (RGA a) where
     precedes _ _ = False
 
 emptyPayload :: RgaPayload a
-emptyPayload = RgaPayload{vertices = Vector.empty, vertexIxs = Map.empty}
+emptyPayload = RgaPayload {vertices = Vector.empty, vertexIxs = Map.empty}
 
-instance Ord a => CmRDT (RGA a) where
+instance (MaybeLike a, Ord a) => CmRDT (RGA a) where
     type Intent  (RGA a) = RgaIntent  a
     type Payload (RGA a) = RgaPayload a
 
@@ -101,7 +99,7 @@ instance Ord a => CmRDT (RGA a) where
 
         (vertices', newIx)
             | null vertices = case mOldId of
-                Nothing    -> (Vector.singleton (newId, Just newAtom), 0)
+                Nothing    -> (Vector.singleton (newId, newAtom), 0)
                 Just oldId -> error $ show oldId <> " not delivered"
             | otherwise = (insert ix, ix)
               where
@@ -123,20 +121,21 @@ instance Ord a => CmRDT (RGA a) where
                 _ -> ix
 
         insert ix
-            | ix < n = left <> Vector.singleton (newId, Just newAtom) <> right
-            | otherwise = Vector.snoc vertices (newId, Just newAtom)
+            | ix < n = left <> Vector.singleton (newId, newAtom) <> right
+            | otherwise = Vector.snoc vertices (newId, newAtom)
           where
             (left, right) = Vector.splitAt ix vertices
 
     apply (OpRemove vid) payload@RgaPayload{vertices, vertexIxs} =
         -- pre addAfter(_, w) delivered  -- 2P-Set precondition
-        payload{vertices = vertices // [(ix, (vid, Nothing))]}
+        payload{vertices = vertices // [(ix, (vid, nothing))]}
       where
         ix = vertexIxs Map.! vid
 
 fromList
-    :: (Ord a, Clock m, MonadFail m, MonadState (RgaPayload a) m)
-    => [a] -> m [RGA a]
+    :: (MaybeLike a, Ord a, Clock m, MonadFail m, MonadState (RgaPayload a) m)
+    => [a]
+    -> m [RGA a]
 fromList = go Nothing
   where
     go _      []     = pure []
@@ -145,22 +144,23 @@ fromList = go Nothing
         (op :) <$> go (Just newId) xs
 
 toList :: RgaPayload a -> [a]
-toList RgaPayload{vertices} = [a | (_, Just a) <- Vector.toList vertices]
+toList RgaPayload { vertices } = map snd $ Vector.toList vertices
 
 toVector :: RgaPayload a -> Vector a
-toVector RgaPayload{vertices} = Vector.mapMaybe snd vertices
+toVector RgaPayload { vertices } = Vector.map snd vertices
 
 fromString
     :: (Clock m, MonadFail m, MonadState (RgaPayload Char) m)
-    => String -> m [RGA Char]
+    => String
+    -> m [RGA Char]
 fromString = fromList
 
 toString :: RgaPayload Char -> String
 toString = toList
 
-load :: Vector (VertexId, Maybe a) -> RgaPayload a
+load :: Vector (VertexId, a) -> RgaPayload a
 load vertices = RgaPayload
     { vertices
     , vertexIxs = Map.fromList
-        [(vid, ix) | ix <- [0..] | (vid, _) <- Vector.toList vertices]
+        [ (vid, ix) | ix <- [0..] | (vid, _) <- Vector.toList vertices ]
     }

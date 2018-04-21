@@ -47,6 +47,7 @@ library
                       CRDT.LamportClock
                       CRDT.LamportClock.Simulation
                       CRDT.LWW
+                      Data.MaybeLike
                       Data.MultiMap
                       Data.Semilattice
     if impl(ghc >= 8)

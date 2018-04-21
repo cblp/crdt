@@ -6,8 +6,7 @@ module Cv.RGA where
 
 import           Prelude hiding (fail)
 
-import           Test.QuickCheck (Arbitrary, arbitrary, conjoin, (.&&.), (.||.),
-                                  (===))
+import           Test.QuickCheck (conjoin, (.&&.), (.||.), (===))
 
 import           CRDT.Cv.RGA (RgaString, edit, fromString, pack, toString,
                               unpack)
@@ -15,14 +14,9 @@ import           CRDT.LamportClock (LamportTime (LamportTime))
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
 
+import           CRDT.Arbitrary (NoNul (..))
 import           Laws (cvrdtLaws)
 import           Util (expectRight, fail)
-
-newtype NoNul = NoNul String
-    deriving Show
-
-instance Arbitrary NoNul where
-    arbitrary = NoNul . filter ('\NUL' /=) <$> arbitrary
 
 prop_fromString_toString (NoNul s) pid = expectRight $ do
     v <- runLamportClockSim . runProcessSim pid $ fromString s

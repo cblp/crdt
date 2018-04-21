@@ -25,6 +25,7 @@ import           CRDT.LamportClock.Simulation (ProcessSim, runLamportClockSim,
                                                runProcessSim)
 import           GHC.Exts (fromList)
 
+import           CRDT.Arbitrary (NoNul (..))
 import           Laws (cmrdtLaw)
 import           Util (pattern (:-), expectRightK, fail, ok)
 
@@ -52,11 +53,10 @@ prop_makeAndApplyOp = conjoin
     op1       = OpAddAfter Nothing '1' time1
     op2       = OpAddAfter Nothing '2' time2
     op3       = OpAddAfter Nothing '3' time3
-    payload3  = load $ fromList [time3 :- Just '3']
-    payload1  = load $ fromList [time1 :- Just '1', time3 :- Just '3']
-    payload2  = load $ fromList [time2 :- Just '2', time3 :- Just '3']
-    payload12 = load
-        $ fromList [time2 :- Just '2', time1 :- Just '1', time3 :- Just '3']
+    payload3  = load $ fromList [time3 :- '3']
+    payload1  = load $ fromList [time1 :- '1', time3 :- '3']
+    payload2  = load $ fromList [time2 :- '2', time3 :- '3']
+    payload12 = load $ fromList [time2 :- '2', time1 :- '1', time3 :- '3']
     result3 =
         runLamportClockSim
             . runProcessSim (Pid 3)
@@ -76,9 +76,9 @@ prop_makeAndApplyOp = conjoin
     result12 = apply op2 payload1
     result21 = apply op1 payload2
 
-prop_fromString s pid =
+prop_fromString (NoNul s) pid =
     expectRightK result $ payloadsEqWoTime $ load $ fromList
-        [ LamportTime t pid :- Just c | t <- [1..] | c <- s ]
+        [ LamportTime t pid :- c | t <- [1..] | c <- s ]
   where
     result =
         runLamportClockSim
@@ -86,7 +86,8 @@ prop_fromString s pid =
             . (`execStateT` initial @(RGA Char))
             $ fromString s
 
-prop_fromString_toString s pid = expectRightK result $ \s' -> toString s' === s
+prop_fromString_toString (NoNul s) pid = expectRightK result
+    $ \s' -> toString s' === s
   where
     result =
         runLamportClockSim
