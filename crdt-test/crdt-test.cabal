@@ -1,5 +1,5 @@
 name: crdt-test
-version: 0.1
+version: 0
 build-type: Simple
 cabal-version: >= 1.10
 
