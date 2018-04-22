@@ -29,12 +29,11 @@ library
                   , Diff
                   , hashable
                   , mtl
+                  , network-info
                   , safe
                   , stm
                   , time
                   , vector
-    if !impl(eta)
-        build-depends:  network-info
     exposed-modules:  CRDT.Cv
                       CRDT.Cv.GCounter
                       CRDT.Cv.GSet
