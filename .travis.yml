@@ -31,6 +31,8 @@ script:
 
 matrix:
   include:
+    - compiler: GHC 8.4
+      env: STACK_YAML="ghc-8.4.yaml"
     - compiler: GHC 8.2
     - compiler: GHC 8.0
       env: STACK_YAML="ghc-8.0.yaml"

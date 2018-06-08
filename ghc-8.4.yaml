@@ -1,0 +1,8 @@
+resolver: nightly-2018-06-08
+
+packages:
+  - crdt
+  - crdt-test
+
+extra-deps:
+  - QuickCheck-GenT-0.2.0
