@@ -8,7 +8,13 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 ### Added
 - Support for GHC 8.4
 
-[Unreleased]: https://github.com/cblp/crdt/compare/4.0...master
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.1...master
+
+## [10.1] - 2018-06-08
+### Added
+- Support for GHC 8.4
+
+[10.1]: https://github.com/cblp/crdt/compare/v10.0...v10.1
 
 ## [4.0] - 2017-11-30
 
