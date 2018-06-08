@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Compatible Versioning](https://github.com/staltz/comver).
 
 ## [Unreleased]
+### Added
+- Support for GHC 8.4
 
 [Unreleased]: https://github.com/cblp/crdt/compare/4.0...master
 
