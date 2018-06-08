@@ -1,5 +1,5 @@
 name: crdt
-version: 10.1
+version: 10.2
           -- ^ ComVer
 category: Distributed Systems
 copyright:
