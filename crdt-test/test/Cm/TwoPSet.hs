@@ -7,8 +7,7 @@ module Cm.TwoPSet where
 import           Test.QuickCheck (Small)
 
 import           CRDT.Cm.TwoPSet (TwoPSet (Remove))
-
-import           Laws (cmrdtLaw, opCommutativity)
+import           CRDT.Laws (cmrdtLaw, opCommutativity)
 
 prop_Cm = cmrdtLaw @(TwoPSet Char)
 

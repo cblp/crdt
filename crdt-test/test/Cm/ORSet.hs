@@ -16,8 +16,8 @@ import           CRDT.Cm.ORSet (Intent (Add, Remove), ORSet, Tag (Tag),
                                 elements)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cmrdtLaw)
 
-import           Laws (cmrdtLaw)
 import           Util (pattern (:-), expectRight)
 
 prop_Cm = cmrdtLaw @(ORSet Char)

@@ -19,8 +19,8 @@ import           CRDT.Cv.LwwElementSet (LwwElementSet, add, lookup, remove)
 import           CRDT.LamportClock (LamportTime (LamportTime), advance, getTime)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cvrdtLaws)
 
-import           Laws (cvrdtLaws)
 import           Util (expectRight)
 
 test_Cv = cvrdtLaws @(LwwElementSet Char)

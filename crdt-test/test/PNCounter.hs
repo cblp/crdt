@@ -8,9 +8,9 @@ module PNCounter where
 import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.PNCounter (PNCounter (..), decrement, increment, query)
+import           CRDT.Laws (cvrdtLaws)
 
 import           GCounter ()
-import           Laws (cvrdtLaws)
 
 test_Cv = cvrdtLaws @(PNCounter Int)
 

@@ -5,7 +5,6 @@
 module Counter where
 
 import           CRDT.Cm.Counter (Counter)
-
-import           Laws (cmrdtLaw)
+import           CRDT.Laws (cmrdtLaw)
 
 prop_Cm = cmrdtLaw @(Counter Int)

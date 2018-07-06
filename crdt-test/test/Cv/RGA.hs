@@ -8,14 +8,14 @@ import           Prelude hiding (fail)
 
 import           Test.QuickCheck (conjoin, (.&&.), (.||.), (===))
 
+import           CRDT.Arbitrary (NoNul (..))
 import           CRDT.Cv.RGA (RgaString, edit, fromString, pack, toString,
                               unpack)
 import           CRDT.LamportClock (LamportTime (LamportTime))
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cvrdtLaws)
 
-import           CRDT.Arbitrary (NoNul (..))
-import           Laws (cvrdtLaws)
 import           Util (expectRight, fail)
 
 prop_fromString_toString (NoNul s) pid = expectRight $ do

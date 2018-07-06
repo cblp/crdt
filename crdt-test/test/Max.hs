@@ -8,9 +8,8 @@ module Max where
 import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.Max (Max, initial, query)
+import           CRDT.Laws (cvrdtLaws)
 import           Data.Semilattice (merge)
-
-import           Laws (cvrdtLaws)
 
 test_Cv = cvrdtLaws @(Max Char)
 

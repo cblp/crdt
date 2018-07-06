@@ -16,9 +16,9 @@ import           Test.QuickCheck ((===))
 
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cmrdtLaw, cvrdtLaws)
 import           CRDT.LWW (LWW, assign, initialize, query)
 
-import           Laws (cmrdtLaw, cvrdtLaws)
 import           Util (expectRight)
 
 prop_Cm = cmrdtLaw @(LWW Char)

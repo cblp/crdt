@@ -12,8 +12,8 @@ import           Data.Semigroup (Semigroup ((<>)))
 import           CRDT.Cv.ORSet (ORSet, add, lookup, remove)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cvrdtLaws)
 
-import           Laws (cvrdtLaws)
 import           Util (expectRight)
 
 test_Cv = cvrdtLaws @(ORSet Int)

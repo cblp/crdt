@@ -11,10 +11,15 @@ library
     hs-source-dirs: lib
     build-depends:  base
                   , crdt
+                  , mtl
                   , QuickCheck
+                  , QuickCheck-GenT
                   , quickcheck-instances
+                  , tasty
+                  , tasty-quickcheck
     exposed-modules:  CRDT.Arbitrary
                       CRDT.Arbitrary.Common
+                      CRDT.Laws
     if flag(Cm)
         cpp-options: -DENABLE_CM=1
         exposed-modules:  CRDT.Arbitrary.Cm
@@ -30,7 +35,6 @@ test-suite test
                   , crdt-test
                   , mtl
                   , QuickCheck
-                  , QuickCheck-GenT
                   , quickcheck-instances
                   , tasty
                   , tasty-discover >=4.1
@@ -44,7 +48,6 @@ test-suite test
                     Cv.TwoPSet
                     GCounter
                     GSet
-                    Laws
                     LWW
                     LwwElementSet
                     Max

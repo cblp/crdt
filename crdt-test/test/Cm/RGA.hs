@@ -15,6 +15,7 @@ import           Data.Maybe (isJust)
 import           Test.QuickCheck (Property, conjoin, counterexample, (.&&.),
                                   (===))
 
+import           CRDT.Arbitrary (NoNul (..))
 import           CRDT.Cm (apply, initial, makeAndApplyOp, makeOp)
 import           CRDT.Cm.RGA (RGA (OpAddAfter, OpRemove), RgaIntent (AddAfter),
                               RgaPayload (RgaPayload), fromString, load,
@@ -23,10 +24,9 @@ import           CRDT.LamportClock (LamportTime (LamportTime), Pid (Pid),
                                     advance)
 import           CRDT.LamportClock.Simulation (ProcessSim, runLamportClockSim,
                                                runProcessSim)
+import           CRDT.Laws (cmrdtLaw)
 import           GHC.Exts (fromList)
 
-import           CRDT.Arbitrary (NoNul (..))
-import           Laws (cmrdtLaw)
 import           Util (pattern (:-), expectRightK, fail, ok)
 
 prop_makeOp = isJust $ makeOp @(RGA Char) @ProcessSim

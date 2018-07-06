@@ -8,8 +8,7 @@ module GCounter where
 import           Test.QuickCheck ((===))
 
 import           CRDT.Cv.GCounter (GCounter (..), increment, query)
-
-import           Laws (cvrdtLaws)
+import           CRDT.Laws (cvrdtLaws)
 
 test_Cv = cvrdtLaws @(GCounter Int)
 

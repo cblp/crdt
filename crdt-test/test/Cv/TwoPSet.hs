@@ -8,8 +8,7 @@ module Cv.TwoPSet where
 import           Test.QuickCheck ((==>))
 
 import           CRDT.Cv.TwoPSet (TwoPSet (..), add, isKnown, member, remove)
-
-import           Laws (cvrdtLaws)
+import           CRDT.Laws (cvrdtLaws)
 
 -- | Difference from LwwElementSet and ORSet -- removal bias
 prop_removal_bias (s :: TwoPSet Char) x =

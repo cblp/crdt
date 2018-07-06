@@ -7,8 +7,7 @@ module GSet where
 
 import qualified CRDT.Cm.GSet as Cm
 import qualified CRDT.Cv.GSet as Cv
-
-import           Laws (cmrdtLaw, cvrdtLaws)
+import           CRDT.Laws (cmrdtLaw, cvrdtLaws)
 
 prop_Cm = cmrdtLaw @(Cm.GSet Char)
 

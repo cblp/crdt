@@ -6,7 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Laws
+module CRDT.Laws
     ( cmrdtLaw
     , cvrdtLaws
     , opCommutativity
