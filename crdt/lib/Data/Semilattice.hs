@@ -36,3 +36,5 @@ infixr 6 `merge`
 instance Ord a => Semilattice (Max a)
 
 instance Ord a => Semilattice (Set a)
+
+instance Semilattice a => Semilattice (Maybe a)
