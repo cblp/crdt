@@ -9,7 +9,7 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 - Support for GHC 8.4
 - Instance Semilattice (CvRDT) for Maybe
 
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.1...master
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.2...master
 
 ## [10.2] - 2018-06-08
 ### Fixed Added
