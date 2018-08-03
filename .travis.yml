@@ -38,5 +38,7 @@ matrix:
       env: STACK_YAML="ghc-8.0.yaml"
     - compiler: GHC 7.10
       env: STACK_YAML="ghc-7.10.yaml"
+    - name: haddock
+      script: $STACK haddock
     - name: hlint
       script: $STACK build hlint --exec 'hlint .'
