@@ -84,8 +84,7 @@ instance (AsEmpty a, Ord a) => CmRDT (RGA a) where
             case Map.lookupMax vertexIxs of
                 Just (LamportTime maxKnownTime _, _) -> advance maxKnownTime
                 Nothing                              -> pure ()
-            newId <- getTime
-            pure $ OpAddAfter mOldId atom newId
+            OpAddAfter mOldId atom <$> getTime
 
     makeOp (Remove w) payload
         | lookup w payload = Just . pure $ OpRemove w

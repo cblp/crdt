@@ -84,8 +84,10 @@ instance Clock LamportClock where
         timeVar <- ask
         lift $ atomically $ modifyTVar' timeVar $ max time
 
-    getTimes n' = do
-        timeRangeStart <- LamportClock $ do
+    getTimes n' = LamportTime <$> getTimes' <*> getPid
+      where
+        n = max n' 1
+        getTimes' = LamportClock $ do
             timeVar <- ask
             lift $ do
                 realTime <- getRealLocalTime
@@ -94,10 +96,6 @@ instance Clock LamportClock where
                     let timeRangeStart = max realTime (timeCur + 1)
                     writeTVar timeVar $ timeRangeStart + n - 1
                     pure timeRangeStart
-        pid <- getPid
-        pure $ LamportTime timeRangeStart pid
-      where
-        n = max n' 1
 
 instance Process m => Process (ReaderT r m) where
     getPid = lift getPid
