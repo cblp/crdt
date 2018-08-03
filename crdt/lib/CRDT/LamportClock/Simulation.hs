@@ -22,6 +22,7 @@ import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
                                        throwError)
 import           Control.Monad.Fail (MonadFail)
 import qualified Control.Monad.Fail as Fail
+import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (StateT, evalState, evalStateT,
                                              modify, state)
@@ -53,6 +54,9 @@ instance MonadTrans LamportClockSimT where
 instance Monad m => MonadFail (LamportClockSimT m) where
     fail = throwError
 
+instance MonadIO m => MonadIO (LamportClockSimT m) where
+    liftIO io = LamportClockSim $ liftIO io
+
 type LamportClockSim = LamportClockSimT Identity
 
 -- | ProcessSim inside Lamport clock simulation.
@@ -82,6 +86,9 @@ instance Monad m => Clock (ProcessSimT m) where
         advancePS = \case
             Nothing      -> time
             Just current -> max time current
+
+instance MonadIO m => MonadIO (ProcessSimT m) where
+    liftIO io = ProcessSim $ liftIO io
 
 runLamportClockSim :: LamportClockSim a -> Either String a
 runLamportClockSim (LamportClockSim action) =
