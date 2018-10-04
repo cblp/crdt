@@ -17,7 +17,7 @@ module CRDT.LamportClock
     ) where
 
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader (ReaderT, ask, runReaderT)
+import           Control.Monad.Reader (ReaderT (..))
 import           Control.Monad.State.Strict (StateT)
 import           Control.Monad.Trans (lift)
 import           Data.IORef (IORef, atomicModifyIORef')
@@ -75,20 +75,17 @@ instance Process LamportClock where
     getPid = Pid <$> liftIO getMacAddress
 
 instance Clock LamportClock where
-    advance time = LamportClock $ do
-        timeVar <- ask
-        lift $ atomicModifyIORef' timeVar $ \t0 -> (max time t0, ())
+    advance time = LamportClock $ ReaderT $ \timeVar ->
+        atomicModifyIORef' timeVar $ \t0 -> (max time t0, ())
 
     getTimes n' = LamportTime <$> getTimes' <*> getPid
       where
         n = max n' 1
-        getTimes' = LamportClock $ do
-            timeVar <- ask
-            lift $ do
-                realTime <- getRealLocalTime
-                atomicModifyIORef' timeVar $ \timeCur ->
-                    let timeRangeStart = max realTime (timeCur + 1)
-                    in (timeRangeStart + n - 1, timeRangeStart)
+        getTimes' = LamportClock $ ReaderT $ \timeVar -> do
+            realTime <- getRealLocalTime
+            atomicModifyIORef' timeVar $ \timeCur ->
+                let timeRangeStart = max realTime (timeCur + 1)
+                in (timeRangeStart + n - 1, timeRangeStart)
 
 instance Process m => Process (ReaderT r m) where
     getPid = lift getPid
