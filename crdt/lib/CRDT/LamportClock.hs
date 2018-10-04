@@ -1,7 +1,4 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NamedFieldPuns #-}
 
 module CRDT.LamportClock
     ( Pid (..)
