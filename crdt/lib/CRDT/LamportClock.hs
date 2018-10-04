@@ -19,12 +19,11 @@ module CRDT.LamportClock
     , getMacAddress
     ) where
 
-import           Control.Concurrent.STM (TVar, atomically, modifyTVar',
-                                         readTVar, writeTVar)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (StateT)
 import           Control.Monad.Trans (lift)
+import           Data.IORef (IORef, atomicModifyIORef')
 import           Data.Time.Clock.POSIX (getPOSIXTime)
 import           Data.Word (Word64)
 import           Numeric.Natural (Natural)
@@ -69,11 +68,10 @@ class Process m => Clock m where
 getTime :: Clock m => m LamportTime
 getTime = getTimes 1
 
--- TODO(cblp, 2018-01-06) benchmark and compare with 'atomicModifyIORef'
-newtype LamportClock a = LamportClock (ReaderT (TVar LocalTime) IO a)
+newtype LamportClock a = LamportClock (ReaderT (IORef LocalTime) IO a)
     deriving (Applicative, Functor, Monad, MonadIO)
 
-runLamportClock :: TVar LocalTime -> LamportClock a -> IO a
+runLamportClock :: IORef LocalTime -> LamportClock a -> IO a
 runLamportClock var (LamportClock action) = runReaderT action var
 
 instance Process LamportClock where
@@ -82,7 +80,7 @@ instance Process LamportClock where
 instance Clock LamportClock where
     advance time = LamportClock $ do
         timeVar <- ask
-        lift $ atomically $ modifyTVar' timeVar $ max time
+        lift $ atomicModifyIORef' timeVar $ \t0 -> (max time t0, ())
 
     getTimes n' = LamportTime <$> getTimes' <*> getPid
       where
@@ -91,11 +89,9 @@ instance Clock LamportClock where
             timeVar <- ask
             lift $ do
                 realTime <- getRealLocalTime
-                atomically $ do
-                    timeCur <- readTVar timeVar
+                atomicModifyIORef' timeVar $ \timeCur ->
                     let timeRangeStart = max realTime (timeCur + 1)
-                    writeTVar timeVar $ timeRangeStart + n - 1
-                    pure timeRangeStart
+                    in (timeRangeStart + n - 1, timeRangeStart)
 
 instance Process m => Process (ReaderT r m) where
     getPid = lift getPid

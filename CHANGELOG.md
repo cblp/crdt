@@ -6,8 +6,10 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 
 ## [Unreleased]
 ### Added
-- Support for GHC 8.4
 - Instance Semilattice (CvRDT) for Maybe
+
+### Changed
+- Use IORef as a container for local time instead of TVar.
 
 [Unreleased]: https://github.com/cblp/crdt/compare/v10.2...master
 
