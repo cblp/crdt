@@ -5,13 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Compatible Versioning](https://github.com/staltz/comver).
 
 ## [Unreleased]
+
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.4...master
+
+## [10.4] - 2019-02-27
 ### Added
-- Instance Semilattice (CvRDT) for Maybe
+- Support for GHC 8.6
 
 ### Changed
 - Use IORef as a container for local time instead of TVar.
 
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.2...master
+[10.4]: https://github.com/cblp/crdt/compare/v10.3...v10.4
+
+## [10.3] - 2018-08-03
+### Added
+- Instance Semilattice (CvRDT) for Maybe
+
+[10.3]: https://github.com/cblp/crdt/compare/v10.2...v10.3
 
 ## [10.2] - 2018-06-08
 ### Fixed
