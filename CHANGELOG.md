@@ -6,11 +6,13 @@ and this project adheres to [Compatible Versioning](https://github.com/staltz/co
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.4...master
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.5...master
 
 ## [10.5] - 2019-09-22
 ### Fixed
 - Diff dependency bounds
+
+[10.5]: https://github.com/cblp/crdt/compare/v10.4...v10.5
 
 ## [10.4] - 2019-02-27
 ### Added
