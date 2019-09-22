@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module CRDT.Cv.LwwElementSet
     ( LwwElementSet (..)

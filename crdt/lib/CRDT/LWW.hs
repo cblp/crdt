@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TypeFamilies #-}
 
 #if __GLASGOW_HASKELL__ >= 800
@@ -56,14 +55,14 @@ instance Eq a => Semilattice (LWW a)
 
 -- | Initialize state
 initialize :: Clock m => a -> m (LWW a)
-initialize value = LWW value <$> getTime
+initialize val = LWW val <$> getTime
 
 -- | Change state as CvRDT operation.
 -- Current value is ignored, because new timestamp is always greater.
 assign :: Clock m => a -> LWW a -> m (LWW a)
-assign value old = do
+assign val old = do
     advanceFromLWW old
-    initialize value
+    initialize val
 
 -- | Query state
 query :: LWW a -> a
@@ -83,9 +82,9 @@ instance Eq a => CmRDT (LWW a) where
 
     initial = Nothing
 
-    makeOp value = Just . \case
-        Just payload -> assign value payload
-        Nothing      -> initialize value
+    makeOp val = Just . \case
+        Just payload -> assign val payload
+        Nothing      -> initialize val
 
     apply op = Just . \case
         Just payload -> op <> payload
@@ -94,4 +93,4 @@ instance Eq a => CmRDT (LWW a) where
 #endif /* __GLASGOW_HASKELL__ >= 800 */
 
 advanceFromLWW :: Clock m => LWW a -> m ()
-advanceFromLWW LWW{time = LamportTime time _} = advance time
+advanceFromLWW LWW{time = LamportTime t _} = advance t
