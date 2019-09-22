@@ -27,7 +27,7 @@ library
                   , bytestring
                   , containers >= 0.5.9
                     -- since lookupMax is used
-                  , Diff
+                  , Diff < 0.4
                   , hashable
                   , mtl
                   , network-info
