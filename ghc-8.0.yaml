@@ -5,6 +5,7 @@ packages:
   - crdt-test
 
 extra-deps:
+  - binary-0.8.7.0
   - containers-0.5.11.0
   - QuickCheck-2.11.3
   - QuickCheck-GenT-0.2.0
