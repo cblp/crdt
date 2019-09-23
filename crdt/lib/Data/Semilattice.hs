@@ -13,7 +13,7 @@ It may be a join-semilattice, or meet-semilattice, it doesn't matter.
 
 If it matters for you, use package @lattices@.
 
-In addition to 'Semigroup', Semilattice defines this laws:
+In addition to 'Semigroup', Semilattice defines these laws:
 
 [commutativity]
 
