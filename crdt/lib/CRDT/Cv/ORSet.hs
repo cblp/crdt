@@ -11,7 +11,6 @@ import           Prelude hiding (lookup)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
-import           Data.Semigroup (Semigroup, (<>))
 import           Numeric.Natural (Natural)
 
 import           CRDT.LamportClock (Pid, Process, getPid)

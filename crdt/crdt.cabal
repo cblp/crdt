@@ -22,12 +22,12 @@ source-repository head
 
 library
     hs-source-dirs: lib
-    build-depends:  base >= 4.8 && < 4.13
+    build-depends:  base >= 4.8 && < 4.14
                   , binary
                   , bytestring
                   , containers >= 0.5.9
                     -- since lookupMax is used
-                  , Diff < 0.4
+                  , Diff >= 0.4
                   , hashable
                   , mtl
                   , network-info

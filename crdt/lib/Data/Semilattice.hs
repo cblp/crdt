@@ -3,7 +3,7 @@ module Data.Semilattice
     , merge
     ) where
 
-import           Data.Semigroup (Max, Semigroup, (<>))
+import           Data.Semigroup (Max)
 import           Data.Set (Set)
 
 {- |

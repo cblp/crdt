@@ -7,8 +7,6 @@ module Cv.ORSet where
 
 import           Prelude hiding (lookup)
 
-import           Data.Semigroup (Semigroup ((<>)))
-
 import           CRDT.Cv.ORSet (ORSet, add, lookup, remove)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,
                                                runProcessSim)

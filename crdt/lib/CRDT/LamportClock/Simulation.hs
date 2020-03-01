@@ -19,8 +19,6 @@ module CRDT.LamportClock.Simulation
 
 import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
                                        throwError)
-import           Control.Monad.Fail (MonadFail)
-import qualified Control.Monad.Fail as Fail
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader (ReaderT, ask, runReaderT)
 import           Control.Monad.State.Strict (StateT, evalState, evalStateT,

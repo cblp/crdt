@@ -9,7 +9,6 @@ module CRDT.Cv.PNCounter
     , increment
     ) where
 
-import           Data.Semigroup (Semigroup (..))
 import           Data.Semilattice (Semilattice)
 
 import           CRDT.Cv.GCounter (GCounter)

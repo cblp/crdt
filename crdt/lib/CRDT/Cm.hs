@@ -14,9 +14,6 @@ module CRDT.Cm
     , makeAndApplyOps
     ) where
 
-import           Prelude hiding (fail)
-
-import           Control.Monad.Fail (MonadFail, fail)
 import           Control.Monad.State.Strict (MonadState, get, modify)
 
 import           CRDT.LamportClock (Clock)

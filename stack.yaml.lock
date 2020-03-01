@@ -5,15 +5,15 @@
 
 packages:
 - completed:
-    hackage: QuickCheck-GenT-0.2.0@sha256:d11b7b4a3f7648895eff66376a00f763821ee955ce42a37fb918213a8eae88d6,1458
+    hackage: QuickCheck-GenT-0.2.2@sha256:a07dbc72e88bb27fcd0946cc51f5204d616114decfb3a67957bf4b56c7fea1fb,1435
     pantry-tree:
       size: 293
-      sha256: a3e3065581974edfdc6951d894d93ed134e6136caa6f5e8593a58c2e039e076b
+      sha256: fd2bc1a0b05e40e35ad34a94759f499eff5da5b3a73c0a991483b0e4d3c7ede5
   original:
-    hackage: QuickCheck-GenT-0.2.0
+    hackage: QuickCheck-GenT-0.2.2
 snapshots:
 - completed:
-    size: 524996
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/27.yaml
-    sha256: 7ea31a280c56bf36ff591a7397cc384d0dff622e7f9e4225b47d8980f019a0f0
-  original: lts-14.27
+    size: 488576
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/0.yaml
+    sha256: e4b6a87b47ec1cf63a7f1a0884a3b276fce2b0d174a10e8753c4f618e7983568
+  original: lts-15.0

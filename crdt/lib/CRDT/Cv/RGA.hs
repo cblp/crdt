@@ -15,11 +15,10 @@ module CRDT.Cv.RGA
     , unpack
     ) where
 
-import           Data.Algorithm.Diff (Diff (Both, First, Second),
+import           Data.Algorithm.Diff (PolyDiff (Both, First, Second),
                                       getGroupedDiffBy)
 import           Data.Empty (AsEmpty (..))
 import           Data.Function (on)
-import           Data.Semigroup (Semigroup, (<>))
 import           Data.Semilattice (Semilattice)
 import           Data.Traversable (for)
 

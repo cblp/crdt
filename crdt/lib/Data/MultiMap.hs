@@ -15,7 +15,6 @@ import           Prelude hiding (lookup)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
-import           Data.Semigroup ((<>))
 import           Data.Set (Set)
 import qualified Data.Set as Set
 

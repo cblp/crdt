@@ -15,8 +15,6 @@ module CRDT.LWW
     , advanceFromLWW
     ) where
 
-import           Data.Semigroup (Semigroup, (<>))
-
 import           Data.Semilattice (Semilattice)
 
 #if __GLASGOW_HASKELL__ >= 800

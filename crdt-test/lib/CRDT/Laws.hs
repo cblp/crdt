@@ -17,7 +17,6 @@ import           Control.Monad.State.Strict (MonadState, StateT, evalStateT,
 import           Control.Monad.Trans (lift)
 import           Data.Functor.Identity (runIdentity)
 import           Data.Maybe (isJust)
-import           Data.Semigroup (Semigroup, (<>))
 import           QuickCheck.GenT (MonadGen, liftGen, runGenT)
 import qualified QuickCheck.GenT as GenT
 import           Test.QuickCheck (Arbitrary (..), Property, choose,

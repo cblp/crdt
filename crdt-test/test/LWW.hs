@@ -10,7 +10,6 @@ module LWW
     , test_Cv
     ) where
 
-import           Data.Semigroup ((<>))
 import           Test.QuickCheck ((===))
 
 import           CRDT.LamportClock.Simulation (runLamportClockSim,

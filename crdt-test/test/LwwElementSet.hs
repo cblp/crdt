@@ -13,8 +13,6 @@ module LwwElementSet
 
 import           Prelude hiding (lookup)
 
-import           Data.Semigroup ((<>))
-
 import           CRDT.Cv.LwwElementSet (LwwElementSet, add, lookup, remove)
 import           CRDT.LamportClock (LamportTime (LamportTime), advance, getTime)
 import           CRDT.LamportClock.Simulation (runLamportClockSim,

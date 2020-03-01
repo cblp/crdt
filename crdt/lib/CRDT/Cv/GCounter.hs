@@ -8,7 +8,6 @@ module CRDT.Cv.GCounter
 
 import           Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IntMap
-import           Data.Semigroup (Semigroup ((<>)))
 import           Data.Semilattice (Semilattice)
 
 -- | Grow-only counter.
