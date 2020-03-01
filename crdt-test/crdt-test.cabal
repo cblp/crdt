@@ -39,6 +39,7 @@ test-suite test
                   , tasty
                   , tasty-discover >=4.1
                   , tasty-quickcheck
+                  , text
     other-modules:  Cm.ORSet
                     Cm.RGA
                     Cm.TwoPSet
@@ -51,6 +52,7 @@ test-suite test
                     LWW
                     LwwElementSet
                     Max
+                    OrsMapLast
                     PNCounter
                     Util
     if impl(ghc < 8)

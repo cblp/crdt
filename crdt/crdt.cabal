@@ -41,6 +41,7 @@ library
                       CRDT.Cv.LwwElementSet
                       CRDT.Cv.Max
                       CRDT.Cv.ORSet
+                      CRDT.Cv.OrsMapLast
                       CRDT.Cv.PNCounter
                       CRDT.Cv.RGA
                       CRDT.Cv.TwoPSet
