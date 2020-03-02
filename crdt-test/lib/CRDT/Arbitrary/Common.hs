@@ -12,7 +12,7 @@ import           CRDT.LamportClock (LamportTime (LamportTime), Pid (Pid))
 import           Data.MultiMap (MultiMap (MultiMap))
 
 deriving instance
-        (Arbitrary k, Ord k, Arbitrary v, Ord v) => Arbitrary (MultiMap k v)
+    (Arbitrary k, Ord k, Arbitrary v, Ord v) => Arbitrary (MultiMap k v)
 
 instance Arbitrary LamportTime where
     arbitrary = LamportTime <$> arbitrary <*> arbitrary

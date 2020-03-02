@@ -9,6 +9,7 @@ module CRDT.Arbitrary
     ( NoNul (..)
     ) where
 
+import           Data.Ord (Down (..))
 import           Test.QuickCheck (Arbitrary (arbitrary))
 import           Test.QuickCheck.Gen (Gen (MkGen))
 import           Test.QuickCheck.Instances ()
@@ -26,6 +27,8 @@ import           CRDT.LWW (LWW (..))
 #if ENABLE_CM
 import           CRDT.Arbitrary.Cm ()
 #endif /* ENABLE_CM */
+
+deriving instance Arbitrary a => Arbitrary (Down a)
 
 instance Arbitrary a => Arbitrary (LWW a) where
     arbitrary = do
