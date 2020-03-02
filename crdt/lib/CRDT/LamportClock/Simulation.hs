@@ -9,8 +9,10 @@ module CRDT.LamportClock.Simulation
     -- * Lamport clock simulation
       LamportClockSim
     , LamportClockSimT (..)
+    , ObservedTime (..)
     , ProcessSim
     , ProcessSimT (..)
+    , evalProcessSim
     , runLamportClockSim
     , runLamportClockSimT
     , runProcessSim
@@ -20,15 +22,20 @@ module CRDT.LamportClock.Simulation
 import           Control.Monad.Except (ExceptT, MonadError, runExceptT,
                                        throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader (ReaderT, ask, runReaderT)
+import           Control.Monad.Reader (ask)
+import           Control.Monad.RWS.Strict (RWST, evalRWST, tell)
 import           Control.Monad.State.Strict (StateT, evalState, evalStateT,
                                              modify, state)
 import           Control.Monad.Trans (MonadTrans, lift)
+import           Data.Bifunctor (second)
+import           Data.Foldable (toList)
 import           Data.Functor.Identity (Identity)
 import           Data.Hashable (hash)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromMaybe)
+import           Data.Sequence (Seq)
+import qualified Data.Sequence as Seq
 import           Numeric.Natural (Natural)
 
 import           CRDT.LamportClock (Clock, LamportTime (LamportTime), LocalTime,
@@ -56,8 +63,11 @@ instance MonadIO m => MonadIO (LamportClockSimT m) where
 
 type LamportClockSim = LamportClockSimT Identity
 
+data ObservedTime = ObservedTime{stamp :: LocalTime, count :: Natural}
+
 -- | ProcessSim inside Lamport clock simulation.
-newtype ProcessSimT m a = ProcessSim (ReaderT Pid (LamportClockSimT m) a)
+newtype ProcessSimT m a =
+    ProcessSim (RWST Pid (Seq ObservedTime) () (LamportClockSimT m) a)
     deriving (Applicative, Functor, Monad, MonadFail)
 
 type ProcessSim = ProcessSimT Identity
@@ -72,6 +82,7 @@ instance Monad m => Clock (ProcessSimT m) where
     getTimes n' = ProcessSim $ do
         pid <- ask
         time <- lift $ preIncreaseTime n pid
+        tell $ Seq.singleton ObservedTime{stamp = time, count = n}
         pure $ LamportTime time pid
       where
         n = max n' 1
@@ -96,10 +107,14 @@ runLamportClockSimT (LamportClockSim action) =
     evalStateT (runExceptT action) mempty
 
 runProcessSim :: Pid -> ProcessSim a -> LamportClockSim a
-runProcessSim pid (ProcessSim action) = runReaderT action pid
+runProcessSim = runProcessSimT
 
-runProcessSimT :: Pid -> ProcessSimT m a -> LamportClockSimT m a
-runProcessSimT pid (ProcessSim action) = runReaderT action pid
+runProcessSimT :: Monad m => Pid -> ProcessSimT m a -> LamportClockSimT m a
+runProcessSimT pid (ProcessSim action) = fst <$> evalRWST action pid ()
+
+evalProcessSim :: Pid -> ProcessSim a -> LamportClockSim (a, [ObservedTime])
+evalProcessSim pid (ProcessSim action) =
+    second toList <$> evalRWST action pid ()
 
 -- | Increase time by pid and return new value
 preIncreaseTime :: Monad m => Natural -> Pid -> LamportClockSimT m LocalTime
