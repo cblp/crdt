@@ -13,7 +13,6 @@ import           Prelude hiding (lookup)
 import           Data.Foldable (for_)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Semigroup (Semigroup (..))
 
 import           CRDT.LamportClock (Clock)
 import           CRDT.LWW (LWW, advanceFromLWW)

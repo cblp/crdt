@@ -17,12 +17,10 @@ module CRDT.Cm.RGA
 
 import           Prelude hiding (lookup)
 
-import           Control.Monad.Fail (MonadFail)
 import           Control.Monad.State.Strict (MonadState)
 import           Data.Empty (AsEmpty (..))
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Semigroup ((<>))
 import           Data.Vector (Vector, (//))
 import qualified Data.Vector as Vector
 
