@@ -10,7 +10,6 @@ module CRDT.Cv.TwoPSet
 
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromMaybe)
 
 import           Data.Semilattice (Semilattice)
 
@@ -29,7 +28,7 @@ initial :: TwoPSet a
 initial = TwoPSet Map.empty
 
 member :: Ord a => a -> TwoPSet a -> Bool
-member e (TwoPSet m) = fromMaybe False $ Map.lookup e m
+member e (TwoPSet m) = Just True == Map.lookup e m
 
 remove :: Ord a => a -> TwoPSet a -> TwoPSet a
 remove e (TwoPSet m) = TwoPSet $ Map.adjust (const False) e m
