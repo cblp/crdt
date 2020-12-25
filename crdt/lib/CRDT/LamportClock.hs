@@ -60,6 +60,7 @@ class Process m => Clock m where
         -> m LamportTime
         -- ^ Starting value of the range.
         -- So return value @t@ means range @[t .. t + n - 1]@.
+
     advance :: LocalTime -> m ()
 
 getTime :: Clock m => m LamportTime
