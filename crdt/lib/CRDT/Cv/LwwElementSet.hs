@@ -34,13 +34,13 @@ add :: (Ord a, Clock m) => a -> LwwElementSet a -> m (LwwElementSet a)
 add value old@(LES m) = do
     advanceFromLES old
     tag <- LWW.initialize True
-    pure . LES $ Map.insertWith (<>) value tag m
+    pure . LES $ Map.insert value tag m
 
 remove :: (Ord a, Clock m) => a -> LwwElementSet a -> m (LwwElementSet a)
 remove value old@(LES m) = do
     advanceFromLES old
     tag <- LWW.initialize False
-    pure . LES $ Map.insertWith (<>) value tag m
+    pure . LES $ Map.insert value tag m
 
 lookup :: Ord a => a -> LwwElementSet a -> Bool
 lookup value (LES m) = maybe False LWW.query $ Map.lookup value m
