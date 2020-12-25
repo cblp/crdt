@@ -4,13 +4,16 @@ version: 10.5
 category: Distributed Systems
 copyright:
     2017        Yuriy Syrovetskiy, Nikolay Loginov;
-    2018-2019   Yuriy Syrovetskiy
+    2018-2020   Yuriy Syrovetskiy
 maintainer: Yuriy Syrovetskiy <cblp@cblp.su>
 license: BSD3
 license-file: LICENSE
 synopsis: Conflict-free replicated data types
 description:
     Definitions of CmRDT and CvRDT. Implementations for some classic CRDTs.
+    .
+    This package is just for experiments, so it supports only one GHC version.
+    For real CRDT applications, use `ron` package.
 homepage: https://github.com/cblp/crdt#readme
 bug-reports: https://github.com/cblp/crdt/issues
 cabal-version: >= 1.10

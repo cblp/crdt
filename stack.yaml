@@ -1,1 +1,8 @@
-ghc-8.8.yaml
+resolver: lts-16.20
+
+packages:
+  - crdt
+  - crdt-test
+
+extra-deps:
+  - QuickCheck-GenT-0.2.2

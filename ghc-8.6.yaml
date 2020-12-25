@@ -1,8 +1,0 @@
-resolver: lts-14.27
-
-packages:
-  - crdt
-  - crdt-test
-
-extra-deps:
-  - QuickCheck-GenT-0.2.0

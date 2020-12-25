@@ -2,15 +2,23 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Compatible Versioning](https://github.com/staltz/comver).
+and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/comver).
 
 ## [Unreleased]
 
 [Unreleased]: https://github.com/cblp/crdt/compare/v10.5...master
 
 ## [10.5] - 2019-09-22
+### Changed
+- Simplified LwwElementSet implementation.
+  We know for sure the new item is happened-after all existing items,
+  so we can use unconditional insert.
+
 ### Fixed
 - Diff dependency bounds
+
+### Removed
+- Dropped support of GHC < 8.8, since this package is for experiments only.
 
 [10.5]: https://github.com/cblp/crdt/compare/v10.4...v10.5
 
