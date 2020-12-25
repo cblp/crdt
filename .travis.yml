@@ -24,22 +24,8 @@ install:
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64
     | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
-script:
-  # Build the package, its tests, and its docs and run the tests
-  - test/script
-
 jobs:
   include:
-    - compiler: GHC 8.6
-    # - compiler: GHC 8.4
-    #   env: STACK_YAML="ghc-8.4.yaml"
-    # - compiler: GHC 8.2
-    #   env: STACK_YAML="ghc-8.2.yaml"
-    # - compiler: GHC 8.0
-    #   env: STACK_YAML="ghc-8.0.yaml"
-    # - compiler: GHC 7.10
-    #   env: STACK_YAML="ghc-7.10.yaml"
-    - name: haddock
-      script: $STACK haddock
-    - name: hlint
-      script: $STACK build hlint --exec 'hlint .'
+    - {name: build and test everything, script: test/script}
+    - {name: haddock, script: $STACK haddock}
+    - {name: hlint, script: $STACK build hlint --exec 'hlint .'}
