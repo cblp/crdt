@@ -5,20 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/comver).
 
 ## [Unreleased]
-
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.5...master
-
-## [10.5] - 2019-09-22
 ### Changed
+- Updated Diff dependency.
 - Simplified LwwElementSet implementation.
   We know for sure the new item is happened-after all existing items,
   so we can use unconditional insert.
 
-### Fixed
-- Diff dependency bounds
-
 ### Removed
 - Dropped support of GHC < 8.8, since this package is for experiments only.
+
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.5...master
+
+## [10.5] - 2019-09-22
+### Fixed
+- Diff dependency bounds
 
 [10.5]: https://github.com/cblp/crdt/compare/v10.4...v10.5
 
