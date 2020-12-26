@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/comver).
 
 ## [Unreleased]
+
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.6...master
+
+## [10.6] - 2019-12-26
 ### Changed
 - Updated Diff dependency.
 - Simplified LwwElementSet implementation.
@@ -14,7 +18,7 @@ and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/co
 ### Removed
 - Dropped support of GHC < 8.8, since this package is for experiments only.
 
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.5...master
+[10.6]: https://github.com/cblp/crdt/compare/v10.5...v10.6
 
 ## [10.5] - 2019-09-22
 ### Fixed
