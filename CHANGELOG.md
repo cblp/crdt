@@ -6,7 +6,13 @@ and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/co
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/cblp/crdt/compare/v10.6...master
+[Unreleased]: https://github.com/cblp/crdt/compare/v10.7...master
+
+## [10.7] - 2021-01-30
+### Added
+- Support for GHC 8.10/base-4.14
+
+[10.7]: https://github.com/cblp/crdt/compare/v10.6...v10.7
 
 ## [10.6] - 2020-12-26
 ### Changed
