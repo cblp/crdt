@@ -8,7 +8,7 @@ and this project adheres to [Compatible Versioning](https://gitlab.com/staltz/co
 
 [Unreleased]: https://github.com/cblp/crdt/compare/v10.6...master
 
-## [10.6] - 2019-12-26
+## [10.6] - 2020-12-26
 ### Changed
 - Updated Diff dependency.
 - Simplified LwwElementSet implementation.
